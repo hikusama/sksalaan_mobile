@@ -18,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const OverviewScreen(),
     const RecordsScreen(),
-    // const MigrateScreen(),
+    const MigrateScreen(),
     // const SettingsScreen(),
   ];
 
