@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skyouthprofiling/data/models/youth.dart';
-import 'package:skyouthprofiling/service/database_helper.dart';
+// import 'package:skyouthprofiling/service/database_helper.dart';
 
 class RecordsScreen extends StatefulWidget {
   const RecordsScreen({super.key});
@@ -10,14 +9,14 @@ class RecordsScreen extends StatefulWidget {
 }
 
 class RecordsScreenState extends State<RecordsScreen> {
-  final DatabaseService _databaseService = DatabaseService.instance;
+  // final DatabaseService _databaseService = DatabaseService.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
-          child: Column(children: [_builContLogo(), _buildRecords()]),
+          child: Column(children: [_builContLogo(), _designRecords()]),
         ),
       ),
     );
@@ -47,22 +46,22 @@ class RecordsScreenState extends State<RecordsScreen> {
       // width: ,
     );
   }
-  Widget _buildRecords() {
-    return FutureBuilder(
-      future: _databaseService.getYouth(),
-      builder: (context, snapshot) {
-        return ListView.builder(
-          itemCount: snapshot.data?.length ?? 0,
-          itemBuilder: (context, index) {
-            Youth youth = snapshot.data![index];
-            return _designRecords(youth);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _designRecords(Youth youth) {
+  // Widget _buildRecords() {
+  //   return FutureBuilder(
+  //     future: _databaseService.getYouth(),
+  //     builder: (context, snapshot) {
+  //       return ListView.builder(
+  //         itemCount: snapshot.data?.length ?? 0,
+  //         itemBuilder: (context, index) {
+  //           Youth youth = snapshot.data![index];
+  //           return _designRecords(youth);
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+// Youth youth
+  Widget _designRecords() {
     return Container(
       margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
       padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
@@ -90,7 +89,8 @@ class RecordsScreenState extends State<RecordsScreen> {
                   ),
                 ),
                 Text(
-                  youth.name,
+                  'Incent',
+                  // youth.name,
                   style: TextStyle(fontSize: 16, color: Colors.white),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -101,7 +101,8 @@ class RecordsScreenState extends State<RecordsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                  youth.name,
+                'Incent',
+                  // youth.name,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skyouthprofiling/service/database_helper.dart';
+// import 'package:skyouthprofiling/service/database_helper.dart';
 
 class InsertYouth extends StatefulWidget {
   const InsertYouth({super.key});
@@ -12,13 +12,35 @@ class _InsertYouthState extends State<InsertYouth> {
   int currStep = 0;
   bool get isFirstStep => currStep == 0;
   bool get isLastStep => currStep == steps().length - 1;
-  final DatabaseService _databaseService = DatabaseService.instance;
+  // final DatabaseService _databaseService = DatabaseService.instance;
 
   final name = TextEditingController();
-  final age = TextEditingController();
   final company = TextEditingController();
   final role = TextEditingController();
 
+  final fname = TextEditingController();
+  final mname = TextEditingController();
+  final lname = TextEditingController();
+  final age = TextEditingController();
+  final sex = TextEditingController();
+  final gender = TextEditingController();
+
+
+/*
+  IntColumn get userId => integer().nullable()();  
+  TextColumn get youthType => text()();
+  TextColumn get batchNo => text()();
+  TextColumn get skills => text()();
+  TextColumn get status => text()();
+
+    TextColumn get fname => text()();
+  TextColumn get mname => text()();
+  TextColumn get lname => text()();
+  IntColumn get age => integer()();
+  TextColumn get gender => text()();
+  TextColumn get sex => text()();
+  TextColumn get dateOfBirth => text()();
+ */
   Map<String, bool> firstHasError = {'name': false, 'age': false};
   Map<String, bool> secondHasError = {'company': false};
   Map<String, bool> thirdHasError = {'role': false};
@@ -50,7 +72,7 @@ class _InsertYouthState extends State<InsertYouth> {
               currentStep: currStep,
               onStepContinue: () {
                 if (isLastStep) {
-                  _databaseService.addYouth(infoData);
+                  // _databaseService.addYouth(infoData);
                   setState(() {
                     isComplete = true;
                   });

@@ -17,9 +17,9 @@ class _MainScreenState extends State<MainScreen> {
   bool isHv = false;
   final List<Widget> _screens = [
     const OverviewScreen(),
-    const RecordsScreen(),
-    const MigrateScreen(),
-    const SettingsScreen(),
+    // const RecordsScreen(),
+    // const MigrateScreen(),
+    // const SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -41,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             _buildNavItem(Icons.grid_view, "Overview", 0),
             _buildNavItem(Icons.storage, "Records", 1),
-            const SizedBox(width: 40), // Space for FAB
+            const SizedBox(width: 40),  
             _buildNavItem(Icons.import_export_sharp, "Migrate", 2),
             _buildNavItem(Icons.settings, "Settings", 3),
           ],
