@@ -19,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
     const OverviewScreen(),
     const RecordsScreen(),
     const MigrateScreen(),
-    // const SettingsScreen(),
+    const SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {
