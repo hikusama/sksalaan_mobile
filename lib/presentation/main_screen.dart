@@ -17,7 +17,7 @@ class _MainScreenState extends State<MainScreen> {
   bool isHv = false;
   final List<Widget> _screens = [
     const OverviewScreen(),
-    // const RecordsScreen(),
+    const RecordsScreen(),
     // const MigrateScreen(),
     // const SettingsScreen(),
   ];
