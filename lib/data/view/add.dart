@@ -27,7 +27,7 @@ class _AddState extends State<Add> {
     }
   }
 
-  int _steps = 2;
+  int _steps = 1;
   List<String> labelStep = ["Basic", "Personal", "Educ", "Civic", "Finish"];
 
   // First form
@@ -41,16 +41,17 @@ class _AddState extends State<Add> {
   String? genVal;
   String? addrVal;
 
-
   final _cnController = TextEditingController();
   final _pobController = TextEditingController();
   final _nocController = TextEditingController();
+  final _skillsController = TextEditingController();
   final _hController = TextEditingController();
   final _wController = TextEditingController();
   final _occController = TextEditingController();
   String? civilStatsVal;
   String? religionVal;
   String? youthTypeVal;
+  Map<String, dynamic> skills = {};
 
   // Map<String, String> firstForm() => {
   //   'fname': _fnameController.text,
@@ -204,7 +205,7 @@ class _AddState extends State<Add> {
             decoration: InputDecoration(
               labelText: 'First Name',
               labelStyle: TextStyle(fontSize: 12),
-              hintText: 'Enter your first name',
+              hintText: 'Enter a first name',
               border: OutlineInputBorder(),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
@@ -216,7 +217,7 @@ class _AddState extends State<Add> {
             controller: _fnameController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your first name';
+                return 'Please enter the first name';
               }
               if (value.length > 20) {
                 return 'Use only 20 characters';
@@ -228,9 +229,9 @@ class _AddState extends State<Add> {
           SizedBox(height: 10),
           TextFormField(
             decoration: InputDecoration(
-              labelText: 'Middle Name',
+              labelText: 'Middle a Name',
               labelStyle: TextStyle(fontSize: 12),
-              hintText: 'Enter your Middle name',
+              hintText: 'Enter Middle name',
               border: OutlineInputBorder(),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
@@ -242,7 +243,7 @@ class _AddState extends State<Add> {
             controller: _mnameController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your middle name';
+                return 'Please enter the middle name';
               }
               if (value.length > 20) {
                 return 'Use only 20 characters';
@@ -256,7 +257,7 @@ class _AddState extends State<Add> {
             decoration: InputDecoration(
               labelText: 'Last Name',
               labelStyle: TextStyle(fontSize: 12),
-              hintText: 'Enter your last name',
+              hintText: 'Enter a last name',
               border: OutlineInputBorder(),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
@@ -268,7 +269,7 @@ class _AddState extends State<Add> {
             controller: _lnameController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your last name';
+                return 'Please enter the last name';
               }
               if (value.length > 20) {
                 return 'Use only 20 characters';
@@ -431,18 +432,11 @@ class _AddState extends State<Add> {
       key: _formKeyForCurrentStep(),
       child: Column(
         children: [
-          _buildDropDown(sexVal, "Select Youth type", "Type", youthType, (
-                  newValue,
-                ) {
-                  setState(() {
-                    sexVal = newValue;
-                  });
-                }),
           TextFormField(
             decoration: InputDecoration(
-              labelText: 'Place of Birth',
+              labelText: 'Occupation (optional)',
               labelStyle: TextStyle(fontSize: 12),
-              hintText: 'Enter your Place of Birth',
+              hintText: 'Enter a occupation',
               border: OutlineInputBorder(),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
@@ -451,10 +445,10 @@ class _AddState extends State<Add> {
               ),
             ),
             style: TextStyle(fontSize: 12, color: Colors.black),
-            controller: _lnameController,
+            controller: _occController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your Place of Birth';
+                return null;
               }
               if (value.length > 30) {
                 return 'Use only 30 characters';
@@ -462,10 +456,37 @@ class _AddState extends State<Add> {
               return null;
             },
           ),
+          SizedBox(height: 10),
+
           TextFormField(
-            keyboardType:TextInputType.number,
             decoration: InputDecoration(
-              
+              labelText: 'Place of Birth',
+              labelStyle: TextStyle(fontSize: 12),
+              hintText: 'Enter a Place of Birth',
+              border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 10,
+              ),
+            ),
+            style: TextStyle(fontSize: 12, color: Colors.black),
+            controller: _pobController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter the place of birth';
+              }
+              if (value.length > 30) {
+                return 'Use only 30 characters';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 10),
+
+          TextFormField(
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
               labelText: 'Contact no.',
               labelStyle: TextStyle(fontSize: 12),
               hintText: '9554433221',
@@ -477,17 +498,317 @@ class _AddState extends State<Add> {
               ),
             ),
             style: TextStyle(fontSize: 12, color: Colors.black),
-            controller: _lnameController,
+            controller: _cnController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your last name';
+                return 'Please enter the contact no.';
               }
-              if (value.length > 20) {
-                return 'Use only 20 characters';
+              if (value.length != 10) {
+                return 'Use correct formmat 10-Digits.';
               }
               return null;
             },
           ),
+          SizedBox(height: 10),
+
+          TextFormField(
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'No. of children (optional)',
+              labelStyle: TextStyle(fontSize: 12),
+              hintText: 'Enter the No. of children',
+              border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 10,
+              ),
+            ),
+            style: TextStyle(fontSize: 12, color: Colors.black),
+            controller: _nocController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return null; // Optional: no validation if empty
+              }
+
+              final intValue = int.tryParse(value);
+              if (intValue == null) {
+                return 'Enter a valid number';
+              }
+              if (intValue > 20) {
+                return 'Max limit: 20.';
+              }
+
+              return null; // Valid input
+            },
+          ),
+          SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    Stack(
+                      alignment: AlignmentDirectional.centerEnd,
+                      children: [
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Skills',
+                            labelStyle: TextStyle(fontSize: 12),
+                            hintText: 'Add skills',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 10,
+                            ),
+                          ),
+                          style: TextStyle(fontSize: 12, color: Colors.black),
+                          controller: _skillsController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              if (skills.isEmpty) {
+                                return 'Please enter the skills';
+                              }
+                              return null;
+                            }
+                            if (value.length > 30) {
+                              return 'Use only 30 characters';
+                            }
+                            return null;
+                          },
+                        ),
+                        Positioned(
+                          child: IconButton(
+                            icon: Icon(Icons.add_circle, color: Colors.blue),
+                            onPressed: () {
+                              final input = _skillsController.text.trim();
+
+                              if (input.isEmpty ||
+                                  input.length > 30 ||
+                                  skills.containsKey(input)) {
+                                return;
+                              }
+
+                              setState(() {
+                                skills[input] = input;
+                              });
+                              _skillsController.clear();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 5),
+
+                    Container(
+                      height: skills.length > 3 ? 165 : null,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(79, 20, 127, 169),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(5),
+                          topRight: Radius.circular(5),
+                          bottomLeft: Radius.circular(15),
+                          bottomRight: Radius.circular(15),
+                        ),
+                        border: Border.all(
+                          color: const Color.fromRGBO(20, 126, 169, 1),
+                          width: 2.0,
+                        ),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children:
+                              skills.entries.map((entry) {
+                                return Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(13, 0, 0, 0),
+                                      child: Text(
+                                        entry.value,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: const Color.fromARGB(
+                                            255,
+                                            0,
+                                            0,
+                                            0,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      color: Colors.red,
+                                      alignment: Alignment.centerLeft,
+                                      icon: Icon(
+                                        Icons.delete_rounded,
+                                        color: Color.fromARGB(255, 142, 36, 36),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          skills.remove(entry.key);
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Height (cm)',
+                              labelStyle: TextStyle(fontSize: 12),
+                              hintText: 'Height',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 10,
+                              ),
+                            ),
+                            style: TextStyle(fontSize: 12, color: Colors.black),
+                            controller: _hController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Required';
+                              }
+                              if (int.parse(value) > 160) {
+                                return 'max: 160cm';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Weight (kg)',
+                              labelStyle: TextStyle(fontSize: 12),
+                              hintText: 'Weight',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 10,
+                              ),
+                            ),
+                            style: TextStyle(fontSize: 12, color: Colors.black),
+                            controller: _wController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Required';
+                              }
+                              if (int.parse(value) > 200) {
+                                return 'max: 200kg';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    _buildDropDown(
+                      youthTypeVal,
+                      "Select Youth type",
+                      "Type",
+                      youthType,
+                      (newValue) {
+                        setState(() {
+                          youthTypeVal = newValue;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+
+                    _buildDropDown(
+                      civilStatsVal,
+                      "Select Civil status",
+                      "Civil status",
+                      civilStats,
+                      (newValue) {
+                        setState(() {
+                          civilStatsVal = newValue;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+
+                    _buildDropDown(
+                      religionVal,
+                      "Select Religion",
+                      "Religion",
+                      religion,
+                      (newValue) {
+                        setState(() {
+                          religionVal = newValue;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+
+    // 3rd step
+    Form(
+      key: _formKeyForCurrentStep(),
+      child: Column(
+        children: [
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Occupation (optional)',
+              labelStyle: TextStyle(fontSize: 12),
+              hintText: 'Enter a occupation',
+              border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 10,
+              ),
+            ),
+            style: TextStyle(fontSize: 12, color: Colors.black),
+            controller: _occController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return null;
+              }
+              if (value.length > 30) {
+                return 'Use only 30 characters';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 10),
         ],
       ),
     ),
