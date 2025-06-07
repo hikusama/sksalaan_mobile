@@ -25,8 +25,7 @@ class _InsertYouthState extends State<InsertYouth> {
   final sex = TextEditingController();
   final gender = TextEditingController();
 
-
-/*
+  /*
   IntColumn get userId => integer().nullable()();  
   TextColumn get youthType => text()();
   TextColumn get batchNo => text()();
@@ -64,54 +63,58 @@ class _InsertYouthState extends State<InsertYouth> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text('Inserting Youth')),
     body:
         isComplete
             ? _bildSuccess(context)
-            : Stepper(
-              steps: steps(),
-              currentStep: currStep,
-              onStepContinue: () {
-                if (isLastStep) {
-                  // _databaseService.addYouth(infoData);
-                  setState(() {
-                    isComplete = true;
-                  });
-                } else {
-                  setState(() {
-                    currStep += 1;
-                  });
-                }
-              },
-              stepIconHeight: 25,
-              stepIconWidth: 25,
-              onStepCancel:
-                  isFirstStep ? null : () => setState(() => currStep -= 1),
-              onStepTapped: (step) => setState(() => currStep = step),
-              controlsBuilder:
-                  (context, details) => Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: details.onStepContinue,
-                            child: Text(isLastStep ? 'Confirm' : 'Next'),
-                            // isLastStep ? 'Confirm' : 'Next'),
-                          ),
-                        ),
-                        if (!isFirstStep) ...[
-                          const SizedBox(width: 16),
+            : Scrollbar(
+              child: Stepper(
+                steps: steps(),
+                type: StepperType.horizontal,
+                currentStep: currStep,
+                onStepContinue: () {
+                  if (isLastStep) {
+                    // _databaseService.addYouth(infoData);
+                    setState(() {
+                      isComplete = true;
+                    });
+                  } else {
+                    setState(() {
+                      currStep += 1;
+                    });
+                  }
+                },
+                stepIconHeight: 25,
+                stepIconWidth: 25,
+                onStepCancel:
+                    isFirstStep ? null : () => setState(() => currStep -= 1),
+                onStepTapped: (step) => setState(() => currStep = step),
+                controlsBuilder:
+                    (context, details) => Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: Row(
+                        children: [
                           Expanded(
                             child: ElevatedButton(
-                              onPressed:
-                                  isFirstStep ? null : details.onStepCancel,
-                              child: const Text('Back'),
+                              onPressed: details.onStepContinue,
+                              child: Text(isLastStep ? 'Confirm' : 'Next'),
+                              // isLastStep ? 'Confirm' : 'Next'),
                             ),
                           ),
+                          if (!isFirstStep) ...[
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed:
+                                    isFirstStep ? null : details.onStepCancel,
+                                child: const Text('Back'),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
+              ),
             ),
   );
 
@@ -121,7 +124,7 @@ class _InsertYouthState extends State<InsertYouth> {
 
       // state: StepState.,
       isActive: currStep >= 0,
-      title: Text('Personal'),
+      title: Text('Basic'),
 
       content: Column(
         children: [
@@ -149,7 +152,7 @@ class _InsertYouthState extends State<InsertYouth> {
     Step(
       state: currStep > 1 ? StepState.complete : StepState.indexed,
       isActive: currStep >= 1,
-      title: Text('Background'),
+      title: Text('Personal'),
       content: Column(
         children: [
           TextFormField(
@@ -163,6 +166,7 @@ class _InsertYouthState extends State<InsertYouth> {
       ),
     ),
     Step(
+      state: currStep > 1 ? StepState.complete : StepState.indexed,
       isActive: currStep >= 2,
       title: Text('Others'),
       content: Column(
@@ -176,6 +180,11 @@ class _InsertYouthState extends State<InsertYouth> {
           ),
         ],
       ),
+    ),
+    Step(
+      isActive: currStep >= 3,
+      title: Text('Finish up'),
+      content: Column(children: [Scrollbar(child: Text("hello"))]),
     ),
   ];
 

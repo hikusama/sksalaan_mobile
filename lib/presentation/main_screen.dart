@@ -16,10 +16,10 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   bool isHv = false;
   final List<Widget> _screens = [
-    const OverviewScreen(),
-    const RecordsScreen(),
-    const MigrateScreen(),
-    const SettingsScreen(),
+    // const OverviewScreen(),
+    // const RecordsScreen(),
+    // const MigrateScreen(),
+    // const SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {

@@ -9,7 +9,7 @@ class OverviewScreen extends StatelessWidget {
       body: SafeArea(
         child: SizedBox(
           width: double.infinity,
-          child: Column(children: [_buildDashboard()]),
+          child: Column(children: [_buildDashboard(),_buildContRecords()]),
         ),
       ),
     );
