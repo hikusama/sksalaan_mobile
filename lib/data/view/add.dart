@@ -27,7 +27,7 @@ class _AddState extends State<Add> {
     }
   }
 
-  int _steps = 1;
+  int _steps = 3;
   List<String> labelStep = ["Basic", "Personal", "Educ", "Civic", "Finish"];
 
   // First form
@@ -53,6 +53,19 @@ class _AddState extends State<Add> {
   String? youthTypeVal;
   Map<String, dynamic> skills = {};
 
+  final _nosController = TextEditingController();
+  final _poaController = TextEditingController();
+  final _ygschoolController = TextEditingController();
+  String? schoolLevelVal;
+  Map<String, Map<String, dynamic>> educbg = {};
+
+  final _orgController = TextEditingController();
+  final _orgaddrController = TextEditingController();
+  final _ygorgController = TextEditingController();
+  final _startController = TextEditingController();
+  final _endedController = TextEditingController();
+  Map<String, dynamic> civic = {};
+
   // Map<String, String> firstForm() => {
   //   'fname': _fnameController.text,
   //   'mname': _mnameController.text,
@@ -63,7 +76,7 @@ class _AddState extends State<Add> {
   //   'gender': genVal ?? '',
   //   'address': addrVal ?? '',
   // };
-
+  // 2
   final List<String> youthType = ['OSY', 'ISY'];
   final List<String> religion = ['Islam', 'Christianity', 'Agnostic', 'Others'];
   final List<String> civilStats = [
@@ -88,6 +101,8 @@ class _AddState extends State<Add> {
     'Sittio San Antonioay',
   ];
 
+  // 3
+  final List<String> level = ['Elementary', 'HighSchool', 'Colllege',''];
   void nextStep({bool isNext = true}) {
     if ((isNext && _steps > 5) || (!isNext && _steps == 1)) {
       return;
@@ -784,11 +799,53 @@ class _AddState extends State<Add> {
       key: _formKeyForCurrentStep(),
       child: Column(
         children: [
+          SizedBox(
+            width: 200,
+            child: DropdownButtonFormField<String>(
+              value: schoolLevelVal,
+              hint: Text('School level'),
+              decoration: InputDecoration(
+                labelStyle: TextStyle(fontSize: 12),
+                labelText: 'Select School level',
+                border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 10,
+                ),
+              ),
+              style: TextStyle(fontSize: 12, color: Colors.black),
+              items:
+                  [level[educbg.length < level.length ? educbg.length : level.length - 1]]
+                      .map(
+                        (String value) => DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        ),
+                      )
+                      .toList(),
+              onChanged:
+                  (value) => setState(() {
+                    schoolLevelVal = value;
+                  }),
+              validator: (value) {
+                if (value == null ||
+                    value.isEmpty &&
+                        (qCheck(_nosController) ||
+                            qCheck(_poaController) ||
+                            qCheck(_ygschoolController))) {
+                  return 'Please select school level';
+                }
+                return null;
+              },
+            ),
+          ),
+          SizedBox(height: 10),
           TextFormField(
             decoration: InputDecoration(
-              labelText: 'Occupation (optional)',
+              labelText: 'School',
               labelStyle: TextStyle(fontSize: 12),
-              hintText: 'Enter a occupation',
+              hintText: 'Enter a name of School',
               border: OutlineInputBorder(),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
@@ -797,23 +854,309 @@ class _AddState extends State<Add> {
               ),
             ),
             style: TextStyle(fontSize: 12, color: Colors.black),
-            controller: _occController,
+            controller: _nosController,
             validator: (value) {
-              if (value == null || value.isEmpty) {
-                return null;
+              if (value == null ||
+                  value.isEmpty &&
+                      (schoolLevelVal != null ||
+                          qCheck(_poaController) ||
+                          qCheck(_ygschoolController))) {
+                return 'Required';
               }
-              if (value.length > 30) {
-                return 'Use only 30 characters';
+              if (value.length > 50) {
+                return 'Use only 50 characters';
               }
               return null;
             },
           ),
           SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: TextFormField(
+                  controller: _poaController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Period of Attendance',
+                    labelStyle: TextStyle(fontSize: 12),
+                    hintText: 'MM/DD/YYYY',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 10,
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black),
+                  validator: (value) {
+                    if (value == null ||
+                        value.isEmpty &&
+                            (schoolLevelVal != null ||
+                                qCheck(_nosController) ||
+                                qCheck(_ygschoolController))) {
+                      return 'Required';
+                    }
+
+                    return null;
+                  },
+                  onTap: () async {
+                    DateTime today = DateTime.now();
+                    DateTime maxDate = DateTime(
+                      today.year,
+                      today.month,
+                      today.day,
+                    );
+                    DateTime minDate = DateTime(
+                      today.year - 30,
+                      today.month,
+                      today.day,
+                    );
+
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: maxDate,
+                      firstDate: minDate,
+                      lastDate: maxDate,
+                    );
+
+                    if (pickedDate != null) {
+                      String formattedDate =
+                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      setState(() {
+                        _poaController.text = formattedDate;
+                      });
+                    }
+                  },
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                flex: 1,
+                child: TextFormField(
+                  keyboardType: TextInputType.number,
+                  controller: _ygschoolController,
+                  decoration: InputDecoration(
+                    labelText: 'Year graduate',
+                    labelStyle: TextStyle(fontSize: 12),
+                    hintText:
+                        '${DateTime.now().year - 33} - ${DateTime.now().year}',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 10,
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black),
+                  validator: (value) {
+                    if (value == null ||
+                        value.isEmpty &&
+                            (schoolLevelVal != null ||
+                                qCheck(_nosController) ||
+                                qCheck(_poaController))) {
+                      return 'Required';
+                    }
+                    if (DateTime.now().year - 33 > int.parse(value)) {
+                      return 'Min: ${DateTime.now().year - 33}';
+                    }
+                    if (DateTime.now().year < int.parse(value)) {
+                      return 'Max: ${DateTime.now().year}';
+                    }
+
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(12, 10, 12, 12),
+            child: Column(
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromRGBO(35, 62, 72, 1),
+                  ),
+                  onPressed: () {
+                    if (_formKeyForCurrentStep().currentState!.validate()) {
+                      final idx =educbg.length < level.length ? educbg.length : level.length - 1;
+                      setState(() {
+                        educbg[level[idx]] = {
+                          'level': schoolLevelVal,
+                          'school': _nosController.text,
+                          'poa': _poaController.text,
+                          'yg': _ygschoolController.text,
+                        };
+                      schoolLevelVal = null;
+                      _nosController.clear();
+                      _poaController.clear();
+                      _ygschoolController.clear();
+                      });
+                    }
+                  },
+                  child: Text('Add', style: TextStyle(color: Colors.white)),
+                ),
+                SizedBox(height: 10),
+
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.fromLTRB(12, 32, 12, 12),
+                  
+                  child: SizedBox(
+                    height: 150,
+                    width: 220,
+                    child:
+                        educbg.isEmpty
+                            ? Align(
+                              alignment: Alignment.center,
+                              child: Text('No Educational Background'),
+                            )
+                            : PageView.builder(
+                              scrollDirection: Axis.horizontal,
+
+                              controller: PageController(viewportFraction: 0.9),
+                              itemCount: educbg.length,
+                              itemBuilder: (context, index) {
+                                final entry = educbg.entries.toList()[index];
+                                final key = entry.key;
+                                final data = entry.value;
+
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.black,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            7,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              key,
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            Text(
+                                              'Level',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              data['school'],
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            Text(
+                                              'School',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      data['poa'],
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      'Last attendance',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(width: 20),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      data['yg'],
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      'Year Graduate',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Optional delete button
+                                      
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child:
+                                        educbg.length != index + 1 ? SizedBox.shrink() :
+                                         IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              educbg.remove(key);
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     ),
+  
+  
   ];
 
+  bool qCheck(TextEditingController controller) {
+    return controller.text.trim().isNotEmpty;
+  }
   // build drop down
 
   Widget _buildDropDown(
