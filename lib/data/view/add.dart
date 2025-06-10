@@ -107,7 +107,7 @@ class _AddState extends State<Add> {
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = ['Male', 'Female', 'Gay', 'Others'];
+  final List<String> gender = ['Gender', 'Gay', 'Others'];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -464,7 +464,12 @@ class _AddState extends State<Add> {
                   onChanged: (value) {
                     if (value != null) {
                       setState(() {
-                        schoolLevelVal = value;
+                        genVal = value;
+                      });
+                    }
+                    if (value == 'Gender') {
+                      setState(() {
+                        genVal = null;
                       });
                     }
                   },
@@ -2071,9 +2076,9 @@ class _AddState extends State<Add> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    _poaController.text.isEmpty
+                                    _pobController.text.isEmpty
                                         ? '--'
-                                        : _poaController.text,
+                                        : _pobController.text,
                                   ),
                                 ],
                               ),
@@ -2158,7 +2163,7 @@ class _AddState extends State<Add> {
                                   Text(
                                     _hController.text.isEmpty
                                         ? '--'
-                                        : _hController.text,
+                                        :'${ _hController.text}cm',
                                   ),
                                 ],
                               ),
@@ -2199,7 +2204,7 @@ class _AddState extends State<Add> {
                                   Text(
                                     _wController.text.isEmpty
                                         ? '--'
-                                        : _wController.text,
+                                        :'${ _wController.text}kg',
                                   ),
                                 ],
                               ),
@@ -2415,7 +2420,8 @@ class _AddState extends State<Add> {
           SizedBox(height: 10),
 
           Container(
-            height: educbg.isEmpty || educbg.length <= 2 ? 150 : null,
+            width: double.infinity,
+            height: educbg.isEmpty || educbg.length <= 1 ? 210 : null,
             padding: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: Color.fromRGBO(20, 127, 169, 0.484),
@@ -2459,7 +2465,7 @@ class _AddState extends State<Add> {
                     mainAxisSize: MainAxisSize.min,
                     children:
                         educbg.isEmpty
-                            ? [Text('No educational Background set.')]
+                            ? [Align(alignment: Alignment.center, child:Text('No educational Background set.'))]
                             : educbg.entries.map((entry) {
                               return Container(
                                 padding: EdgeInsets.only(bottom: 5),
