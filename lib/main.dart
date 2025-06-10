@@ -14,6 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          elevation: 0,
+          scrolledUnderElevation: 0
+        )
+      ),
       // theme: ThemeData.light(),
       // darkTheme: ThemeData.dark(),
       // themeMode: ThemeMode.light,

@@ -27,7 +27,7 @@ class _AddState extends State<Add> {
     }
   }
 
-  int _steps = 3;
+  int _steps = 5;
   List<String> labelStep = ["Basic", "Personal", "Educ", "Civic", "Finish"];
 
   // First form
@@ -57,14 +57,33 @@ class _AddState extends State<Add> {
   final _poaController = TextEditingController();
   final _ygschoolController = TextEditingController();
   String? schoolLevelVal;
-  Map<String, Map<String, dynamic>> educbg = {};
+  Map<String, Map<String, dynamic>> educbg = {
+    'Elementary': {
+      'level': 'Elementary',
+      'nameOfSchool': 'asdlasd',
+      'periodOfAttendance': '04/09/04',
+      'yearGraduate': '2016',
+    },
+    'HighSchool': {
+      'level': 'HighSchool',
+      'nameOfSchool': 'asdlasd',
+      'periodOfAttendance': '04/09/04',
+      'yearGraduate': '2006',
+    },
+    'Colllege': {
+      'level': 'Colllege',
+      'nameOfSchool': 'ooooo',
+      'periodOfAttendance': '04/09/04',
+      'yearGraduate': '2019',
+    },
+  };
 
   final _orgController = TextEditingController();
   final _orgaddrController = TextEditingController();
   final _ygorgController = TextEditingController();
   final _startController = TextEditingController();
   final _endedController = TextEditingController();
-  Map<String, dynamic> civic = {};
+  Map<String, Map<String, dynamic>> civic = {};
 
   // Map<String, String> firstForm() => {
   //   'fname': _fnameController.text,
@@ -102,7 +121,7 @@ class _AddState extends State<Add> {
   ];
 
   // 3
-  final List<String> level = ['Elementary', 'HighSchool', 'Colllege',''];
+  final List<String> level = ['Elementary', 'HighSchool', 'Colllege', ''];
   void nextStep({bool isNext = true}) {
     if ((isNext && _steps > 5) || (!isNext && _steps == 1)) {
       return;
@@ -114,6 +133,8 @@ class _AddState extends State<Add> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Row(
           children: [
             Icon(size: 20, Icons.arrow_back, color: Colors.black),
@@ -406,36 +427,75 @@ class _AddState extends State<Add> {
             children: [
               Expanded(
                 child: _buildDropDown(sexVal, "Select Sex", "Sex", sex, (
-                  newValue,
+                  value,
                 ) {
-                  setState(() {
-                    sexVal = newValue;
-                  });
+                  if (value != null) {
+                    setState(() {
+                      sexVal = value;
+                    });
+                  }
                 }),
               ),
               SizedBox(width: 10),
               Expanded(
-                child: _buildDropDown(
-                  genVal,
-                  "Select Gender",
-                  "Gender",
-                  gender,
-                  (newValue) {
-                    setState(() {
-                      genVal = newValue;
-                    });
+                child: DropdownButtonFormField<String>(
+                  value: schoolLevelVal,
+                  hint: Text('Gender (optional)'),
+                  decoration: InputDecoration(
+                    labelStyle: TextStyle(fontSize: 12),
+                    labelText: 'Select Gender',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 10,
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black),
+                  items:
+                      gender
+                          .map(
+                            (String value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        schoolLevelVal = value;
+                      });
+                    }
                   },
                 ),
               ),
             ],
           ),
+          /*
+          _buildDropDown(
+                  genVal,
+                  "Select Gender",
+                  "Gender",
+                  gender,
+                  (value) {
+                    if (value != null) {
+                      setState(() {
+                        genVal = value;
+                      });
+                    }
+                  },
+                ),
+          */
           SizedBox(height: 10),
           _buildDropDown(addrVal, "Select Address", "Address", address, (
-            newValue,
+            value,
           ) {
-            setState(() {
-              addrVal = newValue;
-            });
+            if (value != null) {
+              setState(() {
+                addrVal = value;
+              });
+            }
           }),
           SizedBox(height: 10),
         ],
@@ -609,8 +669,8 @@ class _AddState extends State<Add> {
 
                               setState(() {
                                 skills[input] = input;
+                                _skillsController.clear();
                               });
-                              _skillsController.clear();
                             },
                           ),
                         ),
@@ -618,67 +678,79 @@ class _AddState extends State<Add> {
                     ),
 
                     SizedBox(height: 5),
-
-                    Container(
-                      height: skills.length > 3 ? 165 : null,
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(79, 20, 127, 169),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(5),
-                          topRight: Radius.circular(5),
-                          bottomLeft: Radius.circular(15),
-                          bottomRight: Radius.circular(15),
-                        ),
-                        border: Border.all(
-                          color: const Color.fromRGBO(20, 126, 169, 1),
-                          width: 2.0,
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children:
-                              skills.entries.map((entry) {
-                                return Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.fromLTRB(13, 0, 0, 0),
-                                      child: Text(
-                                        entry.value,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: const Color.fromARGB(
-                                            255,
+                    skills.isEmpty
+                        ? SizedBox.shrink()
+                        : Container(
+                          height: skills.length > 3 ? 165 : null,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(79, 20, 127, 169),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(5),
+                              topRight: Radius.circular(5),
+                              bottomLeft: Radius.circular(15),
+                              bottomRight: Radius.circular(15),
+                            ),
+                            border: Border.all(
+                              color: const Color.fromRGBO(20, 126, 169, 1),
+                              width: 2.0,
+                            ),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children:
+                                  skills.entries.map((entry) {
+                                    return Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.fromLTRB(
+                                            13,
                                             0,
                                             0,
                                             0,
                                           ),
+                                          child: Text(
+                                            entry.value,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: const Color.fromARGB(
+                                                255,
+                                                0,
+                                                0,
+                                                0,
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      color: Colors.red,
-                                      alignment: Alignment.centerLeft,
-                                      icon: Icon(
-                                        Icons.delete_rounded,
-                                        color: Color.fromARGB(255, 142, 36, 36),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          skills.remove(entry.key);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
+                                        IconButton(
+                                          color: Colors.red,
+                                          alignment: Alignment.centerLeft,
+                                          icon: Icon(
+                                            Icons.delete_rounded,
+                                            color: Color.fromARGB(
+                                              255,
+                                              142,
+                                              36,
+                                              36,
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              skills.remove(entry.key);
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -752,10 +824,12 @@ class _AddState extends State<Add> {
                       "Select Youth type",
                       "Type",
                       youthType,
-                      (newValue) {
-                        setState(() {
-                          youthTypeVal = newValue;
-                        });
+                      (value) {
+                        if (value != null) {
+                          setState(() {
+                            youthTypeVal = value;
+                          });
+                        }
                       },
                     ),
                     SizedBox(height: 10),
@@ -765,10 +839,12 @@ class _AddState extends State<Add> {
                       "Select Civil status",
                       "Civil status",
                       civilStats,
-                      (newValue) {
-                        setState(() {
-                          civilStatsVal = newValue;
-                        });
+                      (value) {
+                        if (value != null) {
+                          setState(() {
+                            civilStatsVal = value;
+                          });
+                        }
                       },
                     ),
                     SizedBox(height: 10),
@@ -778,10 +854,12 @@ class _AddState extends State<Add> {
                       "Select Religion",
                       "Religion",
                       religion,
-                      (newValue) {
-                        setState(() {
-                          religionVal = newValue;
-                        });
+                      (value) {
+                        if (value != null) {
+                          setState(() {
+                            religionVal = value;
+                          });
+                        }
                       },
                     ),
                     SizedBox(height: 10),
@@ -816,7 +894,11 @@ class _AddState extends State<Add> {
               ),
               style: TextStyle(fontSize: 12, color: Colors.black),
               items:
-                  [level[educbg.length < level.length ? educbg.length : level.length - 1]]
+                  [
+                        level[educbg.length < level.length
+                            ? educbg.length
+                            : level.length - 1],
+                      ]
                       .map(
                         (String value) => DropdownMenuItem<String>(
                           value: value,
@@ -824,16 +906,18 @@ class _AddState extends State<Add> {
                         ),
                       )
                       .toList(),
-              onChanged:
-                  (value) => setState(() {
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
                     schoolLevelVal = value;
-                  }),
+                  });
+                }
+              },
               validator: (value) {
-                if (value == null ||
-                    value.isEmpty &&
-                        (qCheck(_nosController) ||
-                            qCheck(_poaController) ||
-                            qCheck(_ygschoolController))) {
+                if ((value == null || value.isEmpty) &&
+                    (qCheck(_nosController) ||
+                        qCheck(_poaController) ||
+                        qCheck(_ygschoolController))) {
                   return 'Please select school level';
                 }
                 return null;
@@ -856,14 +940,13 @@ class _AddState extends State<Add> {
             style: TextStyle(fontSize: 12, color: Colors.black),
             controller: _nosController,
             validator: (value) {
-              if (value == null ||
-                  value.isEmpty &&
-                      (schoolLevelVal != null ||
-                          qCheck(_poaController) ||
-                          qCheck(_ygschoolController))) {
+              if ((value == null || value.isEmpty) &&
+                  (schoolLevelVal != null ||
+                      qCheck(_poaController) ||
+                      qCheck(_ygschoolController))) {
                 return 'Required';
               }
-              if (value.length > 50) {
+              if (value != null && value.length > 50) {
                 return 'Use only 50 characters';
               }
               return null;
@@ -890,11 +973,10 @@ class _AddState extends State<Add> {
                   ),
                   style: TextStyle(fontSize: 12, color: Colors.black),
                   validator: (value) {
-                    if (value == null ||
-                        value.isEmpty &&
-                            (schoolLevelVal != null ||
-                                qCheck(_nosController) ||
-                                qCheck(_ygschoolController))) {
+                    if ((value == null || value.isEmpty) &&
+                        (schoolLevelVal != null ||
+                            qCheck(_nosController) ||
+                            qCheck(_ygschoolController))) {
                       return 'Required';
                     }
 
@@ -950,20 +1032,25 @@ class _AddState extends State<Add> {
                   ),
                   style: TextStyle(fontSize: 12, color: Colors.black),
                   validator: (value) {
-                    if (value == null ||
-                        value.isEmpty &&
-                            (schoolLevelVal != null ||
-                                qCheck(_nosController) ||
-                                qCheck(_poaController))) {
+                    if ((value == null || value.isEmpty) &&
+                        (schoolLevelVal != null ||
+                            qCheck(_nosController) ||
+                            qCheck(_poaController))) {
                       return 'Required';
                     }
-                    if (DateTime.now().year - 33 > int.parse(value)) {
-                      return 'Min: ${DateTime.now().year - 33}';
-                    }
-                    if (DateTime.now().year < int.parse(value)) {
-                      return 'Max: ${DateTime.now().year}';
-                    }
 
+                    final parsed = int.tryParse(value ?? '');
+                    if (parsed != null) {
+                      final currentYear = DateTime.now().year;
+                      final minYear = currentYear - 33;
+
+                      if (parsed < minYear) {
+                        return 'Min: $minYear';
+                      }
+                      if (parsed > currentYear) {
+                        return 'Max: $currentYear';
+                      }
+                    }
                     return null;
                   },
                 ),
@@ -982,20 +1069,29 @@ class _AddState extends State<Add> {
                     backgroundColor: Color.fromRGBO(35, 62, 72, 1),
                   ),
                   onPressed: () {
-                    if (_formKeyForCurrentStep().currentState!.validate()) {
-                      final idx =educbg.length < level.length ? educbg.length : level.length - 1;
+                    if (_formKeyForCurrentStep().currentState!.validate() &&
+                        (schoolLevelVal != null &&
+                            qCheck(_nosController) &&
+                            qCheck(_poaController) &&
+                            qCheck(_ygschoolController))) {
+                      final idx =
+                          educbg.length < level.length
+                              ? educbg.length
+                              : level.length - 1;
                       setState(() {
                         educbg[level[idx]] = {
                           'level': schoolLevelVal,
-                          'school': _nosController.text,
-                          'poa': _poaController.text,
-                          'yg': _ygschoolController.text,
+                          'nameOfSchool': _nosController.text,
+                          'periodOfAttendance': _poaController.text,
+                          'yearGraduate': _ygschoolController.text,
                         };
-                      schoolLevelVal = null;
-                      _nosController.clear();
-                      _poaController.clear();
-                      _ygschoolController.clear();
+                        schoolLevelVal = null;
+                        _nosController.clear();
+                        _poaController.clear();
+                        _ygschoolController.clear();
                       });
+                    } else {
+                      print(0000);
                     }
                   },
                   child: Text('Add', style: TextStyle(color: Colors.white)),
@@ -1005,7 +1101,7 @@ class _AddState extends State<Add> {
                 Container(
                   width: double.infinity,
                   padding: EdgeInsets.fromLTRB(12, 32, 12, 12),
-                  
+
                   child: SizedBox(
                     height: 150,
                     width: 220,
@@ -1058,7 +1154,7 @@ class _AddState extends State<Add> {
                                             ),
                                             SizedBox(height: 8),
                                             Text(
-                                              data['school'],
+                                              data['nameOfSchool'],
                                               style: TextStyle(fontSize: 12),
                                             ),
                                             Text(
@@ -1076,7 +1172,7 @@ class _AddState extends State<Add> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['poa'],
+                                                      data['periodOfAttendance'],
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1097,7 +1193,7 @@ class _AddState extends State<Add> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['yg'],
+                                                      data['yearGraduate'],
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1119,23 +1215,23 @@ class _AddState extends State<Add> {
                                       ),
 
                                       // Optional delete button
-                                      
                                       Positioned(
                                         top: 0,
                                         right: 0,
                                         child:
-                                        educbg.length != index + 1 ? SizedBox.shrink() :
-                                         IconButton(
-                                          icon: Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              educbg.remove(key);
-                                            });
-                                          },
-                                        ),
+                                            educbg.length != index + 1
+                                                ? SizedBox.shrink()
+                                                : IconButton(
+                                                  icon: Icon(
+                                                    Icons.delete,
+                                                    color: Colors.red,
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      educbg.remove(key);
+                                                    });
+                                                  },
+                                                ),
                                       ),
                                     ],
                                   ),
@@ -1150,8 +1246,1220 @@ class _AddState extends State<Add> {
         ],
       ),
     ),
-  
-  
+
+    // 4rth step
+    Form(
+      key: _formKeyForCurrentStep(),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 250,
+            child: TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Organization',
+                labelStyle: TextStyle(fontSize: 12),
+                hintText: 'Enter a name of Organization',
+                border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 10,
+                ),
+              ),
+              style: TextStyle(fontSize: 12, color: Colors.black),
+              controller: _orgController,
+              validator: (value) {
+                if ((value == null || value.isEmpty) &&
+                    (qCheck(_endedController) ||
+                        qCheck(_orgaddrController) ||
+                        qCheck(_startController) ||
+                        qCheck(_ygorgController))) {
+                  return 'Required';
+                }
+                if (value != null && value.length > 50) {
+                  return 'Use only 50 characters';
+                }
+                return null;
+              },
+            ),
+          ),
+          SizedBox(height: 10),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Organization address',
+              labelStyle: TextStyle(fontSize: 12),
+              hintText: 'Enter a Address of Organization',
+              border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 10,
+              ),
+            ),
+            style: TextStyle(fontSize: 12, color: Colors.black),
+            controller: _orgaddrController,
+            validator: (value) {
+              if ((value == null || value.isEmpty) &&
+                  (qCheck(_orgController) ||
+                      qCheck(_startController) ||
+                      qCheck(_endedController) ||
+                      qCheck(_ygorgController))) {
+                return 'Required';
+              }
+              if (value != null && value.length > 50) {
+                return 'Use only 50 characters';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: TextFormField(
+                  controller: _startController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Started',
+                    labelStyle: TextStyle(fontSize: 12),
+                    hintText: 'MM/DD/YYYY',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 10,
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black),
+                  validator: (value) {
+                    if (value == null ||
+                        value.isEmpty &&
+                            (qCheck(_orgController) ||
+                                qCheck(_orgaddrController) ||
+                                qCheck(_endedController) ||
+                                qCheck(_ygorgController))) {
+                      return 'Required';
+                    }
+
+                    return null;
+                  },
+                  onTap: () async {
+                    DateTime today = DateTime.now();
+                    DateTime maxDate = DateTime(
+                      today.year,
+                      today.month,
+                      today.day,
+                    );
+                    DateTime minDate = DateTime(
+                      today.year - 30,
+                      today.month,
+                      today.day,
+                    );
+
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: maxDate,
+                      firstDate: minDate,
+                      lastDate: maxDate,
+                    );
+
+                    if (pickedDate != null) {
+                      String formattedDate =
+                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      setState(() {
+                        _startController.text = formattedDate;
+                      });
+                    }
+                  },
+                ),
+              ),
+
+              SizedBox(width: 10),
+              Expanded(
+                flex: 1,
+                child: TextFormField(
+                  controller: _endedController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Ended',
+                    labelStyle: TextStyle(fontSize: 12),
+                    hintText: 'MM/DD/YYYY',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 10,
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black),
+                  validator: (value) {
+                    if ((value == null || value.isEmpty) &&
+                        (qCheck(_orgController) ||
+                            qCheck(_orgaddrController) ||
+                            qCheck(_startController) ||
+                            qCheck(_ygorgController))) {
+                      return 'Required';
+                    }
+
+                    return null;
+                  },
+                  onTap: () async {
+                    DateTime today = DateTime.now();
+                    DateTime maxDate = DateTime(
+                      today.year,
+                      today.month,
+                      today.day,
+                    );
+                    DateTime minDate = DateTime(
+                      today.year - 30,
+                      today.month,
+                      today.day,
+                    );
+
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: maxDate,
+                      firstDate: minDate,
+                      lastDate: maxDate,
+                    );
+
+                    if (pickedDate != null) {
+                      String formattedDate =
+                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      setState(() {
+                        _endedController.text = formattedDate;
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 150,
+              child: TextFormField(
+                keyboardType: TextInputType.number,
+                controller: _ygorgController,
+                decoration: InputDecoration(
+                  labelText: 'Year Graduated',
+                  labelStyle: TextStyle(fontSize: 12),
+                  hintText:
+                      '${DateTime.now().year - 33} - ${DateTime.now().year}',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 10,
+                  ),
+                ),
+                style: TextStyle(fontSize: 12, color: Colors.black),
+                validator: (value) {
+                  if ((value == null || value.isEmpty) &&
+                      (qCheck(_orgController) ||
+                          qCheck(_orgaddrController) ||
+                          qCheck(_startController) ||
+                          qCheck(_endedController))) {
+                    return 'Required';
+                  }
+
+                  final parsed = int.tryParse(value ?? '');
+                  if (parsed != null) {
+                    if (DateTime.now().year - 33 > parsed) {
+                      return 'Min: ${DateTime.now().year - 33}';
+                    }
+                    if (DateTime.now().year < parsed) {
+                      return 'Max: ${DateTime.now().year}';
+                    }
+                  }
+
+                  return null;
+                },
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(12, 10, 12, 12),
+            child: Column(
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromRGBO(35, 62, 72, 1),
+                  ),
+                  onPressed: () {
+                    if (_formKeyForCurrentStep().currentState!.validate() &&
+                        (qCheck(_orgController) &&
+                            qCheck(_orgaddrController) &&
+                            qCheck(_startController) &&
+                            qCheck(_ygorgController) &&
+                            qCheck(_endedController))) {
+                      setState(() {
+                        civic[_orgController.text] = {
+                          'nameOfOrganization': _orgController.text,
+                          'addressOfOrganization': _orgaddrController.text,
+                          'start': _startController.text,
+                          'end': _endedController.text,
+                          'yearGraduated': _ygorgController.text,
+                        };
+                        _orgController.clear();
+                        _orgaddrController.clear();
+                        _startController.clear();
+                        _endedController.clear();
+                        _ygorgController.clear();
+                      });
+                    }
+                  },
+                  child: Text('Add', style: TextStyle(color: Colors.white)),
+                ),
+                SizedBox(height: 10),
+
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.fromLTRB(12, 32, 12, 12),
+
+                  child: SizedBox(
+                    height: 150,
+                    width: 220,
+                    child:
+                        civic.isEmpty
+                            ? Align(
+                              alignment: Alignment.center,
+                              child: Text('No Civic involvement records'),
+                            )
+                            : PageView.builder(
+                              scrollDirection: Axis.horizontal,
+
+                              controller: PageController(viewportFraction: 0.9),
+                              itemCount: civic.length,
+                              itemBuilder: (context, index) {
+                                final entry = civic.entries.toList()[index];
+                                final key = entry.key;
+                                final data = entry.value;
+
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.black,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            7,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              key,
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            Text(
+                                              'Organization',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              data['addressOfOrganization'],
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            Text(
+                                              'Address',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      data['start'],
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      'Started',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(width: 20),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      data['end'],
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      'Ended',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(width: 20),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      data['yearGraduated'],
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      'Year Graduated',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Optional delete button
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child:
+                                            civic.length != index + 1
+                                                ? SizedBox.shrink()
+                                                : IconButton(
+                                                  icon: Icon(
+                                                    Icons.delete,
+                                                    color: Colors.red,
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      civic.remove(key);
+                                                    });
+                                                  },
+                                                ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+
+    Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Finish up',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 22),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              color: Color.fromRGBO(20, 127, 169, 0.484),
+              border: Border.all(
+                color: Color.fromRGBO(13, 67, 88, 1),
+                width: 1.3,
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(10),
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 15,
+                  child: SizedBox(
+                    height: 25,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: const Color.fromARGB(141, 0, 0, 0),
+                      child: Text(
+                        '1',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                        ),
+                      ),
+                      padding: EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+
+                        children: [
+                          Text("Hikusama"),
+                          SizedBox(width: 15),
+                          Text("Nakamoto"),
+                          SizedBox(width: 15),
+                          Text("Nagasak"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Name",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("04/09/04")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+
+                            Text(
+                              "Date of Birth",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("15")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Age",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("Male")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Sex",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("--")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Gender",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                        ),
+                      ),
+                      padding: EdgeInsets.only(bottom: 4),
+                      child: Text("Hikusama"),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Address",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 10),
+
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              color: Color.fromRGBO(20, 127, 169, 0.484),
+              border: Border.all(
+                color: Color.fromRGBO(13, 67, 88, 1),
+                width: 1.3,
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(10),
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 15,
+                  child: SizedBox(
+                    height: 25,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: const Color.fromARGB(141, 0, 0, 0),
+                      child: Text(
+                        '2',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                        ),
+                      ),
+                      padding: EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+
+                        children: [Text("OSY")],
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Type",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("Chenzen china")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+
+                            Text(
+                              "Place of Birth",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("Phil president")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Occupation",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("150cm")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+
+                            Text(
+                              "Height",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("65kg")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Weight",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("25")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Children",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("Single")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Civil status",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("Islam")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+
+                            Text(
+                              "Religion",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [Text("09856093241")],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Contact no",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                        ),
+                      ),
+                      padding: EdgeInsets.only(bottom: 4),
+                      child: Text("Boxing, sadfafsa, asdas, asda, yuyuy"),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Skills",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 10),
+
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Color.fromRGBO(20, 127, 169, 0.484),
+              border: Border.all(
+                color: Color.fromRGBO(13, 67, 88, 1),
+                width: 1.3,
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(10),
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 10,
+                  left: 15,
+                  child: SizedBox(
+                    height: 25,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: const Color.fromARGB(141, 0, 0, 0),
+                      child: Text(
+                        '3',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Container(
+                  padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children:
+                        educbg.entries.map((entry) {
+                          return Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey,
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.only(bottom: 4),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(entry.value['level']),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          "Level",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 113,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey,
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.only(bottom: 4),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                entry
+                                                    .value['periodOfAttendance'],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          "Period of Attendance",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10,),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey,
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.only(bottom: 4),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(entry.value['nameOfSchool']),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          "School",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 113,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey,
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.only(bottom: 4),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                entry
+                                                    .value['yearGraduate'],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          "Year Graduate",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
   ];
 
   bool qCheck(TextEditingController controller) {

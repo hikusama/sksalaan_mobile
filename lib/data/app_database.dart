@@ -26,7 +26,7 @@ class YouthInfos extends Table {
   TextColumn get mname => text()();
   TextColumn get lname => text()();
   IntColumn get age => integer()();
-  TextColumn get gender => text()();
+  TextColumn get gender => text().nullable()();
   TextColumn get sex => text()();
   TextColumn get dateOfBirth => text()();
   
@@ -71,8 +71,11 @@ class CivicInvolvements extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(openConnection());
 
-Future<int> insertYouthUser(YouthUsersCompanion user) =>
+Future<void> insertYouthUser(YouthUsersCompanion user) =>
     into(youthUsers).insert(user);
+
+
+
 
 Future<List<YouthUser>> getAllYouthUsers() =>
     select(youthUsers).get();
