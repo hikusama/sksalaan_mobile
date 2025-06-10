@@ -1747,7 +1747,10 @@ class _AddState extends State<Add> {
                     Container(
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                          bottom: BorderSide(
+                            color: const Color.fromARGB(255, 81, 81, 81),
+                            width: 0.8,
+                          ),
                         ),
                       ),
                       padding: EdgeInsets.only(bottom: 4),
@@ -1755,11 +1758,23 @@ class _AddState extends State<Add> {
                         mainAxisSize: MainAxisSize.min,
 
                         children: [
-                          Text("Hikusama"),
+                          Text(
+                            _fnameController.text.isEmpty
+                                ? '--'
+                                : _fnameController.text,
+                          ),
                           SizedBox(width: 15),
-                          Text("Nakamoto"),
+                          Text(
+                            _mnameController.text.isEmpty
+                                ? '--'
+                                : _mnameController.text,
+                          ),
                           SizedBox(width: 15),
-                          Text("Nagasak"),
+                          Text(
+                            _lnameController.text.isEmpty
+                                ? '--'
+                                : _lnameController.text,
+                          ),
                         ],
                       ),
                     ),
@@ -1781,7 +1796,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -1789,7 +1809,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("04/09/04")],
+                                children: [
+                                  Text(
+                                    _dobController.text.isEmpty
+                                        ? '--'
+                                        : _dobController.text,
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -1811,7 +1837,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -1819,7 +1850,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("15")],
+                                children: [
+                                  Text(
+                                    _ageController.text.isEmpty
+                                        ? '--'
+                                        : _ageController.text,
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -1839,7 +1876,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -1847,7 +1889,11 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("Male")],
+                                children: [
+                                  Text(
+                                    sexVal == null ? '--' : sexVal.toString(),
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -1867,7 +1913,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -1875,7 +1926,11 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("--")],
+                                children: [
+                                  Text(
+                                    genVal == null ? '--' : genVal.toString(),
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -1895,7 +1950,10 @@ class _AddState extends State<Add> {
                     Container(
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                          bottom: BorderSide(
+                            color: const Color.fromARGB(255, 81, 81, 81),
+                            width: 0.8,
+                          ),
                         ),
                       ),
                       padding: EdgeInsets.only(bottom: 4),
@@ -1961,14 +2019,23 @@ class _AddState extends State<Add> {
                     Container(
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                          bottom: BorderSide(
+                            color: const Color.fromARGB(255, 81, 81, 81),
+                            width: 0.8,
+                          ),
                         ),
                       ),
                       padding: EdgeInsets.only(bottom: 4),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
 
-                        children: [Text("OSY")],
+                        children: [
+                          Text(
+                            youthTypeVal == null
+                                ? '--'
+                                : youthTypeVal.toString(),
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: 4),
@@ -1989,7 +2056,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -1997,7 +2069,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("Chenzen china")],
+                                children: [
+                                  Text(
+                                    _poaController.text.isEmpty
+                                        ? '--'
+                                        : _poaController.text,
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2019,7 +2097,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -2027,7 +2110,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("Phil president")],
+                                children: [
+                                  Text(
+                                    _occController.text.isEmpty
+                                        ? '--'
+                                        : _occController.text,
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2052,7 +2141,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -2060,7 +2154,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("150cm")],
+                                children: [
+                                  Text(
+                                    _hController.text.isEmpty
+                                        ? '--'
+                                        : _hController.text,
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2082,7 +2182,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -2090,7 +2195,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("65kg")],
+                                children: [
+                                  Text(
+                                    _wController.text.isEmpty
+                                        ? '--'
+                                        : _wController.text,
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2110,7 +2221,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -2118,7 +2234,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("25")],
+                                children: [
+                                  Text(
+                                    _nocController.text.isEmpty
+                                        ? '--'
+                                        : _nocController.text,
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2138,7 +2260,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -2146,7 +2273,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("Single")],
+                                children: [
+                                  Text(
+                                    civilStatsVal == null
+                                        ? '--'
+                                        : civilStatsVal.toString(),
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2171,7 +2304,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -2179,7 +2317,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("Islam")],
+                                children: [
+                                  Text(
+                                    religionVal == null
+                                        ? '--'
+                                        : religionVal.toString(),
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2201,7 +2345,12 @@ class _AddState extends State<Add> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      81,
+                                      81,
+                                      81,
+                                    ),
                                     width: 0.8,
                                   ),
                                 ),
@@ -2209,7 +2358,13 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [Text("09856093241")],
+                                children: [
+                                  Text(
+                                    _cnController.text.isEmpty
+                                        ? '--'
+                                        : '0${_cnController.text}',
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2229,11 +2384,20 @@ class _AddState extends State<Add> {
                     Container(
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: Colors.grey, width: 0.8),
+                          bottom: BorderSide(
+                            color: const Color.fromARGB(255, 81, 81, 81),
+                            width: 0.8,
+                          ),
                         ),
                       ),
                       padding: EdgeInsets.only(bottom: 4),
-                      child: Text("Boxing, sadfafsa, asdas, asda, yuyuy"),
+                      child: Text(
+                        skills.isEmpty
+                            ? '--'
+                            : skills.entries
+                                .map((entry) => entry.value)
+                                .join(', '),
+                      ),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -2251,6 +2415,7 @@ class _AddState extends State<Add> {
           SizedBox(height: 10),
 
           Container(
+            height: educbg.isEmpty || educbg.length <= 2 ? 150 : null,
             padding: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: Color.fromRGBO(20, 127, 169, 0.484),
@@ -2293,165 +2458,218 @@ class _AddState extends State<Add> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children:
-                        educbg.entries.map((entry) {
-                          return Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey,
-                                                width: 0.8,
-                                              ),
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.only(bottom: 4),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(entry.value['level']),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          "Level",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
+                        educbg.isEmpty
+                            ? [Text('No educational Background set.')]
+                            : educbg.entries.map((entry) {
+                              return Container(
+                                padding: EdgeInsets.only(bottom: 5),
+                                margin: EdgeInsets.only(bottom: 20),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: const Color.fromARGB(144, 0, 0, 0),
+                                      width: 1.4,
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: 113,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey,
-                                                width: 0.8,
-                                              ),
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.only(bottom: 4),
+                                        Expanded(
                                           child: Column(
-                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(entry.value['level']),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 2),
                                               Text(
-                                                entry
-                                                    .value['periodOfAttendance'],
+                                                "Level",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          "Period of Attendance",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10,),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey,
-                                                width: 0.8,
-                                              ),
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.only(bottom: 4),
+                                        SizedBox(
+                                          width: 113,
                                           child: Column(
-                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
                                             children: [
-                                              Text(entry.value['nameOfSchool']),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          "School",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 113,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey,
-                                                width: 0.8,
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      entry
+                                                          .value['periodOfAttendance'],
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.only(bottom: 4),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
+                                              SizedBox(height: 2),
                                               Text(
-                                                entry
-                                                    .value['yearGraduate'],
+                                                "Period of Attendance",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          "Year Graduate",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
+                                      ],
+                                    ),
+                                    SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      entry
+                                                          .value['nameOfSchool'],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 4),
+                                              Text(
+                                                "School",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 113,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      entry
+                                                          .value['yearGraduate'],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 4),
+                                              Text(
+                                                "Year Graduate",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          );
-                        }).toList(),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                   ),
                 ),
               ],
