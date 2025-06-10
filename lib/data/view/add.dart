@@ -1957,7 +1957,7 @@ class _AddState extends State<Add> {
                         ),
                       ),
                       padding: EdgeInsets.only(bottom: 4),
-                      child: Text("Hikusama"),
+                      child: Text(addrVal == null ? '--' : addrVal.toString()),
                     ),
                     SizedBox(height: 4),
                     Text(
