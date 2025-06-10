@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skyouthprofiling/data/view/insert.dart';
+import 'package:skyouthprofiling/data/view/add.dart';
 import 'package:skyouthprofiling/presentation/screens/overview_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/records_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/migrate_screen.dart';
@@ -16,10 +16,10 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   bool isHv = false;
   final List<Widget> _screens = [
-    // const OverviewScreen(),
-    // const RecordsScreen(),
-    // const MigrateScreen(),
-    // const SettingsScreen(),
+    const OverviewScreen(),
+    const RecordsScreen(),
+    const MigrateScreen(),
+    const SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -57,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
-              builder: (context) => InsertYouth(),
+              builder: (context) => Add(),
             );
             // Handle FAB click (e.g., open a modal, new screen, etc.)
           },

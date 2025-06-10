@@ -9,7 +9,7 @@ class OverviewScreen extends StatelessWidget {
       body: SafeArea(
         child: SizedBox(
           width: double.infinity,
-          child: Column(children: [_buildDashboard(),_buildContRecords()]),
+          child: Column(children: [_buildDashboard(), _buildContRecords()]),
         ),
       ),
     );
@@ -31,7 +31,6 @@ class OverviewScreen extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-
           Scrollbar(
             thumbVisibility: true,
             child: SingleChildScrollView(
@@ -62,8 +61,8 @@ class OverviewScreen extends StatelessWidget {
         spacing: 20,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-            width: 175,
+          Expanded(
+            flex: 7,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -78,56 +77,55 @@ class OverviewScreen extends StatelessWidget {
                 ),
                 Text(
                   'Nakamotoasdas asdasdsa asdasd, Hikusama',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: TextStyle(fontSize: 14, color: Colors.white),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Age',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Colors.white,
+          Expanded(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Age',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Text('27', style: TextStyle(fontSize: 16, color: Colors.white)),
-            ],
+                Text('27', style: TextStyle(fontSize: 14, color: Colors.white)),
+              ],
+            ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Type',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Colors.white,
+          Expanded(
+            flex: 1,
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Type',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Text('OSY', style: TextStyle(fontSize: 16, color: Colors.white)),
-            ],
+                Text(
+                  'OSY',
+                  style: TextStyle(fontSize: 14, color: Colors.white),
+                ),
+              ],
+            ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Created',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                'Dec 24, 2025',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ],
+
+          IconButton(
+            color: Colors.white,
+            onPressed: () => {},
+            icon: Icon(Icons.more_horiz_rounded),
           ),
         ],
       ),

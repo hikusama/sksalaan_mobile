@@ -27,7 +27,7 @@ class _AddState extends State<Add> {
     }
   }
 
-  int _steps = 5;
+  int _steps = 1;
   List<String> labelStep = ["Basic", "Personal", "Educ", "Civic", "Finish"];
 
   // First form
@@ -132,20 +132,30 @@ class _AddState extends State<Add> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Row(
-          children: [
-            Icon(size: 20, Icons.arrow_back, color: Colors.black),
-            SizedBox(width: 12),
-            Text('Back', style: TextStyle(color: Colors.black, fontSize: 15)),
-          ],
-        ),
-      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Container(
+            margin: EdgeInsets.only(top: 60, left: 17, bottom: 20),
+            // padding: EdgeInsets.only(top: 60),
+            height: 20,
+            child: GestureDetector(
+              onTap: (){
+                Navigator.pop(context);
+              },
+              child: Row(
+                children: [
+                  Icon(size: 20, Icons.arrow_back, color: Colors.black),
+                  SizedBox(width: 8),
+                  Text(
+                    'Go back..',
+                    style: TextStyle(color: Colors.black, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -2732,7 +2742,12 @@ class _AddState extends State<Add> {
                 ),
 
                 Container(
-                  padding: EdgeInsets.fromLTRB(20, 40, 20, civic.length <= 1 ? 15 : 20),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    40,
+                    20,
+                    civic.length <= 1 ? 15 : 20,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
