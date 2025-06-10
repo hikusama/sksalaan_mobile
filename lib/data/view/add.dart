@@ -1708,6 +1708,8 @@ class _AddState extends State<Add> {
             ),
           ),
           SizedBox(height: 22),
+
+          // card 1
           Container(
             padding: EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
@@ -1977,9 +1979,9 @@ class _AddState extends State<Add> {
               ],
             ),
           ),
-
           SizedBox(height: 10),
 
+          // card 2
           Container(
             padding: EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
@@ -2163,7 +2165,7 @@ class _AddState extends State<Add> {
                                   Text(
                                     _hController.text.isEmpty
                                         ? '--'
-                                        :'${ _hController.text}cm',
+                                        : '${_hController.text}cm',
                                   ),
                                 ],
                               ),
@@ -2204,7 +2206,7 @@ class _AddState extends State<Add> {
                                   Text(
                                     _wController.text.isEmpty
                                         ? '--'
-                                        :'${ _wController.text}kg',
+                                        : '${_wController.text}kg',
                                   ),
                                 ],
                               ),
@@ -2419,6 +2421,7 @@ class _AddState extends State<Add> {
           ),
           SizedBox(height: 10),
 
+          // card 3
           Container(
             width: double.infinity,
             height: educbg.isEmpty || educbg.length <= 1 ? 210 : null,
@@ -2465,7 +2468,12 @@ class _AddState extends State<Add> {
                     mainAxisSize: MainAxisSize.min,
                     children:
                         educbg.isEmpty
-                            ? [Align(alignment: Alignment.center, child:Text('No educational Background set.'))]
+                            ? [
+                              Align(
+                                alignment: Alignment.center,
+                                child: Text('No educational Background set.'),
+                              ),
+                            ]
                             : educbg.entries.map((entry) {
                               return Container(
                                 padding: EdgeInsets.only(bottom: 5),
@@ -2669,6 +2677,321 @@ class _AddState extends State<Add> {
                                               ),
                                             ],
                                           ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 10),
+
+          // card 4
+          Container(
+            width: double.infinity,
+            height: educbg.isEmpty || educbg.length <= 1 ? 237 : null,
+            padding: EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Color.fromRGBO(20, 127, 169, 0.484),
+              border: Border.all(
+                color: Color.fromRGBO(13, 67, 88, 1),
+                width: 1.3,
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(10),
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 10,
+                  left: 15,
+                  child: SizedBox(
+                    height: 25,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: const Color.fromARGB(141, 0, 0, 0),
+                      child: Text(
+                        '4',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Container(
+                  padding: EdgeInsets.fromLTRB(20, 40, 20, civic.length <= 1 ? 15 : 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children:
+                        civic.isEmpty
+                            ? [
+                              Align(
+                                alignment: Alignment.center,
+                                child: Text('No Civic Involvement set.'),
+                              ),
+                            ]
+                            : civic.entries.map((entry) {
+                              return Container(
+                                padding: EdgeInsets.only(bottom: 5),
+                                margin: EdgeInsets.only(bottom: 20),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: const Color.fromARGB(144, 0, 0, 0),
+                                      width: 1.4,
+                                    ),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      entry
+                                                          .value['nameOfOrganization'],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 2),
+                                              Text(
+                                                "Organization",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 113,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(entry.value['start']),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 2),
+                                              Text(
+                                                "Started",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      entry
+                                                          .value['addressOfOrganization'],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 4),
+                                              Text(
+                                                "Address",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 113,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            81,
+                                                            81,
+                                                            81,
+                                                          ),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(entry.value['end']),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 4),
+                                              Text(
+                                                "Ended",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
+                                                    ),
+                                                    width: 0.8,
+                                                  ),
+                                                ),
+                                              ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    entry
+                                                        .value['yearGraduated'],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              "Year Graduated",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
