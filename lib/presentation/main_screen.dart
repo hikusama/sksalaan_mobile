@@ -4,6 +4,7 @@ import 'package:skyouthprofiling/presentation/screens/overview_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/records_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/migrate_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/settings_screen.dart';
+import 'package:flutter_exit_app/flutter_exit_app.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -28,60 +29,96 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  Future<bool> _onWillPop(BuildContext context) async {
+    // You can show a dialog or handle logic here
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Exit'),
+            content: const Text('Do you want to exit? 🥹'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Yes'),
+              ),
+            ],
+          ),
+    );
+    return shouldLeave ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-    
-      body: _screens[_selectedIndex], // Load selected screen
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 18.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.grid_view, "Overview", 0),
-            _buildNavItem(Icons.storage, "Records", 1),
-            const SizedBox(width: 40),  
-            _buildNavItem(Icons.import_export_sharp, "Migrate", 2),
-            _buildNavItem(Icons.settings, "Settings", 3),
-          ],
+    return PopScope(
+      canPop: false,
+      // ignore: deprecated_member_use
+      onPopInvoked: (didPop) async {
+        bool canPop = await _onWillPop(context);
+        if (canPop) {
+          FlutterExitApp.exitApp();          
+        } else {
+          return;
+        }
+      },
+      child: Scaffold(
+        body: _screens[_selectedIndex],  
+        bottomNavigationBar: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 18.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(Icons.grid_view, "Overview", 0),
+              _buildNavItem(Icons.storage, "Records", 1),
+              const SizedBox(width: 40),
+              _buildNavItem(Icons.import_export_sharp, "Migrate", 2),
+              _buildNavItem(Icons.settings, "Settings", 3),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: MouseRegion(
-        onEnter:(_) => setState(() => isHv = true),
-        onExit:(_) => setState(() => isHv = false),
-        child: FloatingActionButton(
-          backgroundColor: isHv ? Colors.black : Color.fromARGB(75, 0, 0, 0) ,
-          shape: const CircleBorder(),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (context) => Add(),
-            );
-            // Handle FAB click (e.g., open a modal, new screen, etc.)
-          },
-          child: const Icon(Icons.add, color: Colors.white),
+        floatingActionButton: MouseRegion(
+          onEnter: (_) => setState(() => isHv = true),
+          onExit: (_) => setState(() => isHv = false),
+          child: FloatingActionButton(
+            backgroundColor: isHv ? Colors.black : const Color.fromRGBO(20, 126, 169, 1) ,
+            shape: const CircleBorder(),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => Add(),
+              );
+              // Handle FAB click (e.g., open a modal, new screen, etc.)
+            },
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final bool isSelected = _selectedIndex == index;
     return InkWell(
+
       onTap: () => _onItemTapped(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? Colors.black : Colors.grey),
+          Icon(icon, color: isSelected ? const Color.fromRGBO(20, 126, 169, 1) : Colors.grey),
           Text(
             label,
-            style: TextStyle(color: isSelected ? Colors.black : Colors.grey),
+            style: TextStyle(fontWeight: FontWeight.bold , color: isSelected ? const Color.fromRGBO(20, 126, 169, 1) : Colors.grey),
           ),
         ],
       ),
+      
     );
   }
 }

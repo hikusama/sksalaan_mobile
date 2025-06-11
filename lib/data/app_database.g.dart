@@ -660,7 +660,7 @@ class $YouthInfosTable extends YouthInfos
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     $customConstraints:
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE ',
   );
   static const VerificationMeta _fnameMeta = const VerificationMeta('fname');
   @override
@@ -703,9 +703,9 @@ class $YouthInfosTable extends YouthInfos
   late final GeneratedColumn<String> gender = GeneratedColumn<String>(
     'gender',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _sexMeta = const VerificationMeta('sex');
   @override
@@ -900,8 +900,6 @@ class $YouthInfosTable extends YouthInfos
         _genderMeta,
         gender.isAcceptableOrUnknown(data['gender']!, _genderMeta),
       );
-    } else if (isInserting) {
-      context.missing(_genderMeta);
     }
     if (data.containsKey('sex')) {
       context.handle(
@@ -1034,11 +1032,10 @@ class $YouthInfosTable extends YouthInfos
             DriftSqlType.int,
             data['${effectivePrefix}age'],
           )!,
-      gender:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}gender'],
-          )!,
+      gender: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gender'],
+      ),
       sex:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -1105,7 +1102,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
   final String mname;
   final String lname;
   final int age;
-  final String gender;
+  final String? gender;
   final String sex;
   final String dateOfBirth;
   final String placeOfBirth;
@@ -1123,7 +1120,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     required this.mname,
     required this.lname,
     required this.age,
-    required this.gender,
+    this.gender,
     required this.sex,
     required this.dateOfBirth,
     required this.placeOfBirth,
@@ -1144,7 +1141,9 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     map['mname'] = Variable<String>(mname);
     map['lname'] = Variable<String>(lname);
     map['age'] = Variable<int>(age);
-    map['gender'] = Variable<String>(gender);
+    if (!nullToAbsent || gender != null) {
+      map['gender'] = Variable<String>(gender);
+    }
     map['sex'] = Variable<String>(sex);
     map['date_of_birth'] = Variable<String>(dateOfBirth);
     map['place_of_birth'] = Variable<String>(placeOfBirth);
@@ -1166,7 +1165,8 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       mname: Value(mname),
       lname: Value(lname),
       age: Value(age),
-      gender: Value(gender),
+      gender:
+          gender == null && nullToAbsent ? const Value.absent() : Value(gender),
       sex: Value(sex),
       dateOfBirth: Value(dateOfBirth),
       placeOfBirth: Value(placeOfBirth),
@@ -1192,7 +1192,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       mname: serializer.fromJson<String>(json['mname']),
       lname: serializer.fromJson<String>(json['lname']),
       age: serializer.fromJson<int>(json['age']),
-      gender: serializer.fromJson<String>(json['gender']),
+      gender: serializer.fromJson<String?>(json['gender']),
       sex: serializer.fromJson<String>(json['sex']),
       dateOfBirth: serializer.fromJson<String>(json['dateOfBirth']),
       placeOfBirth: serializer.fromJson<String>(json['placeOfBirth']),
@@ -1215,7 +1215,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       'mname': serializer.toJson<String>(mname),
       'lname': serializer.toJson<String>(lname),
       'age': serializer.toJson<int>(age),
-      'gender': serializer.toJson<String>(gender),
+      'gender': serializer.toJson<String?>(gender),
       'sex': serializer.toJson<String>(sex),
       'dateOfBirth': serializer.toJson<String>(dateOfBirth),
       'placeOfBirth': serializer.toJson<String>(placeOfBirth),
@@ -1236,7 +1236,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     String? mname,
     String? lname,
     int? age,
-    String? gender,
+    Value<String?> gender = const Value.absent(),
     String? sex,
     String? dateOfBirth,
     String? placeOfBirth,
@@ -1254,7 +1254,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     mname: mname ?? this.mname,
     lname: lname ?? this.lname,
     age: age ?? this.age,
-    gender: gender ?? this.gender,
+    gender: gender.present ? gender.value : this.gender,
     sex: sex ?? this.sex,
     dateOfBirth: dateOfBirth ?? this.dateOfBirth,
     placeOfBirth: placeOfBirth ?? this.placeOfBirth,
@@ -1375,7 +1375,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
   final Value<String> mname;
   final Value<String> lname;
   final Value<int> age;
-  final Value<String> gender;
+  final Value<String?> gender;
   final Value<String> sex;
   final Value<String> dateOfBirth;
   final Value<String> placeOfBirth;
@@ -1412,7 +1412,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     required String mname,
     required String lname,
     required int age,
-    required String gender,
+    this.gender = const Value.absent(),
     required String sex,
     required String dateOfBirth,
     required String placeOfBirth,
@@ -1428,7 +1428,6 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
        mname = Value(mname),
        lname = Value(lname),
        age = Value(age),
-       gender = Value(gender),
        sex = Value(sex),
        dateOfBirth = Value(dateOfBirth),
        placeOfBirth = Value(placeOfBirth),
@@ -1486,7 +1485,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Value<String>? mname,
     Value<String>? lname,
     Value<int>? age,
-    Value<String>? gender,
+    Value<String?>? gender,
     Value<String>? sex,
     Value<String>? dateOfBirth,
     Value<String>? placeOfBirth,
@@ -1632,7 +1631,7 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     $customConstraints:
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE NOT NULL',
   );
   static const VerificationMeta _levelMeta = const VerificationMeta('level');
   @override
@@ -2073,7 +2072,7 @@ class $CivicInvolvementsTable extends CivicInvolvements
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     $customConstraints:
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE NOT NULL',
   );
   static const VerificationMeta _nameOfOrganizationMeta =
       const VerificationMeta('nameOfOrganization');
@@ -3278,7 +3277,7 @@ typedef $$YouthInfosTableCreateCompanionBuilder =
       required String mname,
       required String lname,
       required int age,
-      required String gender,
+      Value<String?> gender,
       required String sex,
       required String dateOfBirth,
       required String placeOfBirth,
@@ -3298,7 +3297,7 @@ typedef $$YouthInfosTableUpdateCompanionBuilder =
       Value<String> mname,
       Value<String> lname,
       Value<int> age,
-      Value<String> gender,
+      Value<String?> gender,
       Value<String> sex,
       Value<String> dateOfBirth,
       Value<String> placeOfBirth,
@@ -3691,7 +3690,7 @@ class $$YouthInfosTableTableManager
                 Value<String> mname = const Value.absent(),
                 Value<String> lname = const Value.absent(),
                 Value<int> age = const Value.absent(),
-                Value<String> gender = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
                 Value<String> sex = const Value.absent(),
                 Value<String> dateOfBirth = const Value.absent(),
                 Value<String> placeOfBirth = const Value.absent(),
@@ -3729,7 +3728,7 @@ class $$YouthInfosTableTableManager
                 required String mname,
                 required String lname,
                 required int age,
-                required String gender,
+                Value<String?> gender = const Value.absent(),
                 required String sex,
                 required String dateOfBirth,
                 required String placeOfBirth,

@@ -3,6 +3,20 @@ import 'package:skyouthprofiling/service/connection.dart';
 
 part 'app_database.g.dart';
 
+class FullYouthProfile {
+  final YouthUser youthUser;
+  final YouthInfo? youthInfo;
+  final List<EducBg> educBgs;
+  final List<CivicInvolvement> civicInvolvements;
+
+  FullYouthProfile({
+    required this.youthUser,
+    this.youthInfo,
+    required this.educBgs,
+    required this.civicInvolvements,
+  });
+}
+
 class Users extends Table {
   TextColumn get userName => text()();
   TextColumn get password => text()();
@@ -22,7 +36,7 @@ class YouthInfos extends Table {
 
   IntColumn get youthUserId =>
       integer().customConstraint(
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE ',
       )();
 
   TextColumn get fname => text()();
@@ -48,7 +62,7 @@ class EducBgs extends Table {
 
   IntColumn get youthUserId =>
       integer().customConstraint(
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE NOT NULL',
       )();
 
   TextColumn get level => text()();
@@ -62,7 +76,7 @@ class CivicInvolvements extends Table {
 
   IntColumn get youthUserId =>
       integer().customConstraint(
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE NOT NULL',
       )();
 
   TextColumn get nameOfOrganization => text()();
@@ -78,7 +92,8 @@ class CivicInvolvements extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(openConnection());
 
-  Future<void> insertYouthUser(YouthUsersCompanion user) =>
+  // youth user
+  Future<int> insertYouthUser(YouthUsersCompanion user) =>
       into(youthUsers).insert(user);
 
   Future<List<YouthUser>> getAllYouthUsers() => select(youthUsers).get();
@@ -89,9 +104,13 @@ class AppDatabase extends _$AppDatabase {
   Future<int> deleteYouthUser(int id) =>
       (delete(youthUsers)..where((t) => t.youthUserId.equals(id))).go();
 
+  // youth info
+  Future<void> insertYouthInfo(YouthInfosCompanion info) =>
+      into(youthInfos).insert(info);
+
   Future<void> insertAllEducBgs(
     int youthUserId,
-    Map<String, Map<String, String>> educbg,
+    Map<String, Map<String, dynamic>> educbg,
     AppDatabase db,
   ) async {
     for (final entry in educbg.entries) {
@@ -100,9 +119,9 @@ class AppDatabase extends _$AppDatabase {
       final educ = EducBgsCompanion(
         youthUserId: Value(youthUserId),
         level: Value(data['level'] ?? ''),
-        nameOfSchool: Value(data['school'] ?? ''),
-        periodOfAttendance: Value(data['poa'] ?? ''),
-        yearGraduate: Value(data['yg'] ?? ''),
+        nameOfSchool: Value(data['nameOfSchool'] ?? ''),
+        periodOfAttendance: Value(data['periodOfAttendance'] ?? ''),
+        yearGraduate: Value(data['yearGraduate'] ?? ''),
       );
 
       await db.into(db.educBgs).insert(educ);
@@ -111,7 +130,7 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> insertAllCivic(
     int youthUserId,
-    Map<String, Map<String, String>> civic,
+    Map<String, Map<String, dynamic>> civic,
     AppDatabase db,
   ) async {
     for (final entry in civic.entries) {
@@ -128,6 +147,38 @@ class AppDatabase extends _$AppDatabase {
 
       await db.into(db.civicInvolvements).insert(involvement);
     }
+  }
+
+  Future<List<FullYouthProfile>> getAllYouthProfiles() async {
+    final users = await select(youthUsers).get();
+
+    final List<FullYouthProfile> result = [];
+
+    for (final user in users) {
+      final youthInfo =
+          await (select(youthInfos)..where(
+            (tbl) => tbl.youthUserId.equals(user.youthUserId),
+          )).getSingleOrNull();
+
+      final educs =
+          await (select(educBgs)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+      final civics =
+          await (select(civicInvolvements)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+      result.add(
+        FullYouthProfile(
+          youthUser: user,
+          youthInfo: youthInfo,
+          educBgs: educs,
+          civicInvolvements: civics,
+        ),
+      );
+    }
+
+    return result;
   }
 
   @override

@@ -54,7 +54,7 @@ class OverviewScreen extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 61, 61, 61),
+        color: const Color.fromRGBO(20, 126, 169, 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:skyouthprofiling/data/app_database.dart';
+import 'package:drift/drift.dart' as drift;
 
 class Add extends StatefulWidget {
   const Add({super.key});
@@ -140,7 +142,7 @@ class _AddState extends State<Add> {
             // padding: EdgeInsets.only(top: 60),
             height: 20,
             child: GestureDetector(
-              onTap: (){
+              onTap: () {
                 Navigator.pop(context);
               },
               child: Row(
@@ -222,9 +224,48 @@ class _AddState extends State<Add> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color.fromRGBO(20, 126, 169, 1),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKeyForCurrentStep().currentState!.validate()) {
-                      nextStep();
+                      if (_steps == 5) {
+                        final db = AppDatabase();
+                        final youthUserID = await db.insertYouthUser(
+                          YouthUsersCompanion(
+                            skills: drift.Value(
+                              skills.entries
+                                  .map((entry) => entry.value)
+                                  .toList()
+                                  .join(', '),
+                            ),
+                            status: drift.Value('Standby'),
+                            youthType: drift.Value(youthTypeVal ?? 'Unknown'),
+                          ),
+                        );
+                        await db.insertYouthInfo(
+                          YouthInfosCompanion(
+                            youthUserId: drift.Value(youthUserID),
+                            fname: drift.Value(_fnameController.text),
+                            mname: drift.Value(_mnameController.text),
+                            lname: drift.Value(_lnameController.text),
+
+                            occupation: drift.Value(_occController.text),
+                            placeOfBirth: drift.Value(_pobController.text),
+                            contactNo: drift.Value(_cnController.text),
+                            noOfChildren: drift.Value(int.tryParse(_nocController.text) ?? 0),
+                            height: drift.Value(double.tryParse(_hController.text) ?? 0),
+                            weight: drift.Value(double.tryParse(_wController.text) ?? 0),
+                            dateOfBirth: drift.Value(_dobController.text),
+                            age: drift.Value(int.tryParse(_ageController.text) ?? 0),
+                            civilStatus: drift.Value(civilStatsVal ?? 'Unknown'),
+                            gender: drift.Value(genVal ?? ''),
+                          ),
+                        );
+                        await db.insertAllEducBgs(youthUserID, educbg, db);
+                        await db.insertAllCivic(youthUserID, civic, db);
+
+
+                      } else {
+                        nextStep();
+                      }
                     }
                   },
                   child: Text(
