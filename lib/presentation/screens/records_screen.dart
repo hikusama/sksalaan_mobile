@@ -53,20 +53,20 @@ class RecordsScreenState extends State<RecordsScreen> {
     );
   }
 
-  Widget _builContLogo() {
-    return Container(
-      height: 250,
-      decoration: BoxDecoration(color: Color.fromARGB(0, 11, 48, 65)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Image.asset('assets/images/logo.png'),
-          Text('SK Youth records'),
-          SizedBox(height: 10),
-        ],
-      ),
-    );
-  }
+  // Widget _builContLogo() {
+  //   return Container(
+  //     height: 250,
+  //     decoration: BoxDecoration(color: Color.fromARGB(0, 11, 48, 65)),
+  //     child: Column(
+  //       mainAxisAlignment: MainAxisAlignment.end,
+  //       children: [
+  //         Image.asset('assets/images/logo.png'),
+  //         Text('SK Youth records'),
+  //         SizedBox(height: 10),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildViewModal() {
     return Container(
