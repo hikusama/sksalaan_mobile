@@ -28,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
       _selectedIndex = index;
     });
   }
+  
 
   Future<bool> _onWillPop(BuildContext context) async {
     // You can show a dialog or handle logic here
@@ -121,7 +122,7 @@ class _MainScreenState extends State<MainScreen> {
             color:
                 isSelected
                     ? const Color.fromRGBO(20, 126, 169, 1)
-                    : Colors.grey,
+                    : const Color.fromARGB(144, 67, 67, 67),
           ),
           Text(
             label,
@@ -130,7 +131,7 @@ class _MainScreenState extends State<MainScreen> {
               color:
                   isSelected
                       ? const Color.fromRGBO(20, 126, 169, 1)
-                      : Colors.grey,
+                    : const Color.fromARGB(144, 67, 67, 67),
             ),
           ),
         ],

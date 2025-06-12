@@ -327,6 +327,18 @@ class $YouthUsersTable extends YouthUsers
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _registerAtMeta = const VerificationMeta(
+    'registerAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> registerAt = GeneratedColumn<DateTime>(
+    'register_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     youthUserId,
@@ -334,6 +346,7 @@ class $YouthUsersTable extends YouthUsers
     youthType,
     skills,
     status,
+    registerAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -386,6 +399,12 @@ class $YouthUsersTable extends YouthUsers
     } else if (isInserting) {
       context.missing(_statusMeta);
     }
+    if (data.containsKey('register_at')) {
+      context.handle(
+        _registerAtMeta,
+        registerAt.isAcceptableOrUnknown(data['register_at']!, _registerAtMeta),
+      );
+    }
     return context;
   }
 
@@ -419,6 +438,11 @@ class $YouthUsersTable extends YouthUsers
             DriftSqlType.string,
             data['${effectivePrefix}status'],
           )!,
+      registerAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}register_at'],
+          )!,
     );
   }
 
@@ -434,12 +458,14 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   final String youthType;
   final String skills;
   final String status;
+  final DateTime registerAt;
   const YouthUser({
     required this.youthUserId,
     this.userId,
     required this.youthType,
     required this.skills,
     required this.status,
+    required this.registerAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -451,6 +477,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     map['youth_type'] = Variable<String>(youthType);
     map['skills'] = Variable<String>(skills);
     map['status'] = Variable<String>(status);
+    map['register_at'] = Variable<DateTime>(registerAt);
     return map;
   }
 
@@ -462,6 +489,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       youthType: Value(youthType),
       skills: Value(skills),
       status: Value(status),
+      registerAt: Value(registerAt),
     );
   }
 
@@ -476,6 +504,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       youthType: serializer.fromJson<String>(json['youthType']),
       skills: serializer.fromJson<String>(json['skills']),
       status: serializer.fromJson<String>(json['status']),
+      registerAt: serializer.fromJson<DateTime>(json['registerAt']),
     );
   }
   @override
@@ -487,6 +516,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       'youthType': serializer.toJson<String>(youthType),
       'skills': serializer.toJson<String>(skills),
       'status': serializer.toJson<String>(status),
+      'registerAt': serializer.toJson<DateTime>(registerAt),
     };
   }
 
@@ -496,12 +526,14 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     String? youthType,
     String? skills,
     String? status,
+    DateTime? registerAt,
   }) => YouthUser(
     youthUserId: youthUserId ?? this.youthUserId,
     userId: userId.present ? userId.value : this.userId,
     youthType: youthType ?? this.youthType,
     skills: skills ?? this.skills,
     status: status ?? this.status,
+    registerAt: registerAt ?? this.registerAt,
   );
   YouthUser copyWithCompanion(YouthUsersCompanion data) {
     return YouthUser(
@@ -511,6 +543,8 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       youthType: data.youthType.present ? data.youthType.value : this.youthType,
       skills: data.skills.present ? data.skills.value : this.skills,
       status: data.status.present ? data.status.value : this.status,
+      registerAt:
+          data.registerAt.present ? data.registerAt.value : this.registerAt,
     );
   }
 
@@ -521,14 +555,15 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
           ..write('userId: $userId, ')
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('registerAt: $registerAt')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(youthUserId, userId, youthType, skills, status);
+      Object.hash(youthUserId, userId, youthType, skills, status, registerAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -537,7 +572,8 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
           other.userId == this.userId &&
           other.youthType == this.youthType &&
           other.skills == this.skills &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.registerAt == this.registerAt);
 }
 
 class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
@@ -546,12 +582,14 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   final Value<String> youthType;
   final Value<String> skills;
   final Value<String> status;
+  final Value<DateTime> registerAt;
   const YouthUsersCompanion({
     this.youthUserId = const Value.absent(),
     this.userId = const Value.absent(),
     this.youthType = const Value.absent(),
     this.skills = const Value.absent(),
     this.status = const Value.absent(),
+    this.registerAt = const Value.absent(),
   });
   YouthUsersCompanion.insert({
     this.youthUserId = const Value.absent(),
@@ -559,6 +597,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     required String youthType,
     required String skills,
     required String status,
+    this.registerAt = const Value.absent(),
   }) : youthType = Value(youthType),
        skills = Value(skills),
        status = Value(status);
@@ -568,6 +607,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     Expression<String>? youthType,
     Expression<String>? skills,
     Expression<String>? status,
+    Expression<DateTime>? registerAt,
   }) {
     return RawValuesInsertable({
       if (youthUserId != null) 'youth_user_id': youthUserId,
@@ -575,6 +615,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
       if (youthType != null) 'youth_type': youthType,
       if (skills != null) 'skills': skills,
       if (status != null) 'status': status,
+      if (registerAt != null) 'register_at': registerAt,
     });
   }
 
@@ -584,6 +625,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     Value<String>? youthType,
     Value<String>? skills,
     Value<String>? status,
+    Value<DateTime>? registerAt,
   }) {
     return YouthUsersCompanion(
       youthUserId: youthUserId ?? this.youthUserId,
@@ -591,6 +633,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
       youthType: youthType ?? this.youthType,
       skills: skills ?? this.skills,
       status: status ?? this.status,
+      registerAt: registerAt ?? this.registerAt,
     );
   }
 
@@ -612,6 +655,9 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (registerAt.present) {
+      map['register_at'] = Variable<DateTime>(registerAt.value);
+    }
     return map;
   }
 
@@ -622,7 +668,8 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
           ..write('userId: $userId, ')
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('registerAt: $registerAt')
           ..write(')'))
         .toString();
   }
@@ -2758,6 +2805,7 @@ typedef $$YouthUsersTableCreateCompanionBuilder =
       required String youthType,
       required String skills,
       required String status,
+      Value<DateTime> registerAt,
     });
 typedef $$YouthUsersTableUpdateCompanionBuilder =
     YouthUsersCompanion Function({
@@ -2766,6 +2814,7 @@ typedef $$YouthUsersTableUpdateCompanionBuilder =
       Value<String> youthType,
       Value<String> skills,
       Value<String> status,
+      Value<DateTime> registerAt,
     });
 
 final class $$YouthUsersTableReferences
@@ -2880,6 +2929,11 @@ class $$YouthUsersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get registerAt => $composableBuilder(
+    column: $table.registerAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> youthInfosRefs(
     Expression<bool> Function($$YouthInfosTableFilterComposer f) f,
   ) {
@@ -2989,6 +3043,11 @@ class $$YouthUsersTableOrderingComposer
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get registerAt => $composableBuilder(
+    column: $table.registerAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$YouthUsersTableAnnotationComposer
@@ -3016,6 +3075,11 @@ class $$YouthUsersTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get registerAt => $composableBuilder(
+    column: $table.registerAt,
+    builder: (column) => column,
+  );
 
   Expression<T> youthInfosRefs<T extends Object>(
     Expression<T> Function($$YouthInfosTableAnnotationComposer a) f,
@@ -3131,12 +3195,14 @@ class $$YouthUsersTableTableManager
                 Value<String> youthType = const Value.absent(),
                 Value<String> skills = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion(
                 youthUserId: youthUserId,
                 userId: userId,
                 youthType: youthType,
                 skills: skills,
                 status: status,
+                registerAt: registerAt,
               ),
           createCompanionCallback:
               ({
@@ -3145,12 +3211,14 @@ class $$YouthUsersTableTableManager
                 required String youthType,
                 required String skills,
                 required String status,
+                Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion.insert(
                 youthUserId: youthUserId,
                 userId: userId,
                 youthType: youthType,
                 skills: skills,
                 status: status,
+                registerAt: registerAt,
               ),
           withReferenceMapper:
               (p0) =>

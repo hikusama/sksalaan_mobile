@@ -29,6 +29,7 @@ class YouthUsers extends Table {
   TextColumn get youthType => text()();
   TextColumn get skills => text()();
   TextColumn get status => text()();
+  DateTimeColumn get registerAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 class YouthInfos extends Table {
@@ -87,9 +88,9 @@ class CivicInvolvements extends Table {
 }
 
 class DatabaseProvider {
-  static final AppDatabase _instance = AppDatabase();
+  DatabaseProvider._();
 
-  static AppDatabase get instance => _instance;
+  static final AppDatabase instance = AppDatabase();
 }
 
 @DriftDatabase(

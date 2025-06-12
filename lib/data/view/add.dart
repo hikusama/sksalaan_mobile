@@ -277,17 +277,17 @@ class _AddState extends State<Add> {
                                 await db.insertYouthInfo(
                                   YouthInfosCompanion(
                                     youthUserId: drift.Value(youthUserID),
-                                    fname: drift.Value(_fnameController.text),
-                                    mname: drift.Value(_mnameController.text),
-                                    lname: drift.Value(_lnameController.text),
+                                    fname: drift.Value(_fnameController.text.toUpperCase().characters.first+_fnameController.text.toString().substring(1).trim()),
+                                    mname: drift.Value(_mnameController.text.toUpperCase().characters.first+_mnameController.text.toString().substring(1).trim()),
+                                    lname: drift.Value(_lnameController.text.toUpperCase().characters.first+_lnameController.text.toString().substring(1).trim()),
 
                                     occupation: drift.Value(
-                                      _occController.text,
+                                      _occController.text.trim(),
                                     ),
                                     placeOfBirth: drift.Value(
-                                      _pobController.text,
+                                      _pobController.text.trim(),
                                     ),
-                                    contactNo: drift.Value(_cnController.text),
+                                    contactNo: drift.Value(_cnController.text.trim()),
                                     noOfChildren: drift.Value(
                                       int.tryParse(_nocController.text) ?? 0,
                                     ),
@@ -298,17 +298,17 @@ class _AddState extends State<Add> {
                                       double.tryParse(_wController.text) ?? 0,
                                     ),
                                     dateOfBirth: drift.Value(
-                                      _dobController.text,
+                                      _dobController.text.trim(),
                                     ),
                                     age: drift.Value(
                                       int.tryParse(_ageController.text) ?? 0,
                                     ),
                                     civilStatus: drift.Value(
-                                      civilStatsVal ?? 'Unknown',
+                                      civilStatsVal.toString().trim() ,
                                     ),
-                                    gender: drift.Value(genVal ?? ''),
-                                    religion: drift.Value(religionVal ?? ''),
-                                    sex: drift.Value(sexVal ?? ''),
+                                    gender: drift.Value(genVal.toString().trim() ),
+                                    religion: drift.Value(religionVal.toString().trim()),
+                                    sex: drift.Value(sexVal.toString().trim()),
                                   ),
                                 );
                                 if (educbg.isNotEmpty) {
