@@ -14,7 +14,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
   final db = DatabaseProvider.instance;
 
   Future<List<FullYouthProfile>> _fetchProfiles(BuildContext context) async {
-    return db.getAllYouthProfiles();
+    return db.getAllYouthProfiles(offset: 1,searchKeyword: '');
   }
 
   int clicked = 0;
@@ -41,13 +41,20 @@ class _OverviewScreenState extends State<OverviewScreen> {
                     }
 
                     final profiles = snapshot.data!;
-                    return Scrollbar(
-                      thumbVisibility: true,
-                      child: ListView.builder(
-                        itemCount: profiles.length,
-                        itemBuilder: (context, index) {
-                          return _designRecord(profiles[index], context);
-                        },
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        setState(
+                          () {},
+                        ); 
+                      },
+                      child: Scrollbar(
+                        thumbVisibility: true,
+                        child: ListView.builder(
+                          itemCount: profiles.length,
+                          itemBuilder: (context, index) {
+                            return _designRecord(profiles[index], context);
+                          },
+                        ),
                       ),
                     );
                   },
@@ -220,9 +227,10 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                   child:
                                       clicked > 3
                                           ? SizedBox(
-                                                  height: 200,
+                                            height: 200,
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: [
                                                 SizedBox(
                                                   height: 90,

@@ -156,37 +156,52 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  Future<List<FullYouthProfile>> getAllYouthProfiles() async {
-    final users = await select(youthUsers).get();
+Future<List<FullYouthProfile>> getAllYouthProfiles({
+  String searchKeyword = '',
+  int limit = 10,
+  int offset = 0,
+}) async {
+  final query = select(youthUsers)
+    ..limit(limit, offset: offset);
 
-    final List<FullYouthProfile> result = [];
+  if (searchKeyword.isNotEmpty) {
+    final userIds = await (select(youthInfos)
+          ..where((tbl) => tbl.fname.like('%$searchKeyword%') |
+                           tbl.lname.like('%$searchKeyword%')))
+        .map((info) => info.youthUserId)
+        .get();
 
-    for (final user in users) {
-      final youthInfo =
-          await (select(youthInfos)..where(
-            (tbl) => tbl.youthUserId.equals(user.youthUserId),
-          )).getSingleOrNull();
-
-      final educs =
-          await (select(educBgs)
-            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-
-      final civics =
-          await (select(civicInvolvements)
-            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-
-      result.add(
-        FullYouthProfile(
-          youthUser: user,
-          youthInfo: youthInfo,
-          educBgs: educs,
-          civicInvolvements: civics,
-        ),
-      );
-    }
-
-    return result;
+    query.where((tbl) => tbl.youthUserId.isIn(userIds));
   }
+
+  final users = await query.get();
+  final List<FullYouthProfile> result = [];
+
+  for (final user in users) {
+    final youthInfo = await (select(youthInfos)
+          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
+        .getSingleOrNull();
+
+    final educs = await (select(educBgs)
+          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
+        .get();
+
+    final civics = await (select(civicInvolvements)
+          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
+        .get();
+
+    result.add(
+      FullYouthProfile(
+        youthUser: user,
+        youthInfo: youthInfo,
+        educBgs: educs,
+        civicInvolvements: civics,
+      ),
+    );
+  }
+
+  return result;
+}
 
   @override
   int get schemaVersion => 2;
