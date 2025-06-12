@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
+import 'package:skyouthprofiling/data/view/edit.dart';
 
 class OverviewScreen extends StatelessWidget {
   const OverviewScreen({super.key});
@@ -13,9 +15,7 @@ class OverviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: SafeArea(
-        
         child: SizedBox(
           width: double.infinity,
           child: Column(
@@ -39,7 +39,7 @@ class OverviewScreen extends StatelessWidget {
                       child: ListView.builder(
                         itemCount: profiles.length,
                         itemBuilder: (context, index) {
-                          return _designRecord(profiles[index]);
+                          return _designRecord(profiles[index], context);
                         },
                       ),
                     );
@@ -64,7 +64,7 @@ class OverviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _designRecord(FullYouthProfile profile) {
+  Widget _designRecord(FullYouthProfile profile, BuildContext context) {
     final name =
         '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''}';
     final age = profile.youthInfo?.age ?? '--';
@@ -137,15 +137,61 @@ class OverviewScreen extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            color: Colors.white,
-            icon: const Icon(Icons.more_horiz_rounded),
-            onPressed: () {
-              // Add action here (e.g., show dialog, navigate)
+          PopupMenuButton(
+            icon: Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (value) {
+              switch (value) {
+                case 'see more':
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return _buildViewModal();
+                    },
+                  );
+                  break;
+                case 'edit':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Edit()),
+                  );
+                  break;
+                case 'delete':
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return _buildDeleteModal();
+                    },
+                  );
+                  break;
+              }
             },
+            itemBuilder:
+                (context) => [
+                  PopupMenuItem(value: 'see more', child: Text('Show info.')),
+                  PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete')),
+                ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDeleteModal() {
+    return Container(
+      padding: EdgeInsets.all(15),
+      height: 300,
+      width: double.infinity,
+      child: Text('hello'),
+    );
+  }
+
+  Widget _buildViewModal() {
+    return Container(
+      padding: EdgeInsets.all(15),
+      height: 300,
+      width: double.infinity,
+      child: Text('hello'),
     );
   }
 }
