@@ -18,7 +18,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
   }
 
   int clicked = 0;
-  bool isDeleteSuccess = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,9 +80,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
   Widget _designRecord(FullYouthProfile profile, BuildContext context) {
     final name =
         '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''}';
-    final fullname =
-        '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''} - ${profile.youthInfo?.mname ?? ''}';
-    final dateString = profile.youthUser.registerAt.toString().split(' ').first;
+      final dateString = profile.youthUser.registerAt.toString().split(' ').first;
     String date = DateFormat('MMM d, yy').format(DateTime.parse(dateString));
 
     final status = profile.youthUser.status;
@@ -206,246 +203,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                           MaterialPageRoute(builder: (context) => const Edit()),
                         );
                         break;
-                      case 'delete':
-                        clicked = 0;
-
-                        showModalBottomSheet(
-                          backgroundColor: Colors.white,
-                          context: context,
-                          builder: (BuildContext context) {
-                            return StatefulBuilder(
-                              builder: (context, setModalState) {
-                                return Container(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    17,
-                                    25,
-                                    17,
-                                    17,
-                                  ),
-                                  height: 300,
-                                  width: double.infinity,
-                                  child:
-                                      clicked > 3
-                                          ? SizedBox(
-                                            height: 200,
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                SizedBox(
-                                                  height: 90,
-                                                  child:
-                                                      isDeleteSuccess
-                                                          ? Image.asset(
-                                                            'assets/images/success.png',
-                                                          )
-                                                          : Image.asset(
-                                                            'assets/images/failed.png',
-                                                          ),
-                                                ),
-                                                SizedBox(height: 15),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    CircleAvatar(
-                                                      radius: 8,
-                                                      backgroundColor:
-                                                          isDeleteSuccess
-                                                              ? Colors.green
-                                                              : Colors.red,
-                                                      child: Icon(
-                                                        size: 15,
-                                                        isDeleteSuccess
-                                                            ? Icons.check
-                                                            : Icons.close,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                    SizedBox(width: 4),
-                                                    isDeleteSuccess
-                                                        ? Text(
-                                                          'Success....',
-                                                          style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontSize: 18,
-                                                          ),
-                                                        )
-                                                        : Text(
-                                                          'Something went wrong',
-                                                          style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontSize: 18,
-                                                          ),
-                                                        ),
-                                                  ],
-                                                ),
-                                                SizedBox(height: 8),
-
-                                                MaterialButton(
-                                                  minWidth: 80,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          10,
-                                                        ),
-                                                  ),
-                                                  onPressed: () {
-                                                    clicked = 0;
-                                                    Navigator.pop(context);
-                                                  },
-                                                  color: Color.fromRGBO(
-                                                    20,
-                                                    126,
-                                                    169,
-                                                    1,
-                                                  ),
-                                                  child: Text(
-                                                    'Done',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                          : Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    fullname,
-                                                    style: const TextStyle(
-                                                      color: Colors.black,
-                                                      fontSize: 17,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-
-                                                  const SizedBox(width: 10),
-                                                  Text(
-                                                    date,
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontSize: 17,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-
-                                                children: [
-                                                  Text(
-                                                    'Name',
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 10),
-                                                  Text(
-                                                    'Date Registered',
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 20),
-                                              Expanded(
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      'Are you sure you want to delete?',
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 19,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      'To confirm click the button 3 times: $clicked/3',
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              MaterialButton(
-                                                color:
-                                                    clicked < 3
-                                                        ? const Color.fromARGB(
-                                                          120,
-                                                          244,
-                                                          67,
-                                                          54,
-                                                        )
-                                                        : Colors.red,
-                                                textColor: Colors.white,
-                                                onPressed: () async {
-                                                  if (clicked >= 3) {
-                                                    bool isGood = false;
-                                                    try {
-                                                      await db.deleteYouthUser(
-                                                        profile
-                                                            .youthUser
-                                                            .youthUserId,
-                                                      );
-                                                      isGood = true;
-                                                    } catch (e) {
-                                                      isGood = false;
-                                                    }
-                                                    if (isGood) {
-                                                      isDeleteSuccess = true;
-                                                      setState(() {});
-                                                    } else {
-                                                      isDeleteSuccess = false;
-                                                    }
-                                                  }
-                                                  setModalState(() {
-                                                    clicked++;
-                                                  });
-                                                },
-                                                child: Text(
-                                                  clicked < 3
-                                                      ? 'Click'
-                                                      : 'Delete',
-                                                ),
-                                              ),
-                                              const SizedBox(height: 25),
-                                            ],
-                                          ),
-                                );
-                              },
-                            );
-                          },
-                        );
-
-                        break;
+                     
                     }
                   },
                   itemBuilder:
@@ -454,8 +212,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
                           value: 'see more',
                           child: Text('All info.'),
                         ),
-                        PopupMenuItem(value: 'edit', child: Text('Edit')),
-                        PopupMenuItem(value: 'delete', child: Text('Delete')),
                       ],
                 ),
               ],
