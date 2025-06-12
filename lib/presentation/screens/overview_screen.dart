@@ -68,14 +68,27 @@ class OverviewScreen extends StatelessWidget {
     final name =
         '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''}';
     final age = profile.youthInfo?.age ?? '--';
+    final status = profile.youthUser.status;
     final type = profile.youthUser.youthType;
-
+    Color statColor = Colors.white;
+    switch (status) {
+      case 'Standby':
+        statColor = const Color.fromARGB(255, 255, 17, 0);
+        break;
+      case 'Failed':
+        statColor = const Color.fromARGB(255, 255, 217, 0);
+        break;
+      case 'Submitted':
+        statColor = Colors.red;
+        break;
+    }
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       padding: const EdgeInsets.fromLTRB(17, 6, 8, 6),
       decoration: BoxDecoration(
-        color: const Color.fromRGBO(20, 126, 169, 1),
+        color: const Color.fromARGB(181, 20, 127, 169),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(width: 2,color:  Color.fromARGB(255, 19, 137, 184),)
       ),
       child: Row(
         children: [
@@ -97,6 +110,23 @@ class OverviewScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 14, color: Colors.white),
                   overflow: TextOverflow.ellipsis,
                 ),
+              ],
+            ),
+          ),
+          SizedBox(
+            width: 50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Status',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(status, style: TextStyle(color: statColor)),
               ],
             ),
           ),
