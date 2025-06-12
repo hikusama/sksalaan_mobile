@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:confetti/confetti.dart';
 
 class Add extends StatefulWidget {
   const Add({super.key});
@@ -10,6 +11,7 @@ class Add extends StatefulWidget {
 }
 
 class _AddState extends State<Add> {
+  late final ConfettiController confettiController = ConfettiController();
   final _formKeyStep1 = GlobalKey<FormState>();
   final _formKeyStep2 = GlobalKey<FormState>();
   final _formKeyStep3 = GlobalKey<FormState>();
@@ -29,7 +31,7 @@ class _AddState extends State<Add> {
     }
   }
 
-  int _steps = 1;
+  int _steps = 6;
   List<String> labelStep = ["Basic", "Personal", "Educ", "Civic", "Finish"];
 
   // First form
@@ -87,6 +89,8 @@ class _AddState extends State<Add> {
   final _endedController = TextEditingController();
   Map<String, Map<String, dynamic>> civic = {};
 
+  bool isResponse = true;
+  bool success = true;
   // Map<String, String> firstForm() => {
   //   'fname': _fnameController.text,
   //   'mname': _mnameController.text,
@@ -132,8 +136,37 @@ class _AddState extends State<Add> {
   }
 
   @override
+  void dispose() {
+    _fnameController.dispose();
+    _mnameController.dispose();
+    _lnameController.dispose();
+    _ageController.dispose();
+    _dobController.dispose();
+    _cnController.dispose();
+    _pobController.dispose();
+    _nocController.dispose();
+    _skillsController.dispose();
+    _hController.dispose();
+    _wController.dispose();
+    _occController.dispose();
+    _nosController.dispose();
+    _poaController.dispose();
+    _ygschoolController.dispose();
+
+    _orgController.dispose();
+    _orgaddrController.dispose();
+    _ygorgController.dispose();
+    _endedController.dispose();
+
+    confettiController.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -186,96 +219,146 @@ class _AddState extends State<Add> {
 
           Expanded(
             flex: 1,
-            child: Scrollbar(
-              thumbVisibility: true, // Optional
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: contentStep[_steps.clamp(1, contentStep.length) - 1],
+            child:
+                isResponse
+                    ? contentStep[_steps.clamp(1, contentStep.length) - 1]
+                    : Scrollbar(
+                      thumbVisibility: true, // Optional
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child:
+                              contentStep[_steps.clamp(1, contentStep.length) -
+                                  1],
+                        ),
+                      ),
+                    ),
+          ),
+          isResponse
+              ? SizedBox.shrink()
+              : Padding(
+                padding: const EdgeInsets.fromLTRB(25, 2, 25, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            _steps > 1
+                                ? const Color.fromARGB(82, 0, 0, 0)
+                                : const Color.fromARGB(34, 0, 0, 0),
+                      ),
+                      onPressed: () => nextStep(isNext: false),
+                      child: Text(
+                        'Back',
+                        style: TextStyle(
+                          color:
+                              _steps > 1
+                                  ? Colors.white
+                                  : const Color.fromARGB(81, 0, 0, 0),
+                        ),
+                      ),
+                    ),
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromRGBO(20, 126, 169, 1),
+                      ),
+                      onPressed: () async {
+                        if (_formKeyForCurrentStep().currentState!.validate()) {
+                          if (_steps == 5) {
+                            final db = AppDatabase();
+                            int youthUserID = 0;
+                            bool good = false;
+                            try {
+                              youthUserID = await db.insertYouthUser(
+                                YouthUsersCompanion(
+                                  skills: drift.Value(
+                                    skills.entries
+                                        .map((entry) => entry.value)
+                                        .toList()
+                                        .join(', '),
+                                  ),
+                                  status: drift.Value('Standby'),
+                                  youthType: drift.Value(
+                                    youthTypeVal ?? 'Unknown',
+                                  ),
+                                ),
+                              );
+
+                              good = true;
+                            } catch (e) {
+                              good = false;
+                            }
+
+                            if (good) {
+                              try {
+                                await db.insertYouthInfo(
+                                  YouthInfosCompanion(
+                                    youthUserId: drift.Value(youthUserID),
+                                    fname: drift.Value(_fnameController.text),
+                                    mname: drift.Value(_mnameController.text),
+                                    lname: drift.Value(_lnameController.text),
+
+                                    occupation: drift.Value(
+                                      _occController.text,
+                                    ),
+                                    placeOfBirth: drift.Value(
+                                      _pobController.text,
+                                    ),
+                                    contactNo: drift.Value(_cnController.text),
+                                    noOfChildren: drift.Value(
+                                      int.tryParse(_nocController.text) ?? 0,
+                                    ),
+                                    height: drift.Value(
+                                      double.tryParse(_hController.text) ?? 0,
+                                    ),
+                                    weight: drift.Value(
+                                      double.tryParse(_wController.text) ?? 0,
+                                    ),
+                                    dateOfBirth: drift.Value(
+                                      _dobController.text,
+                                    ),
+                                    age: drift.Value(
+                                      int.tryParse(_ageController.text) ?? 0,
+                                    ),
+                                    civilStatus: drift.Value(
+                                      civilStatsVal ?? 'Unknown',
+                                    ),
+                                    gender: drift.Value(genVal ?? ''),
+                                  ),
+                                );
+                                await db.insertAllEducBgs(
+                                  youthUserID,
+                                  educbg,
+                                  db,
+                                );
+                                await db.insertAllCivic(youthUserID, civic, db);
+                                success = true;
+                              } catch (e) {
+                                db.deleteYouthUser(youthUserID);
+                                success = false;
+                              }
+                            } else {
+                              success = false;
+                            }
+                            setState(() {
+                              isResponse = true;
+                            });
+                            isResponse = false;
+                          } else {
+                            nextStep();
+                          }
+                        }
+                      },
+                      child: Text(
+                        _steps == contentStep.length ? 'Finish' : 'Next',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(25, 2, 25, 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _steps > 1
-                            ? const Color.fromARGB(82, 0, 0, 0)
-                            : const Color.fromARGB(34, 0, 0, 0),
-                  ),
-                  onPressed: () => nextStep(isNext: false),
-                  child: Text(
-                    'Back',
-                    style: TextStyle(
-                      color:
-                          _steps > 1
-                              ? Colors.white
-                              : const Color.fromARGB(81, 0, 0, 0),
-                    ),
-                  ),
-                ),
-
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromRGBO(20, 126, 169, 1),
-                  ),
-                  onPressed: () async {
-                    if (_formKeyForCurrentStep().currentState!.validate()) {
-                      if (_steps == 5) {
-                        final db = AppDatabase();
-                        final youthUserID = await db.insertYouthUser(
-                          YouthUsersCompanion(
-                            skills: drift.Value(
-                              skills.entries
-                                  .map((entry) => entry.value)
-                                  .toList()
-                                  .join(', '),
-                            ),
-                            status: drift.Value('Standby'),
-                            youthType: drift.Value(youthTypeVal ?? 'Unknown'),
-                          ),
-                        );
-                        await db.insertYouthInfo(
-                          YouthInfosCompanion(
-                            youthUserId: drift.Value(youthUserID),
-                            fname: drift.Value(_fnameController.text),
-                            mname: drift.Value(_mnameController.text),
-                            lname: drift.Value(_lnameController.text),
-
-                            occupation: drift.Value(_occController.text),
-                            placeOfBirth: drift.Value(_pobController.text),
-                            contactNo: drift.Value(_cnController.text),
-                            noOfChildren: drift.Value(int.tryParse(_nocController.text) ?? 0),
-                            height: drift.Value(double.tryParse(_hController.text) ?? 0),
-                            weight: drift.Value(double.tryParse(_wController.text) ?? 0),
-                            dateOfBirth: drift.Value(_dobController.text),
-                            age: drift.Value(int.tryParse(_ageController.text) ?? 0),
-                            civilStatus: drift.Value(civilStatsVal ?? 'Unknown'),
-                            gender: drift.Value(genVal ?? ''),
-                          ),
-                        );
-                        await db.insertAllEducBgs(youthUserID, educbg, db);
-                        await db.insertAllCivic(youthUserID, civic, db);
-
-
-                      } else {
-                        nextStep();
-                      }
-                    }
-                  },
-                  child: Text(
-                    _steps == contentStep.length ? 'Finish' : 'Next',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -3062,6 +3145,93 @@ class _AddState extends State<Add> {
           ),
         ],
       ),
+    ),
+
+    Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+
+                children: [
+                  SizedBox(
+                    height: 190,
+                    child:
+                        success
+                            ? Image.asset('assets/images/success.png')
+                            : Image.asset('assets/images/failed.png'),
+                  ),
+                  SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 8,
+                        backgroundColor: success ? Colors.green : Colors.red,
+                        child: Icon(
+                          size: 15,
+                          success ? Icons.check : Icons.close,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      success
+                          ? Text(
+                            'Success....',
+                            style: TextStyle(color: Colors.black, fontSize: 18),
+                          )
+                          : Text(
+                            'Something went wrong',
+                            style: TextStyle(color: Colors.black, fontSize: 18),
+                          ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+
+                  MaterialButton(
+                    minWidth: 80,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    onPressed: () {
+                      confettiController.play();
+                    },
+                    color: Color.fromRGBO(20, 126, 169, 1),
+                    child: Text('Done', style: TextStyle(color: Colors.white)),
+                  ),
+                  SizedBox(height: 150),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        Positioned(
+          top: 10,
+          child: ConfettiWidget(
+            numberOfParticles: 15,
+            confettiController: confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: false,
+            colors: const [
+              Colors.red,
+              Colors.blue,
+              Colors.green,
+              Colors.orange,
+              Colors.purple,
+            ],
+            gravity: 0.3,
+          ),
+        ),
+      ],
     ),
   ];
 

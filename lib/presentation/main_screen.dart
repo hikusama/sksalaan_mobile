@@ -60,13 +60,13 @@ class _MainScreenState extends State<MainScreen> {
       onPopInvoked: (didPop) async {
         bool canPop = await _onWillPop(context);
         if (canPop) {
-          FlutterExitApp.exitApp();          
+          FlutterExitApp.exitApp();
         } else {
           return;
         }
       },
       child: Scaffold(
-        body: _screens[_selectedIndex],  
+        body: _screens[_selectedIndex],
         bottomNavigationBar: BottomAppBar(
           shape: const CircularNotchedRectangle(),
           notchMargin: 18.0,
@@ -85,14 +85,20 @@ class _MainScreenState extends State<MainScreen> {
           onEnter: (_) => setState(() => isHv = true),
           onExit: (_) => setState(() => isHv = false),
           child: FloatingActionButton(
-            backgroundColor: isHv ? Colors.black : const Color.fromRGBO(20, 126, 169, 1) ,
+            backgroundColor:
+                isHv ? Colors.black : const Color.fromRGBO(20, 126, 169, 1),
             shape: const CircleBorder(),
             onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) => Add(),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Add()),
               );
+              // showModalBottomSheet(
+              //   context: context,
+              //   enableDrag: true,
+              //   isScrollControlled: true,
+              //   builder: (context) => Add(),
+              // );
               // Handle FAB click (e.g., open a modal, new screen, etc.)
             },
             child: const Icon(Icons.add, color: Colors.white),
@@ -106,19 +112,29 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildNavItem(IconData icon, String label, int index) {
     final bool isSelected = _selectedIndex == index;
     return InkWell(
-
       onTap: () => _onItemTapped(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? const Color.fromRGBO(20, 126, 169, 1) : Colors.grey),
+          Icon(
+            icon,
+            color:
+                isSelected
+                    ? const Color.fromRGBO(20, 126, 169, 1)
+                    : Colors.grey,
+          ),
           Text(
             label,
-            style: TextStyle(fontWeight: FontWeight.bold , color: isSelected ? const Color.fromRGBO(20, 126, 169, 1) : Colors.grey),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color:
+                  isSelected
+                      ? const Color.fromRGBO(20, 126, 169, 1)
+                      : Colors.grey,
+            ),
           ),
         ],
       ),
-      
     );
   }
 }

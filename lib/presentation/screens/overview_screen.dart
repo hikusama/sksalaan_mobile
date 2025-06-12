@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skyouthprofiling/data/app_database.dart';
 
 class OverviewScreen extends StatelessWidget {
   const OverviewScreen({super.key});
@@ -132,83 +133,5 @@ class OverviewScreen extends StatelessWidget {
     );
   }
 
-  // Widget _designRecords2() {
-  //   return Container(
-  //     margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
-  //     padding: EdgeInsets.fromLTRB(6.5, 5, 6.5, 5),
-  //     alignment: Alignment.center,
-  //     decoration: BoxDecoration(
-  //       color: Color.fromARGB(255, 61, 61, 61),
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     child: Row(
-  //       spacing: 20,
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text(
-  //               'Name',
-  //               style: TextStyle(
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 13,
-  //                 color: Colors.white,
-  //               ),
-  //             ),
-  //             Text(
-  //               'Nakamotojoko, Hikusama',
-  //               style: TextStyle(fontSize: 16, color: Colors.white),
-  //             ),
-  //           ],
-  //         ),
-  //         Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text(
-  //               'Age',
-  //               style: TextStyle(
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 13,
-  //                 color: Colors.white,
-  //               ),
-  //             ),
-  //             Text('13', style: TextStyle(fontSize: 16, color: Colors.white)),
-  //           ],
-  //         ),
-  //         Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text(
-  //               'Type',
-  //               style: TextStyle(
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 13,
-  //                 color: Colors.white,
-  //               ),
-  //             ),
-  //             Text('OSY', style: TextStyle(fontSize: 16, color: Colors.white)),
-  //           ],
-  //         ),
-  //         Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text(
-  //               'Created',
-  //               style: TextStyle(
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 13,
-  //                 color: Colors.white,
-  //               ),
-  //             ),
-  //             Text(
-  //               'Dec 24, 2025',
-  //               style: TextStyle(fontSize: 16, color: Colors.white),
-  //             ),
-  //           ],
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+ 
 }
