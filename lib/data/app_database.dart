@@ -86,6 +86,12 @@ class CivicInvolvements extends Table {
   TextColumn get yearGraduated => text()();
 }
 
+class DatabaseProvider {
+  static final AppDatabase _instance = AppDatabase();
+
+  static AppDatabase get instance => _instance;
+}
+
 @DriftDatabase(
   tables: [Users, YouthUsers, YouthInfos, EducBgs, CivicInvolvements],
 )

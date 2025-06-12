@@ -4,13 +4,50 @@ import 'package:skyouthprofiling/data/app_database.dart';
 class OverviewScreen extends StatelessWidget {
   const OverviewScreen({super.key});
 
+  Future<List<FullYouthProfile>> _fetchProfiles(BuildContext context) async {
+    final db = DatabaseProvider.instance;
+
+    return db.getAllYouthProfiles();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       body: SafeArea(
+        
         child: SizedBox(
           width: double.infinity,
-          child: Column(children: [_buildDashboard(), _buildContRecords()]),
+          child: Column(
+            children: [
+              _buildDashboard(),
+              Expanded(
+                child: FutureBuilder<List<FullYouthProfile>>(
+                  future: _fetchProfiles(context),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('No records found.'));
+                    }
+
+                    final profiles = snapshot.data!;
+                    return Scrollbar(
+                      thumbVisibility: true,
+                      child: ListView.builder(
+                        itemCount: profiles.length,
+                        itemBuilder: (context, index) {
+                          return _designRecord(profiles[index]);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -19,56 +56,35 @@ class OverviewScreen extends StatelessWidget {
   Widget _buildDashboard() {
     return Container(
       height: 250,
-      margin: EdgeInsets.fromLTRB(10, 5, 10, 20),
+      margin: const EdgeInsets.fromLTRB(10, 5, 10, 20),
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 73, 73, 73),
+        color: const Color.fromARGB(255, 73, 73, 73),
         borderRadius: BorderRadius.circular(12),
       ),
-      // width: ,
     );
   }
 
-  Widget _buildContRecords() {
-    return Expanded(
-      child: Column(
-        children: [
-          Scrollbar(
-            thumbVisibility: true,
-            child: SingleChildScrollView(
-              // width: 400,
-              child: Column(
-                spacing: 6,
-                mainAxisAlignment: MainAxisAlignment.center,
+  Widget _designRecord(FullYouthProfile profile) {
+    final name =
+        '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''}';
+    final age = profile.youthInfo?.age ?? '--';
+    final type = profile.youthUser.youthType;
 
-                children: [_designRecords(), _designRecords()],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _designRecords() {
     return Container(
-      margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
-      padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
-      alignment: Alignment.center,
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      padding: const EdgeInsets.fromLTRB(17, 6, 8, 6),
       decoration: BoxDecoration(
         color: const Color.fromRGBO(20, 126, 169, 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        spacing: 20,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             flex: 7,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-
               children: [
-                Text(
+                const Text(
                   'Name',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -77,8 +93,8 @@ class OverviewScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Nakamotoasdas asdasdsa asdasd, Hikusama',
-                  style: TextStyle(fontSize: 14, color: Colors.white),
+                  name,
+                  style: const TextStyle(fontSize: 14, color: Colors.white),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -89,7 +105,7 @@ class OverviewScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Age',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -97,17 +113,19 @@ class OverviewScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                Text('27', style: TextStyle(fontSize: 14, color: Colors.white)),
+                Text(
+                  age.toString(),
+                  style: const TextStyle(color: Colors.white),
+                ),
               ],
             ),
           ),
           Expanded(
             flex: 1,
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Type',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -115,23 +133,19 @@ class OverviewScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                Text(
-                  'OSY',
-                  style: TextStyle(fontSize: 14, color: Colors.white),
-                ),
+                Text(type, style: const TextStyle(color: Colors.white)),
               ],
             ),
           ),
-
           IconButton(
             color: Colors.white,
-            onPressed: () => {},
-            icon: Icon(Icons.more_horiz_rounded),
+            icon: const Icon(Icons.more_horiz_rounded),
+            onPressed: () {
+              // Add action here (e.g., show dialog, navigate)
+            },
           ),
         ],
       ),
     );
   }
-
- 
 }

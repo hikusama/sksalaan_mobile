@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:confetti/confetti.dart';
+import 'package:skyouthprofiling/presentation/main_screen.dart';
 
 class Add extends StatefulWidget {
   const Add({super.key});
@@ -31,7 +32,7 @@ class _AddState extends State<Add> {
     }
   }
 
-  int _steps = 6;
+  int _steps = 1;
   List<String> labelStep = ["Basic", "Personal", "Educ", "Civic", "Finish"];
 
   // First form
@@ -61,26 +62,7 @@ class _AddState extends State<Add> {
   final _poaController = TextEditingController();
   final _ygschoolController = TextEditingController();
   String? schoolLevelVal;
-  Map<String, Map<String, dynamic>> educbg = {
-    'Elementary': {
-      'level': 'Elementary',
-      'nameOfSchool': 'asdlasd',
-      'periodOfAttendance': '04/09/04',
-      'yearGraduate': '2016',
-    },
-    'HighSchool': {
-      'level': 'HighSchool',
-      'nameOfSchool': 'asdlasd',
-      'periodOfAttendance': '04/09/04',
-      'yearGraduate': '2006',
-    },
-    'Colllege': {
-      'level': 'Colllege',
-      'nameOfSchool': 'ooooo',
-      'periodOfAttendance': '04/09/04',
-      'yearGraduate': '2019',
-    },
-  };
+  Map<String, Map<String, dynamic>> educbg = {};
 
   final _orgController = TextEditingController();
   final _orgaddrController = TextEditingController();
@@ -89,8 +71,8 @@ class _AddState extends State<Add> {
   final _endedController = TextEditingController();
   Map<String, Map<String, dynamic>> civic = {};
 
-  bool isResponse = true;
-  bool success = true;
+  bool isResponse = false;
+  bool success = false;
   // Map<String, String> firstForm() => {
   //   'fname': _fnameController.text,
   //   'mname': _mnameController.text,
@@ -265,7 +247,7 @@ class _AddState extends State<Add> {
                         backgroundColor: Color.fromRGBO(20, 126, 169, 1),
                       ),
                       onPressed: () async {
-                        if (_formKeyForCurrentStep().currentState!.validate()) {
+                        if (_steps >= 3 || _formKeyForCurrentStep().currentState!.validate()) {
                           if (_steps == 5) {
                             final db = AppDatabase();
                             int youthUserID = 0;
@@ -285,7 +267,6 @@ class _AddState extends State<Add> {
                                   ),
                                 ),
                               );
-
                               good = true;
                             } catch (e) {
                               good = false;
@@ -326,17 +307,27 @@ class _AddState extends State<Add> {
                                       civilStatsVal ?? 'Unknown',
                                     ),
                                     gender: drift.Value(genVal ?? ''),
+                                    religion: drift.Value(religionVal ?? ''),
+                                    sex: drift.Value(sexVal ?? ''),
                                   ),
                                 );
-                                await db.insertAllEducBgs(
-                                  youthUserID,
-                                  educbg,
-                                  db,
-                                );
-                                await db.insertAllCivic(youthUserID, civic, db);
+                                if (educbg.isNotEmpty) {
+                                  await db.insertAllEducBgs(
+                                    youthUserID,
+                                    educbg,
+                                    db,
+                                  );
+                                }
+                                if (civic.isNotEmpty) {
+                                  await db.insertAllCivic(
+                                    youthUserID,
+                                    civic,
+                                    db,
+                                  );
+                                }
                                 success = true;
                               } catch (e) {
-                                db.deleteYouthUser(youthUserID);
+                                await db.deleteYouthUser(youthUserID);
                                 success = false;
                               }
                             } else {
@@ -345,7 +336,10 @@ class _AddState extends State<Add> {
                             setState(() {
                               isResponse = true;
                             });
-                            isResponse = false;
+                            if (success) {
+                              confettiController.play();
+                            }
+                            nextStep();
                           } else {
                             nextStep();
                           }
@@ -573,7 +567,7 @@ class _AddState extends State<Add> {
               SizedBox(width: 10),
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: schoolLevelVal,
+                  value: genVal,
                   hint: Text('Gender (optional)'),
                   decoration: InputDecoration(
                     labelStyle: TextStyle(fontSize: 12),
@@ -1047,17 +1041,23 @@ class _AddState extends State<Add> {
                       .toList(),
               onChanged: (value) {
                 if (value != null) {
-                  setState(() {
-                    schoolLevelVal = value;
-                  });
+                  if (value == '') {
+                    schoolLevelVal = null;
+                  } else {
+                    setState(() {
+                      schoolLevelVal = value;
+                    });
+                  }
                 }
               },
               validator: (value) {
-                if ((value == null || value.isEmpty) &&
-                    (qCheck(_nosController) ||
-                        qCheck(_poaController) ||
-                        qCheck(_ygschoolController))) {
-                  return 'Please select school level';
+                if (educbg.length <= 3) {
+                  if ((value == null || value.isEmpty) &&
+                      (qCheck(_nosController) ||
+                          qCheck(_poaController) ||
+                          qCheck(_ygschoolController))) {
+                    return 'Please select school level';
+                  }
                 }
                 return null;
               },
@@ -1079,14 +1079,16 @@ class _AddState extends State<Add> {
             style: TextStyle(fontSize: 12, color: Colors.black),
             controller: _nosController,
             validator: (value) {
-              if ((value == null || value.isEmpty) &&
-                  (schoolLevelVal != null ||
-                      qCheck(_poaController) ||
-                      qCheck(_ygschoolController))) {
-                return 'Required';
-              }
-              if (value != null && value.length > 50) {
-                return 'Use only 50 characters';
+              if (educbg.length <= 3) {
+                if ((value == null || value.isEmpty) &&
+                    (schoolLevelVal != null ||
+                        qCheck(_poaController) ||
+                        qCheck(_ygschoolController))) {
+                  return 'Required';
+                }
+                if (value != null && value.length > 50) {
+                  return 'Use only 50 characters';
+                }
               }
               return null;
             },
@@ -1112,11 +1114,13 @@ class _AddState extends State<Add> {
                   ),
                   style: TextStyle(fontSize: 12, color: Colors.black),
                   validator: (value) {
-                    if ((value == null || value.isEmpty) &&
-                        (schoolLevelVal != null ||
-                            qCheck(_nosController) ||
-                            qCheck(_ygschoolController))) {
-                      return 'Required';
+                    if (educbg.length <= 3) {
+                      if ((value == null || value.isEmpty) &&
+                          (schoolLevelVal != null ||
+                              qCheck(_nosController) ||
+                              qCheck(_ygschoolController))) {
+                        return 'Required';
+                      }
                     }
 
                     return null;
@@ -1229,9 +1233,7 @@ class _AddState extends State<Add> {
                         _poaController.clear();
                         _ygschoolController.clear();
                       });
-                    } else {
-                      print(0000);
-                    }
+                    } else {}
                   },
                   child: Text('Add', style: TextStyle(color: Colors.white)),
                 ),
@@ -3202,7 +3204,10 @@ class _AddState extends State<Add> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     onPressed: () {
-                      confettiController.play();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MainScreen()),
+                      );
                     },
                     color: Color.fromRGBO(20, 126, 169, 1),
                     child: Text('Done', style: TextStyle(color: Colors.white)),
