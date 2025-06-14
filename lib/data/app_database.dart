@@ -157,16 +157,17 @@ class AppDatabase extends _$AppDatabase {
   }
 
 // Future<List<FullYouthProfile>> getAllYouthProfiles({
-Future<Map<String,dynamic>> getAllYouthProfiles({
+Future<Map<String, dynamic>> getAllYouthProfiles({
   String searchKeyword = '',
   int limit = 10,
   int offset = 0,
 }) async {
-  final query = select(youthUsers)
-    ..limit(limit, offset: offset);
+  final query = select(youthUsers)..limit(limit, offset: offset);
+
+  List<int> userIds = [];
 
   if (searchKeyword.isNotEmpty) {
-    final userIds = await (select(youthInfos)
+    userIds = await (select(youthInfos)
           ..where((tbl) => tbl.fname.like('%$searchKeyword%') |
                            tbl.lname.like('%$searchKeyword%')))
         .map((info) => info.youthUserId)
@@ -177,6 +178,7 @@ Future<Map<String,dynamic>> getAllYouthProfiles({
 
   final users = await query.get();
   final List<FullYouthProfile> result = [];
+
   for (final user in users) {
     final youthInfo = await (select(youthInfos)
           ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
@@ -200,10 +202,33 @@ Future<Map<String,dynamic>> getAllYouthProfiles({
     );
   }
 
+  // 🔢 Count total matching records (no limit)
+  final countQuery = selectOnly(youthUsers)
+    ..addColumns([youthUsers.youthUserId.count()]);
+
+  if (searchKeyword.isNotEmpty && userIds.isNotEmpty) {
+    countQuery.where(youthUsers.youthUserId.isIn(userIds));
+  }
+
+  final countRow = await countQuery.getSingle();
+  final totalCount = countRow.read(youthUsers.youthUserId.count()) ?? 0;
+
+  // 📄 Calculate pages left
+  final int totalPages = (totalCount / limit).ceil();
+  final int currentPage = (offset / limit).floor() + 1;
+  final int pagesLeft = totalPages - currentPage;
+  final int rowsLeft = (totalCount - (currentPage * limit));
+
   return {
-    'youth' : result
+    'youth': result,
+    'pagesLeft': pagesLeft,
+    'totalPages': totalPages,
+    'totalCount': totalCount,
+    'currentPage': currentPage,
+    'rowsLeft': rowsLeft < 0 ? 0 : rowsLeft,
   };
 }
+
 
   @override
   int get schemaVersion => 2;

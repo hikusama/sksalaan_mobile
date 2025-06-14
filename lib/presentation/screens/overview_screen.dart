@@ -14,61 +14,59 @@ class _OverviewScreenState extends State<OverviewScreen> {
   final db = DatabaseProvider.instance;
 
   List<FullYouthProfile> _youthProfiles = [];
-  late ScrollController _scrollController;
 
   bool _isLoadingMore = false;
   int _offset = 0;
-  final int _limit = 15;
-  bool _hasMore = true;
+  int pagesLeft = 0;
+  int totalPages = 0;
+  int currentPage = 0;
+  int totalCount = 0;
+  int rowsLeft = 0;
+
+  final int _limit = 5;
   bool _isInitialLoading = true;
 
- 
-@override
-void initState() {
-  super.initState();
-  _scrollController = ScrollController()..addListener(_scrollListener);
-  _loadInitialData();
-}
-
-Future<void> _loadInitialData() async {
-  final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
-  setState(() {
-    _youthProfiles = List<FullYouthProfile>.from(res['youth']);
-    _offset += _limit;
-    _hasMore = res['youth'].length == _limit;
-     _isInitialLoading = false;
-  });
-}
-
-
-void _scrollListener() {
-  if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200 &&
-      !_isLoadingMore &&
-      _hasMore) {
-        print('hello');
-    _loadMoreData();
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
   }
-}
 
+  Future<void> _loadInitialData() async {
+    final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
+    setState(() {
+      _youthProfiles = List<FullYouthProfile>.from(res['youth']);
+      _offset += _limit;
+      _isInitialLoading = false;
+      pagesLeft = res['pagesLeft'];
+      totalCount = res['totalCount'];
+      totalPages = res['totalPages'];
+      currentPage = res['currentPage'];
+      rowsLeft = res['rowsLeft'];
+    });
+  }
 
-Future<void> _loadMoreData() async {
-  setState(() {
-    _isLoadingMore = true;
-  });
+  Future<void> _loadMoreData() async {
+    setState(() {
+      _isLoadingMore = true;
+    });
 
-  final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
-  final List<FullYouthProfile> moreProfiles =
-      List<FullYouthProfile>.from(res['youth']);
+    final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
+    final List<FullYouthProfile> moreProfiles = List<FullYouthProfile>.from(
+      res['youth'],
+    );
 
-  setState(() {
-    _youthProfiles.addAll(moreProfiles);
-    _offset += _limit;
-    _hasMore = moreProfiles.length == _limit;
-    _isLoadingMore = false;
-  });
-}
-
+    setState(() {
+      _youthProfiles.addAll(moreProfiles);
+      _offset += _limit;
+      _isLoadingMore = false;
+      pagesLeft = res['pagesLeft'];
+      totalCount = res['totalCount'];
+      totalPages = res['totalPages'];
+      currentPage = res['currentPage'];
+      rowsLeft = res['rowsLeft'];
+    });
+  }
 
   int clicked = 0;
   @override
@@ -87,15 +85,12 @@ Future<void> _loadMoreData() async {
                         : RefreshIndicator(
                           onRefresh: () async {
                             _offset = 0;
-                            _hasMore = true;
                             _isInitialLoading = true;
                             await _loadInitialData();
                           },
                           child: Scrollbar(
-                            controller: _scrollController,
                             thumbVisibility: true,
                             child: ListView.builder(
-                              controller: _scrollController,
                               itemCount:
                                   _youthProfiles.length +
                                   (_isLoadingMore ? 1 : 0),
@@ -298,7 +293,90 @@ Future<void> _loadMoreData() async {
             ],
           ),
         ),
-        index + 1 == proflen ? Text('hello') : SizedBox.shrink(),
+        index + 1 == proflen ? SizedBox(height: 5) : SizedBox.shrink(),
+        (index + 1 == proflen && pagesLeft != 0)
+            ? MaterialButton(
+              onPressed: () => _loadMoreData(),
+              child: Text('Load more'),
+            )
+            : SizedBox.shrink(),
+        (index + 1 == proflen && pagesLeft == 0) ? SizedBox(height:15,) :  SizedBox.shrink(),
+        (index + 1 == proflen && pagesLeft == 0)
+            ? Text('You\'re all caught up.')
+            : SizedBox.shrink(),
+        (index + 1 == proflen && pagesLeft == 0) ? SizedBox(height:15,) :  SizedBox.shrink(),
+        index + 1 == proflen
+            ? Container(
+              padding: EdgeInsets.fromLTRB(30, 0, 30, 15),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Text(
+                            pagesLeft.toString(),
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text('Pages left', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            currentPage.toString(),
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text('Current page', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            totalPages.toString(),
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text('Total pages', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Text(
+                            rowsLeft.toString(),
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text('Rows left', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            totalCount.toString(),
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text('Total rows', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+            : SizedBox.shrink(),
       ],
     );
   }
