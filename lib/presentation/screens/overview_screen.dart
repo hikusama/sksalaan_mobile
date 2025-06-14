@@ -12,18 +12,63 @@ class OverviewScreen extends StatefulWidget {
 
 class _OverviewScreenState extends State<OverviewScreen> {
   final db = DatabaseProvider.instance;
-  late Future<List<FullYouthProfile>> _youthProfilesFuture;
 
-  @override
-  void initState() {
-    super.initState();
-    _youthProfilesFuture = loadData();
-  }
+  List<FullYouthProfile> _youthProfiles = [];
+  late ScrollController _scrollController;
 
-  Future<List<FullYouthProfile>> loadData() async {
-    final res = await db.getAllYouthProfiles(offset: 1, searchKeyword: '');
-    return res['youth'];
+  bool _isLoadingMore = false;
+  int _offset = 0;
+  final int _limit = 15;
+  bool _hasMore = true;
+  bool _isInitialLoading = true;
+
+ 
+@override
+void initState() {
+  super.initState();
+  _scrollController = ScrollController()..addListener(_scrollListener);
+  _loadInitialData();
+}
+
+Future<void> _loadInitialData() async {
+  final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
+  setState(() {
+    _youthProfiles = List<FullYouthProfile>.from(res['youth']);
+    _offset += _limit;
+    _hasMore = res['youth'].length == _limit;
+     _isInitialLoading = false;
+  });
+}
+
+
+void _scrollListener() {
+  if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200 &&
+      !_isLoadingMore &&
+      _hasMore) {
+        print('hello');
+    _loadMoreData();
   }
+}
+
+
+Future<void> _loadMoreData() async {
+  setState(() {
+    _isLoadingMore = true;
+  });
+
+  final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
+  final List<FullYouthProfile> moreProfiles =
+      List<FullYouthProfile>.from(res['youth']);
+
+  setState(() {
+    _youthProfiles.addAll(moreProfiles);
+    _offset += _limit;
+    _hasMore = moreProfiles.length == _limit;
+    _isLoadingMore = false;
+  });
+}
+
 
   int clicked = 0;
   @override
@@ -36,39 +81,44 @@ class _OverviewScreenState extends State<OverviewScreen> {
             children: [
               _buildDashboard(),
               Expanded(
-                child: FutureBuilder<List<FullYouthProfile>>(
-                  future: _youthProfilesFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No records found.'));
-                    }
-
-                    final profiles = snapshot.data!;
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        setState(() {});
-                      },
-                      child: Scrollbar(
-                        thumbVisibility: true,
-                        child: ListView.builder(
-                          itemCount: profiles.length,
-                          itemBuilder: (context, index) {
-                            return _designRecord(
-                              profiles[index],
-                              context,
-                              index,
-                              profiles.length,
-                            );
+                child:
+                    _isInitialLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : RefreshIndicator(
+                          onRefresh: () async {
+                            _offset = 0;
+                            _hasMore = true;
+                            _isInitialLoading = true;
+                            await _loadInitialData();
                           },
+                          child: Scrollbar(
+                            controller: _scrollController,
+                            thumbVisibility: true,
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              itemCount:
+                                  _youthProfiles.length +
+                                  (_isLoadingMore ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == _youthProfiles.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+
+                                return _designRecord(
+                                  _youthProfiles[index],
+                                  context,
+                                  index,
+                                  _youthProfiles.length,
+                                );
+                              },
+                            ),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
               ),
             ],
           ),
