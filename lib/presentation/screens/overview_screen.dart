@@ -15,14 +15,14 @@ class _OverviewScreenState extends State<OverviewScreen> {
   late Future<List<FullYouthProfile>> _youthProfilesFuture;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    loadData();
-    
+    _youthProfilesFuture = loadData();
   }
- Future<void> loadData() async {
-    final res = await db.getAllYouthProfiles(offset: 1,searchKeyword: '');
-    _youthProfilesFuture = res['youth'];
+
+  Future<List<FullYouthProfile>> loadData() async {
+    final res = await db.getAllYouthProfiles(offset: 1, searchKeyword: '');
+    return res['youth'];
   }
 
   int clicked = 0;

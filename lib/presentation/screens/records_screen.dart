@@ -17,15 +17,16 @@ class RecordsScreenState extends State<RecordsScreen> {
   bool isDeleteSuccess = false;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    loadData();
-    
+    _youthProfilesFuture = loadData();
   }
- Future<void> loadData() async {
-    final res = await db.getAllYouthProfiles(offset: 1,searchKeyword: '');
-    _youthProfilesFuture = res['youth'];
+
+  Future<List<FullYouthProfile>> loadData() async {
+    final res = await db.getAllYouthProfiles(offset: 1, searchKeyword: '');
+    return res['youth'];
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -177,7 +177,6 @@ Future<Map<String,dynamic>> getAllYouthProfiles({
 
   final users = await query.get();
   final List<FullYouthProfile> result = [];
-  Map<String,dynamic> allData = {};
   for (final user in users) {
     final youthInfo = await (select(youthInfos)
           ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
@@ -202,7 +201,7 @@ Future<Map<String,dynamic>> getAllYouthProfiles({
   }
 
   return {
-    'youth' : allData
+    'youth' : result
   };
 }
 
