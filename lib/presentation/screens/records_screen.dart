@@ -24,6 +24,7 @@ class RecordsScreenState extends State<RecordsScreen> {
   bool isDeleteSuccess = false;
   final int _limit = 5;
   bool _isInitialLoading = true;
+  String sort = 'regiteredAt';
 
   @override
   void initState() {
@@ -84,9 +85,8 @@ class RecordsScreenState extends State<RecordsScreen> {
           child: Column(
             children: [
               _builConHeader(),
-              SizedBox(height: 15),
+              SizedBox(height: 5),
               _builSummary(),
-              SizedBox(height: 8),
               Expanded(
                 child:
                     _isInitialLoading
@@ -141,26 +141,29 @@ class RecordsScreenState extends State<RecordsScreen> {
             style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 7),
-          Row(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              InkWell(child: Row(children: [Text('Sort '), Icon(Icons.tune)])),
-              SizedBox(width: 15),
 
-              InkWell(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text('aksdjaksd'),
-                      );
-                    },
-                  );
-                },
-                child: Row(children: [Text('Filter '), Icon(Icons.filter_alt)]),
+          Row(
+            children: [
+              Text('Sort '),
+              PopupMenuButton(
+                icon: Icon(Icons.tune, color: const Color.fromARGB(255, 0, 0, 0)),
+                onSelected: (value) {},
+                itemBuilder:
+                    (context) => [
+                      PopupMenuItem(value: 'ASC', child: Text('ASC',style:TextStyle(color: sort == 'ASC' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
+                      PopupMenuItem(value: 'DESC', child: Text('DESC',style:TextStyle(color: sort == 'DESC' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: SizedBox(height: 15),
+                      ),
+                      PopupMenuItem(value: 'age', child: Text('Age',style:TextStyle(color: sort == 'age' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
+                      PopupMenuItem(value: 'fname', child: Text('Firstname',style:TextStyle(color: sort == 'fname' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
+                      PopupMenuItem(value: 'lname', child: Text('Lastname',style:TextStyle(color: sort == 'lname' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
+                      PopupMenuItem(
+                        value: 'regiteredAt',
+                        child: Text('Registered'),
+                      ),
+                    ],
               ),
             ],
           ),
