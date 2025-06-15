@@ -28,7 +28,6 @@ class _MainScreenState extends State<MainScreen> {
       _selectedIndex = index;
     });
   }
-  
 
   Future<bool> _onWillPop(BuildContext context) async {
     // You can show a dialog or handle logic here
@@ -69,6 +68,7 @@ class _MainScreenState extends State<MainScreen> {
       child: Scaffold(
         body: _screens[_selectedIndex],
         bottomNavigationBar: BottomAppBar(
+                      color: const Color.fromARGB(255, 30, 65, 80),
           shape: const CircularNotchedRectangle(),
           notchMargin: 18.0,
           child: Row(
@@ -122,7 +122,7 @@ class _MainScreenState extends State<MainScreen> {
             color:
                 isSelected
                     ? const Color.fromRGBO(20, 126, 169, 1)
-                    : const Color.fromARGB(144, 67, 67, 67),
+                    : const Color.fromARGB(144, 200, 200, 200),
           ),
           Text(
             label,
@@ -131,7 +131,7 @@ class _MainScreenState extends State<MainScreen> {
               color:
                   isSelected
                       ? const Color.fromRGBO(20, 126, 169, 1)
-                    : const Color.fromARGB(144, 67, 67, 67),
+                      : const Color.fromARGB(144, 200, 200, 200),
             ),
           ),
         ],

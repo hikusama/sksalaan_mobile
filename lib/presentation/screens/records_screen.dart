@@ -75,6 +75,7 @@ class RecordsScreenState extends State<RecordsScreen> {
           width: double.infinity,
           child: Column(
             children: [
+              _builContLogo(),
               Expanded(
                 child:
                     _isInitialLoading
@@ -117,20 +118,28 @@ class RecordsScreenState extends State<RecordsScreen> {
       ),
     );
   }
-  // Widget _builContLogo() {
-  //   return Container(
-  //     height: 250,
-  //     decoration: BoxDecoration(color: Color.fromARGB(0, 11, 48, 65)),
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.end,
-  //       children: [
-  //         Image.asset('assets/images/logo.png'),
-  //         Text('SK Youth records'),
-  //         SizedBox(height: 10),
-  //       ],
-  //     ),
-  //   );
-  // }
+
+  Widget _builContLogo() {
+    return Container(
+      height: 200,
+      width: double.infinity,
+      decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 30, 65, 80),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(height: 100, child: Image.asset('assets/images/logo.png')),
+          Text('SK Youth records'),
+          SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
 
   Widget _buildViewModal() {
     return Container(
@@ -173,7 +182,7 @@ class RecordsScreenState extends State<RecordsScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
           padding: const EdgeInsets.fromLTRB(17, 0, 8, 0),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(181, 20, 127, 169),
+            color: const Color.fromARGB(181, 11, 67, 90),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               width: 2,
