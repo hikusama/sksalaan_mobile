@@ -163,7 +163,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
           padding: const EdgeInsets.fromLTRB(17, 0, 8, 0),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(181, 20, 127, 169),
+            color: const Color.fromARGB(181, 11, 67, 90),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               width: 2,

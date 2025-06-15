@@ -28,11 +28,15 @@ class RecordsScreenState extends State<RecordsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+    _loadInitialData('');
   }
 
-  Future<void> _loadInitialData() async {
-    final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
+  Future<void> _loadInitialData(String arg) async {
+    final res = await db.getAllYouthProfiles(
+      offset: _offset,
+      limit: _limit,
+      searchKeyword: arg,
+    );
     setState(() {
       _youthProfiles = List<FullYouthProfile>.from(res['youth']);
       _offset += _limit;
@@ -50,7 +54,11 @@ class RecordsScreenState extends State<RecordsScreen> {
       _isLoadingMore = true;
     });
 
-    final res = await db.getAllYouthProfiles(offset: _offset, limit: _limit);
+    final res = await db.getAllYouthProfiles(
+      offset: _offset,
+      limit: _limit,
+      searchKeyword: '',
+    );
     final List<FullYouthProfile> moreProfiles = List<FullYouthProfile>.from(
       res['youth'],
     );
@@ -75,7 +83,10 @@ class RecordsScreenState extends State<RecordsScreen> {
           width: double.infinity,
           child: Column(
             children: [
-              _builContLogo(),
+              _builConHeader(),
+              SizedBox(height: 15),
+              _builSummary(),
+              SizedBox(height: 8),
               Expanded(
                 child:
                     _isInitialLoading
@@ -84,7 +95,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                           onRefresh: () async {
                             _offset = 0;
                             _isInitialLoading = true;
-                            await _loadInitialData();
+                            await _loadInitialData('');
                           },
                           child: Scrollbar(
                             thumbVisibility: true,
@@ -119,12 +130,51 @@ class RecordsScreenState extends State<RecordsScreen> {
     );
   }
 
-  Widget _builContLogo() {
+  Widget _builSummary() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 18),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Records',
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 7),
+          Row(
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(child: Row(children: [Text('Sort '), Icon(Icons.tune)])),
+              SizedBox(width: 15),
+
+              InkWell(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Text('aksdjaksd'),
+                      );
+                    },
+                  );
+                },
+                child: Row(children: [Text('Filter '), Icon(Icons.filter_alt)]),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _builConHeader() {
     return Container(
-      height: 200,
+      height: 230,
       width: double.infinity,
       decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 30, 65, 80),
+        color: const Color.fromARGB(255, 30, 65, 80),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
@@ -134,8 +184,54 @@ class RecordsScreenState extends State<RecordsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(height: 100, child: Image.asset('assets/images/logo.png')),
-          Text('SK Youth records'),
+          Text(
+            'SK Youth records',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
           SizedBox(height: 10),
+          SizedBox(
+            width: 200,
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    labelStyle: TextStyle(fontSize: 12),
+                    hintText: 'Search',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(150)),
+                    ),
+                    isDense: true,
+                    contentPadding: EdgeInsets.fromLTRB(45, 10, 10, 10),
+                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.black),
+                  onChanged: (value) {
+                    _offset = 0;
+                    _isInitialLoading = true;
+                    _loadInitialData(value.trim());
+                  },
+                ),
+                Positioned(
+                  left: 10,
+                  child: Container(
+                    padding: EdgeInsets.only(right: 5),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(width: 1.0, color: Colors.black),
+                      ),
+                    ),
+                    child: Icon(Icons.search, color: Colors.black, size: 23),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -578,6 +674,7 @@ class RecordsScreenState extends State<RecordsScreen> {
         (index + 1 == proflen && pagesLeft == 0)
             ? SizedBox(height: 15)
             : SizedBox.shrink(),
+        (_youthProfiles.isEmpty) ? Text('No records.') : SizedBox.shrink(),
         (index + 1 == proflen && pagesLeft == 0)
             ? Text('You\'re all caught up.')
             : SizedBox.shrink(),
