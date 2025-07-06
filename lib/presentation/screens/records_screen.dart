@@ -12,6 +12,8 @@ class RecordsScreen extends StatefulWidget {
 
 class RecordsScreenState extends State<RecordsScreen> {
   final db = DatabaseProvider.instance;
+
+  
   bool _isLoadingMore = false;
   int _offset = 0;
   int pagesLeft = 0;
@@ -78,53 +80,51 @@ class RecordsScreenState extends State<RecordsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            children: [
-              _builConHeader(),
-              SizedBox(height: 5),
-              _builSummary(),
-              Expanded(
-                child:
-                    _isInitialLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : RefreshIndicator(
-                          onRefresh: () async {
-                            _offset = 0;
-                            _isInitialLoading = true;
-                            await _loadInitialData('');
-                          },
-                          child: Scrollbar(
-                            thumbVisibility: true,
-                            child: ListView.builder(
-                              itemCount:
-                                  _youthProfiles.length +
-                                  (_isLoadingMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index == _youthProfiles.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-                                return _designRecord(
-                                  _youthProfiles[index],
-                                  context,
-                                  index,
-                                  _youthProfiles.length,
+    return SafeArea(
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          children: [
+            _builConHeader(),
+            SizedBox(height: 5),
+            _builSummary(),
+            Expanded(
+              child:
+                  _isInitialLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : RefreshIndicator(
+                        onRefresh: () async {
+                          _offset = 0;
+                          _isInitialLoading = true;
+                          await _loadInitialData('');
+                        },
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            itemCount:
+                                _youthProfiles.length +
+                                (_isLoadingMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == _youthProfiles.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
                                 );
-                              },
-                            ),
+                              }
+                              return _designRecord(
+                                _youthProfiles[index],
+                                context,
+                                index,
+                                _youthProfiles.length,
+                              );
+                            },
                           ),
                         ),
-              ),
-            ],
-          ),
+                      ),
+            ),
+          ],
         ),
       ),
     );
@@ -146,19 +146,77 @@ class RecordsScreenState extends State<RecordsScreen> {
             children: [
               Text('Sort '),
               PopupMenuButton(
-                icon: Icon(Icons.tune, color: const Color.fromARGB(255, 0, 0, 0)),
+                icon: Icon(
+                  Icons.tune,
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                ),
                 onSelected: (value) {},
                 itemBuilder:
                     (context) => [
-                      PopupMenuItem(value: 'ASC', child: Text('ASC',style:TextStyle(color: sort == 'ASC' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
-                      PopupMenuItem(value: 'DESC', child: Text('DESC',style:TextStyle(color: sort == 'DESC' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
+                      PopupMenuItem(
+                        value: 'ASC',
+                        child: Text(
+                          'ASC',
+                          style: TextStyle(
+                            color:
+                                sort == 'ASC'
+                                    ? Color.fromARGB(255, 30, 65, 80)
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'DESC',
+                        child: Text(
+                          'DESC',
+                          style: TextStyle(
+                            color:
+                                sort == 'DESC'
+                                    ? Color.fromARGB(255, 30, 65, 80)
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
                       PopupMenuItem(
                         value: 'delete',
                         child: SizedBox(height: 15),
                       ),
-                      PopupMenuItem(value: 'age', child: Text('Age',style:TextStyle(color: sort == 'age' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
-                      PopupMenuItem(value: 'fname', child: Text('Firstname',style:TextStyle(color: sort == 'fname' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
-                      PopupMenuItem(value: 'lname', child: Text('Lastname',style:TextStyle(color: sort == 'lname' ? Color.fromARGB(255, 30, 65, 80) : Colors.black))),
+                      PopupMenuItem(
+                        value: 'age',
+                        child: Text(
+                          'Age',
+                          style: TextStyle(
+                            color:
+                                sort == 'age'
+                                    ? Color.fromARGB(255, 30, 65, 80)
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'fname',
+                        child: Text(
+                          'Firstname',
+                          style: TextStyle(
+                            color:
+                                sort == 'fname'
+                                    ? Color.fromARGB(255, 30, 65, 80)
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'lname',
+                        child: Text(
+                          'Lastname',
+                          style: TextStyle(
+                            color:
+                                sort == 'lname'
+                                    ? Color.fromARGB(255, 30, 65, 80)
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
                       PopupMenuItem(
                         value: 'regiteredAt',
                         child: Text('Registered'),
