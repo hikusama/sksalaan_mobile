@@ -1,4 +1,4 @@
-# skyouthprofiling
+# skyouthprofiling (mobile android)
 
 - DB: Drift
 <br>
