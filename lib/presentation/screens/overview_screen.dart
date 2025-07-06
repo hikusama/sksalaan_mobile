@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:skyouthprofiling/data/view/edit.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key});
@@ -90,28 +91,32 @@ class _OverviewScreenState extends State<OverviewScreen> {
                           },
                           child: Scrollbar(
                             thumbVisibility: true,
-                            child: ListView.builder(
-                              itemCount:
-                                  _youthProfiles.length +
-                                  (_isLoadingMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index == _youthProfiles.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
+                            child:
+                                _youthProfiles.isEmpty
+                                    ? Text('No record...')
+                                    : ListView.builder(
+                                      itemCount:
+                                          _youthProfiles.length +
+                                          (_isLoadingMore ? 1 : 0),
+                                      itemBuilder: (context, index) {
+                                        if (index == _youthProfiles.length) {
+                                          return const Padding(
+                                            padding: EdgeInsets.all(16),
+                                            child: Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          );
+                                        }
 
-                                return _designRecord(
-                                  _youthProfiles[index],
-                                  context,
-                                  index,
-                                  _youthProfiles.length,
-                                );
-                              },
-                            ),
+                                        return _designRecord(
+                                          _youthProfiles[index],
+                                          context,
+                                          index,
+                                          _youthProfiles.length,
+                                        );
+                                      },
+                                    ),
                           ),
                         ),
               ),
@@ -127,8 +132,132 @@ class _OverviewScreenState extends State<OverviewScreen> {
       height: 250,
       margin: const EdgeInsets.fromLTRB(10, 5, 10, 20),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 73, 73, 73),
+        color: const Color.fromARGB(255, 30, 65, 80),
         borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 30),
+          Container(
+            padding: EdgeInsets.only(left: 15),
+            child: Text(
+              "Youth Migration Status",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+              textAlign: TextAlign.start,
+            ),
+          ),
+          SizedBox(height: 5),
+          Container(
+            margin: EdgeInsets.only(left: 15),
+            height: 3,
+            width: 150,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          SizedBox(height: 30),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(width: 10),
+
+              /// 📊 Pie Chart Section
+              Expanded(
+                flex: 4,
+                child: SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 0,
+                      sections: [
+                        PieChartSectionData(
+                          value: 40,
+                          color: Colors.blue,
+                          radius: 60,
+                          title: '40%',
+                          titleStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          titlePositionPercentageOffset: 1.2,
+                        ),
+                        PieChartSectionData(
+                          value: 30,
+                          color: Colors.red,
+                          radius: 60,
+                          title: '30%',
+                          titleStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          titlePositionPercentageOffset: 1.2,
+                        ),
+                        PieChartSectionData(
+                          value: 30,
+                          color: Colors.green,
+                          radius: 60,
+                          title: '30%',
+                          titleStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          titlePositionPercentageOffset: 1.2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildLegend(Colors.blue, "Submitted"),
+                    _buildLegend(Colors.red, "Failed"),
+                    _buildLegend(Colors.green, "Standby"),
+                    SizedBox(height: 25),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegend(Color color, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
+        ],
       ),
     );
   }
@@ -300,11 +429,15 @@ class _OverviewScreenState extends State<OverviewScreen> {
               child: Text('Load more'),
             )
             : SizedBox.shrink(),
-        (index + 1 == proflen && pagesLeft == 0) ? SizedBox(height:15,) :  SizedBox.shrink(),
+        (index + 1 == proflen && pagesLeft == 0)
+            ? SizedBox(height: 15)
+            : SizedBox.shrink(),
         (index + 1 == proflen && pagesLeft == 0)
             ? Text('You\'re all caught up.')
             : SizedBox.shrink(),
-        (index + 1 == proflen && pagesLeft == 0) ? SizedBox(height:15,) :  SizedBox.shrink(),
+        (index + 1 == proflen && pagesLeft == 0)
+            ? SizedBox(height: 15)
+            : SizedBox.shrink(),
         index + 1 == proflen
             ? Container(
               padding: EdgeInsets.fromLTRB(30, 0, 30, 15),

@@ -175,7 +175,6 @@ class AppDatabase extends _$AppDatabase {
         .map((info) => info.youthUserId)
         .get();
 
-    // ⛔ If no matches found, return empty results immediately
     if (userIds.isEmpty) {
       return {
         'youth': [],
@@ -190,7 +189,6 @@ class AppDatabase extends _$AppDatabase {
     query.where((tbl) => tbl.youthUserId.isIn(userIds));
   }
 
-  // Execute the main query
   final users = await query.get();
   final result = <FullYouthProfile>[];
 

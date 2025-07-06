@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // import 'package:skyouthprofiling/data/view/insert.dart';
 import 'presentation/main_screen.dart';
 
-void main() async {
+void main()  {
 
   runApp(const MyApp());
 }

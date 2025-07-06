@@ -13,7 +13,6 @@ class RecordsScreen extends StatefulWidget {
 class RecordsScreenState extends State<RecordsScreen> {
   final db = DatabaseProvider.instance;
 
-  
   bool _isLoadingMore = false;
   int _offset = 0;
   int pagesLeft = 0;
@@ -99,28 +98,31 @@ class RecordsScreenState extends State<RecordsScreen> {
                           await _loadInitialData('');
                         },
                         child: Scrollbar(
-                          thumbVisibility: true,
-                          child: ListView.builder(
-                            itemCount:
-                                _youthProfiles.length +
-                                (_isLoadingMore ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == _youthProfiles.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
+                          thumbVisibility: _youthProfiles.isEmpty ? false : true,
+                          child:
+                              _youthProfiles.isEmpty
+                                  ? Text('No record...')
+                                  : ListView.builder(
+                                    itemCount:
+                                        _youthProfiles.length +
+                                        (_isLoadingMore ? 1 : 0),
+                                    itemBuilder: (context, index) {
+                                      if (index == _youthProfiles.length) {
+                                        return const Padding(
+                                          padding: EdgeInsets.all(16),
+                                          child: Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+                                      }
+                                      return _designRecord(
+                                        _youthProfiles[index],
+                                        context,
+                                        index,
+                                        _youthProfiles.length,
+                                      );
+                                    },
                                   ),
-                                );
-                              }
-                              return _designRecord(
-                                _youthProfiles[index],
-                                context,
-                                index,
-                                _youthProfiles.length,
-                              );
-                            },
-                          ),
                         ),
                       ),
             ),
