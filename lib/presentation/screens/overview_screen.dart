@@ -144,7 +144,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
             child: Text(
               "Youth Migration Status",
               style: TextStyle(
-                color: Colors.white,
+                color: const Color.fromARGB(191, 255, 255, 255),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -157,7 +157,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
             height: 3,
             width: 150,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color.fromARGB(157, 255, 255, 255),
               borderRadius: BorderRadius.circular(20),
             ),
           ),
