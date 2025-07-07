@@ -25,59 +25,82 @@ class _MigrateScreenState extends State<MigrateScreen> {
             onTapCancel: () => setState(() => isHv = false),
             onLongPress: () {
               setState(() {
-                isPressed ? isPressed = false : isPressed = true;
+                isPressed = !isPressed;
               });
             },
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (isPressed)
+                  SizedBox(
+                    height: 250,
+                    width: 250,
+                    child: CircularProgressIndicator(
+                      value: null,
+                      strokeWidth: 6,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        const Color.fromARGB(255, 113, 63, 7),
+                      ),
+                      backgroundColor: Colors.transparent,
+                    ),
+                  ),
 
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 200),
-              height: isPressed ? 200 : 300,
-              width: isPressed ? 200 : 300,
-              decoration: BoxDecoration(
-                color:
-                    isPressed
-                        ? const Color.fromARGB(255, 122, 60, 2)
-                        : const Color.fromARGB(205, 27, 57, 70),
-                borderRadius: BorderRadius.circular(150),
-                border: Border.all(
-                  width: 4,
-                  color: const Color.fromARGB(255, 6, 64, 91),
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 200),
+                  height: isPressed ? 200 : 300,
+                  width: isPressed ? 200 : 300,
+                  decoration: BoxDecoration(
+                    color:
+                        isPressed
+                            ? isHv
+                                ? const Color.fromARGB(146, 113, 64, 7)
+                                : const Color.fromARGB(255, 113, 63, 7)
+                            : isHv
+                            ? const Color.fromARGB(100, 27, 57, 70)
+                            : const Color.fromARGB(205, 27, 57, 70),
+
+                    borderRadius: BorderRadius.circular(150),
+                    border: Border.all(
+                      width: 4,
+                      color: isPressed ? const Color.fromARGB(255, 87, 51, 9) : const Color.fromARGB(255, 6, 64, 91),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      isPressed
+                          ? Icon(
+                            Icons.import_export_outlined,
+                            color: Colors.white,
+                            size: 35,
+                          )
+                          : Text(
+                            'Go',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 35,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                      isPressed
+                          ? Text(
+                            'Migrating data',
+                            style: TextStyle(color: Colors.white, fontSize: 13),
+                          )
+                          : Text(
+                            '< Long press to start >',
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                      isPressed
+                          ? Text(
+                            '< Long press to abort >',
+                            style: TextStyle(color: Colors.white, fontSize: 13),
+                          )
+                          : SizedBox.shrink(),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  isPressed
-                      ? Icon(
-                        Icons.import_export_outlined,
-                        color: Colors.white,
-                        size: 35,
-                      )
-                      : Text(
-                        'Go',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 35,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                  isPressed
-                      ? Text(
-                        'Migrating data',
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                      )
-                      : Text(
-                        '< Long press to start >',
-                        style: TextStyle(color: Colors.white, fontSize: 15),
-                      ),
-                  isPressed
-                      ? Text(
-                        '< Long press to abort >',
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                      )
-                      : SizedBox.shrink(),
-                ],
-              ),
+              ],
             ),
           ),
         ],
