@@ -8,6 +8,7 @@ class MigrateScreen extends StatefulWidget {
 }
 
 bool isHv = false;
+bool isPressed = false;
 
 class _MigrateScreenState extends State<MigrateScreen> {
   @override
@@ -20,17 +21,21 @@ class _MigrateScreenState extends State<MigrateScreen> {
         children: [
           InkWell(
             borderRadius: BorderRadius.circular(150),
+            onTapDown: (_) => setState(() => isHv = true),
+            onTapCancel: () => setState(() => isHv = false),
             onLongPress: () {
               setState(() {
-                isHv ? isHv = false : isHv = true;
+                isPressed ? isPressed = false : isPressed = true;
               });
             },
-            child: Container(
-              height: isHv ? 200 : 300,
-              width: isHv ? 200 : 300,
+
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 200),
+              height: isPressed ? 200 : 300,
+              width: isPressed ? 200 : 300,
               decoration: BoxDecoration(
                 color:
-                    isHv
+                    isPressed
                         ? const Color.fromARGB(255, 122, 60, 2)
                         : const Color.fromARGB(205, 27, 57, 70),
                 borderRadius: BorderRadius.circular(150),
@@ -42,7 +47,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  isHv
+                  isPressed
                       ? Icon(
                         Icons.import_export_outlined,
                         color: Colors.white,
@@ -56,7 +61,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                  isHv
+                  isPressed
                       ? Text(
                         'Migrating data',
                         style: TextStyle(color: Colors.white, fontSize: 13),
@@ -65,7 +70,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
                         '< Long press to start >',
                         style: TextStyle(color: Colors.white, fontSize: 15),
                       ),
-                  isHv
+                  isPressed
                       ? Text(
                         '< Long press to abort >',
                         style: TextStyle(color: Colors.white, fontSize: 13),
