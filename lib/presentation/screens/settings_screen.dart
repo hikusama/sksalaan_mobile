@@ -76,8 +76,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please Input Host IP';
                       }
-                      if (value.length > 14) {
-                        return '14 characters only allowed';
+                      if (value.length > 20) {
+                        return '20 characters only allowed';
                       }
                       return null;
                     },

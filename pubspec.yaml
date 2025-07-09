@@ -30,6 +30,7 @@ environment:
 dependencies:
   confetti: ^0.7.0
   cupertino_icons: ^1.0.8
+  dio: ^5.8.0+1
   drift: ^2.26.1
   fl_chart: ^1.0.0
   flutter:
@@ -49,7 +50,10 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
-
+flutter_launcher_icons:
+  android: "ic_launcher"
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#0B3041"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter packages.
