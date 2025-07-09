@@ -29,7 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _setIp() async {
-    await storage.write(key: 'ip', value: ipTextController.text);
+    await storage.write(key: 'ip', value: ipTextController.text.trim());
   }
 
   @override

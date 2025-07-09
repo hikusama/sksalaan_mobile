@@ -72,6 +72,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
   int clicked = 0;
   @override
   Widget build(BuildContext context) {
+    FocusScope.of(context).unfocus();
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
