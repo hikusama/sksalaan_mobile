@@ -23,14 +23,30 @@ class _OverviewScreenState extends State<OverviewScreen> {
   int currentPage = 0;
   int totalCount = 0;
   int rowsLeft = 0;
+  int sm = 0;
+  int fl = 0;
+  int sb = 0;
 
   final int _limit = 5;
   bool _isInitialLoading = true;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadStats();
     _loadInitialData();
+  }
+
+  Future<void> _loadStats() async {
+    final stat = await db.getStatus();
+
+    setState(() {
+      isLoading = false;
+      sm = stat['Submitted'];
+      fl = stat['Failed'];
+      sb = stat['Standby'];
+    });
   }
 
   Future<void> _loadInitialData() async {
@@ -72,14 +88,18 @@ class _OverviewScreenState extends State<OverviewScreen> {
   int clicked = 0;
   @override
   Widget build(BuildContext context) {
-    FocusScope.of(context).unfocus();
+    int total = sm + fl + sb;
+    double smPct = total == 0 ? 0 : sm / total * 100;
+    double flPct = total == 0 ? 0 : fl / total * 100;
+    double sbPct = total == 0 ? 0 : sb / total * 100;
+
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
           width: double.infinity,
           child: Column(
             children: [
-              _buildDashboard(),
+              _buildDashboard(sbPct, flPct, smPct, total),
               Expanded(
                 child:
                     _isInitialLoading
@@ -88,13 +108,18 @@ class _OverviewScreenState extends State<OverviewScreen> {
                           onRefresh: () async {
                             _offset = 0;
                             _isInitialLoading = true;
+                            isLoading = true;
                             await _loadInitialData();
                           },
                           child: Scrollbar(
                             thumbVisibility: true,
                             child:
                                 _youthProfiles.isEmpty
-                                    ? Text('No record...')
+                                    ? Center(
+                                      child: Text(
+                                        'No record...',
+                                      ),
+                                    )
                                     : ListView.builder(
                                       itemCount:
                                           _youthProfiles.length +
@@ -128,7 +153,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
     );
   }
 
-  Widget _buildDashboard() {
+  Widget _buildDashboard(sbPct, flPct, smPct, tot) {
     return Container(
       height: 250,
       margin: const EdgeInsets.fromLTRB(10, 5, 10, 20),
@@ -162,80 +187,113 @@ class _OverviewScreenState extends State<OverviewScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
           ),
-          SizedBox(height: 30),
+          SizedBox(height: isLoading ? 55 : 30),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment:
+                isLoading
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(width: 10),
-
-              /// 📊 Pie Chart Section
-              Expanded(
-                flex: 4,
-                child: SizedBox(
-                  width: 120,
-                  height: 120,
-                  child: PieChart(
-                    PieChartData(
-                      sectionsSpace: 2,
-                      centerSpaceRadius: 0,
-                      sections: [
-                        PieChartSectionData(
-                          value: 40,
-                          color: Colors.blue,
-                          radius: 60,
-                          title: '40%',
-                          titleStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          titlePositionPercentageOffset: 1.2,
+              isLoading
+                  ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          color: Color.fromARGB(255, 213, 213, 213),
                         ),
-                        PieChartSectionData(
-                          value: 30,
-                          color: Colors.red,
-                          radius: 60,
-                          title: '30%',
-                          titleStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          titlePositionPercentageOffset: 1.2,
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Fetching data',
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 213, 213, 213),
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
                         ),
-                        PieChartSectionData(
-                          value: 30,
-                          color: Colors.green,
-                          radius: 60,
-                          title: '30%',
-                          titleStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          titlePositionPercentageOffset: 1.2,
-                        ),
-                      ],
+                      ),
+                    ],
+                  )
+                  : Expanded(
+                    flex: 4,
+                    child: SizedBox(
+                      width: 120,
+                      height: 120,
+                      child:
+                          tot == 0
+                              ? const Center(
+                                child: Text(
+                                  'No record...',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              )
+                              : PieChart(
+                                PieChartData(
+                                  sectionsSpace: 2,
+                                  centerSpaceRadius: 0,
+                                  sections: [
+                                    PieChartSectionData(
+                                      value: sm.toDouble(),
+                                      color: Colors.green,
+                                      radius: 60,
+                                      title: '${smPct.toStringAsFixed(0)}%',
+                                      titleStyle: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                      titlePositionPercentageOffset: 1.2,
+                                    ),
+                                    PieChartSectionData(
+                                      value: fl.toDouble(),
+                                      color: Colors.red,
+                                      radius: 60,
+                                      title: '${flPct.toStringAsFixed(0)}%',
+                                      titleStyle: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                      titlePositionPercentageOffset: 1.2,
+                                    ),
+                                    PieChartSectionData(
+                                      value: sb.toDouble(),
+                                      color: Colors.orangeAccent,
+                                      radius: 60,
+                                      title: '${sbPct.toStringAsFixed(0)}%',
+                                      titleStyle: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                      titlePositionPercentageOffset: 1.2,
+                                    ),
+                                  ],
+                                ),
+                              ),
                     ),
                   ),
-                ),
-              ),
 
-              const SizedBox(width: 16),
-
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildLegend(Colors.blue, "Submitted"),
-                    _buildLegend(Colors.red, "Failed"),
-                    _buildLegend(Colors.green, "Standby"),
-                    SizedBox(height: 25),
-                  ],
+              if (!isLoading) const SizedBox(width: 16),
+              if (!isLoading)
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLegend(Colors.green, "Submitted"),
+                      _buildLegend(Colors.red, "Failed"),
+                      _buildLegend(Colors.orangeAccent, "Standby"),
+                      SizedBox(height: 25),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ],

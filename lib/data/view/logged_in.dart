@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:skyouthprofiling/service/dio_client.dart';
+import 'package:skyouthprofiling/data/app_database.dart';
 
 class LoggedIn extends StatefulWidget {
   const LoggedIn({super.key});
@@ -37,7 +38,8 @@ class _LoggedInState extends State<LoggedIn> {
       client = DioClient(ip);
     }
   }
-
+  final db = AppDatabase();
+  int scanned = 0;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -94,12 +96,15 @@ class _LoggedInState extends State<LoggedIn> {
 
                         if (isPressed == 0) {
                           setState(() => isPressed = 1); // Scanning
+                          final count = await db.countStandbyYouthUsers();
                           await Future.delayed(Duration(seconds: 2));
+                          setState(() => scanned = count); // Go
                           setState(() => isPressed = 2); // Go
                           return;
                         }
 
                         if (isPressed == 2) {
+                          if(scanned < 1) return;
                           setState(() => isPressed = 3); // Migrating
                           await Future.delayed(Duration(seconds: 3));
                           setState(() => isRequested = true); // Migrating
@@ -182,7 +187,6 @@ class _LoggedInState extends State<LoggedIn> {
                     if (isRequested) SizedBox(width: 15),
                     if (isRequested)
                       AnimatedContainer(
-                        color: Colors.black,
                         duration: Duration(milliseconds: 200),
                         width: isRequested ? 160 : 0,
                         child: SingleChildScrollView(
@@ -210,13 +214,13 @@ class _LoggedInState extends State<LoggedIn> {
       case 1:
         return _label("Scanning", "Please wait...");
       case 2:
-        return _label("Go", "Migrate data");
+        return _label("Go", "$scanned scanned data");
       case 3:
         return _label("Migrating", "Long press to abort");
       case 4:
         return _label("Start", "Scan again");
       default:
-        return _label("Scan", "Ready to start");
+        return _label("Scan", "Scan youth");
     }
   }
 
@@ -233,6 +237,8 @@ class _LoggedInState extends State<LoggedIn> {
           ),
         ),
         Text(subtitle, style: TextStyle(color: Colors.white, fontSize: 14)),
+        if(title == "Go")
+          Text('Migrate now', style: TextStyle(color: Colors.white, fontSize: 14)),
       ],
     );
   }

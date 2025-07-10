@@ -4,6 +4,7 @@ import 'package:skyouthprofiling/data/view/logged_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:skyouthprofiling/service/dio_client.dart';
 
+
 class MigrateScreen extends StatefulWidget {
   const MigrateScreen({super.key});
 
@@ -22,7 +23,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
   void initState() {
     super.initState();
     ipTextController = TextEditingController();
-    // _init();
+    _init();
   }
 
   Future<void> _init() async {

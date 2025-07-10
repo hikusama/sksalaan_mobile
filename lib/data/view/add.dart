@@ -95,7 +95,14 @@ class _AddState extends State<Add> {
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = ['unselect','Transgender', 'Agender', 'Bigender', 'Non-binary', 'Others'];
+  final List<String> gender = [
+    'unselect',
+    'Transgender',
+    'Agender',
+    'Bigender',
+    'Non-binary',
+    'Others',
+  ];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -247,7 +254,8 @@ class _AddState extends State<Add> {
                         backgroundColor: Color.fromRGBO(20, 126, 169, 1),
                       ),
                       onPressed: () async {
-                        if (_steps >= 3 || _formKeyForCurrentStep().currentState!.validate()) {
+                        if (_steps >= 3 ||
+                            _formKeyForCurrentStep().currentState!.validate()) {
                           if (_steps == 5) {
                             final db = AppDatabase();
                             int youthUserID = 0;
@@ -277,9 +285,36 @@ class _AddState extends State<Add> {
                                 await db.insertYouthInfo(
                                   YouthInfosCompanion(
                                     youthUserId: drift.Value(youthUserID),
-                                    fname: drift.Value(_fnameController.text.toUpperCase().characters.first+_fnameController.text.toString().substring(1).trim()),
-                                    mname: drift.Value(_mnameController.text.toUpperCase().characters.first+_mnameController.text.toString().substring(1).trim()),
-                                    lname: drift.Value(_lnameController.text.toUpperCase().characters.first+_lnameController.text.toString().substring(1).trim()),
+                                    fname: drift.Value(
+                                      _fnameController.text
+                                              .toUpperCase()
+                                              .characters
+                                              .first +
+                                          _fnameController.text
+                                              .toString()
+                                              .substring(1)
+                                              .trim(),
+                                    ),
+                                    mname: drift.Value(
+                                      _mnameController.text
+                                              .toUpperCase()
+                                              .characters
+                                              .first +
+                                          _mnameController.text
+                                              .toString()
+                                              .substring(1)
+                                              .trim(),
+                                    ),
+                                    lname: drift.Value(
+                                      _lnameController.text
+                                              .toUpperCase()
+                                              .characters
+                                              .first +
+                                          _lnameController.text
+                                              .toString()
+                                              .substring(1)
+                                              .trim(),
+                                    ),
 
                                     occupation: drift.Value(
                                       _occController.text.trim(),
@@ -287,7 +322,9 @@ class _AddState extends State<Add> {
                                     placeOfBirth: drift.Value(
                                       _pobController.text.trim(),
                                     ),
-                                    contactNo: drift.Value(_cnController.text.trim()),
+                                    contactNo: drift.Value(
+                                      _cnController.text.trim(),
+                                    ),
                                     noOfChildren: drift.Value(
                                       int.tryParse(_nocController.text) ?? 0,
                                     ),
@@ -304,10 +341,14 @@ class _AddState extends State<Add> {
                                       int.tryParse(_ageController.text) ?? 0,
                                     ),
                                     civilStatus: drift.Value(
-                                      civilStatsVal.toString().trim() ,
+                                      civilStatsVal.toString().trim(),
                                     ),
-                                    gender: drift.Value(genVal.toString().trim() ),
-                                    religion: drift.Value(religionVal.toString().trim()),
+                                    gender: drift.Value(
+                                      genVal.toString().trim(),
+                                    ),
+                                    religion: drift.Value(
+                                      religionVal.toString().trim(),
+                                    ),
                                     sex: drift.Value(sexVal.toString().trim()),
                                   ),
                                 );
@@ -3206,7 +3247,9 @@ class _AddState extends State<Add> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const MainScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const MainScreen(),
+                        ),
                       );
                     },
                     color: Color.fromRGBO(20, 126, 169, 1),

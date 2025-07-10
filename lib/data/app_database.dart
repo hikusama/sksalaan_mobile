@@ -114,6 +114,25 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> deleteYouthUser(int id) =>
       (delete(youthUsers)..where((t) => t.youthUserId.equals(id))).go();
+  Future<Map<String, dynamic>> getStatus() async {
+    final result =
+        await customSelect(
+          '''
+    SELECT 
+      SUM(CASE WHEN status = 'Standby' THEN 1 ELSE 0 END) AS standby,
+      SUM(CASE WHEN status = 'Submitted' THEN 1 ELSE 0 END) AS submitted,
+      SUM(CASE WHEN status = 'Failed' THEN 1 ELSE 0 END) AS failed
+    FROM youth_users
+    ''',
+          readsFrom: {youthUsers},
+        ).getSingle();
+
+    return {
+      'Standby': (result.data['standby'] ?? 0) as int,
+      'Submitted': (result.data['submitted'] ?? 0) as int,
+      'Failed': (result.data['failed'] ?? 0) as int,
+    };
+  }
 
   // youth info
   Future<void> insertYouthInfo(YouthInfosCompanion info) =>
