@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/view/logged_in.dart';
-import 'package:skyouthprofiling/data/view/login.dart';
+// import 'package:skyouthprofiling/data/view/login.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:skyouthprofiling/service/dio_client.dart';
 
@@ -14,7 +14,7 @@ class MigrateScreen extends StatefulWidget {
 class _MigrateScreenState extends State<MigrateScreen> {
   late TextEditingController ipTextController;
 
-  int authenticated = 0;
+  int authenticated = 1;
   DioClient? client;
   final storage = FlutterSecureStorage();
 
@@ -22,7 +22,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
   void initState() {
     super.initState();
     ipTextController = TextEditingController();
-    _init();
+    // _init();
   }
 
   Future<void> _init() async {
@@ -83,6 +83,8 @@ class _MigrateScreenState extends State<MigrateScreen> {
 
     return Scaffold(body: currentView);
   }
+
+
 
   Widget _loginForm() {
     final formKey = GlobalKey<FormState>();

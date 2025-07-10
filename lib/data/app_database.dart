@@ -103,7 +103,11 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertYouthUser(YouthUsersCompanion user) =>
       into(youthUsers).insert(user);
 
-  Future<List<YouthUser>> getAllYouthUsers() => select(youthUsers).get();
+  Future<int> countStandbyYouthUsers() {
+    final query =
+        youthUsers.select()..where((tbl) => tbl.status.equals('Standby'));
+    return query.get().then((rows) => rows.length);
+  }
 
   Future<bool> updateYouthUser(YouthUser user) =>
       update(youthUsers).replace(user);
@@ -157,90 +161,90 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<Map<String, dynamic>> getAllYouthProfiles({
-  String searchKeyword = '',
-  int limit = 10,
-  int offset = 0,
-}) async {
-  final query = select(youthUsers)..limit(limit, offset: offset);
-  List<int> userIds = [];
+    String searchKeyword = '',
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    final query = select(youthUsers)..limit(limit, offset: offset);
+    List<int> userIds = [];
 
-  // If there is a search keyword, find matching user IDs
-  if (searchKeyword.isNotEmpty) {
-    userIds = await (select(youthInfos)
-          ..where(
+    // If there is a search keyword, find matching user IDs
+    if (searchKeyword.isNotEmpty) {
+      userIds =
+          await (select(youthInfos)..where(
             (tbl) =>
                 tbl.fname.like('%$searchKeyword%') |
                 tbl.lname.like('%$searchKeyword%'),
-          ))
-        .map((info) => info.youthUserId)
-        .get();
+          )).map((info) => info.youthUserId).get();
 
-    if (userIds.isEmpty) {
-      return {
-        'youth': [],
-        'pagesLeft': 0,
-        'totalPages': 0,
-        'totalCount': 0,
-        'currentPage': 1,
-        'rowsLeft': 0,
-      };
+      if (userIds.isEmpty) {
+        return {
+          'youth': [],
+          'pagesLeft': 0,
+          'totalPages': 0,
+          'totalCount': 0,
+          'currentPage': 1,
+          'rowsLeft': 0,
+        };
+      }
+
+      query.where((tbl) => tbl.youthUserId.isIn(userIds));
     }
 
-    query.where((tbl) => tbl.youthUserId.isIn(userIds));
-  }
+    final users = await query.get();
+    final result = <FullYouthProfile>[];
 
-  final users = await query.get();
-  final result = <FullYouthProfile>[];
+    for (final user in users) {
+      final youthInfo =
+          await (select(youthInfos)..where(
+            (tbl) => tbl.youthUserId.equals(user.youthUserId),
+          )).getSingleOrNull();
 
-  for (final user in users) {
-    final youthInfo = await (select(youthInfos)
-          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
-        .getSingleOrNull();
+      final educs =
+          await (select(educBgs)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
 
-    final educs = await (select(educBgs)
-          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
-        .get();
+      final civics =
+          await (select(civicInvolvements)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
 
-    final civics = await (select(civicInvolvements)
-          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId)))
-        .get();
+      result.add(
+        FullYouthProfile(
+          youthUser: user,
+          youthInfo: youthInfo,
+          educBgs: educs,
+          civicInvolvements: civics,
+        ),
+      );
+    }
 
-    result.add(
-      FullYouthProfile(
-        youthUser: user,
-        youthInfo: youthInfo,
-        educBgs: educs,
-        civicInvolvements: civics,
-      ),
+    final countQuery = selectOnly(youthUsers)
+      ..addColumns([youthUsers.youthUserId.count()]);
+
+    if (searchKeyword.isNotEmpty && userIds.isNotEmpty) {
+      countQuery.where(youthUsers.youthUserId.isIn(userIds));
+    }
+
+    final countRow = await countQuery.getSingle();
+    final int totalCount = countRow.read(youthUsers.youthUserId.count()) ?? 0;
+
+    final int totalPages = (totalCount / limit).ceil();
+    final int currentPage = (offset / limit).floor() + 1;
+    final int pagesLeft = (totalPages - currentPage).clamp(0, totalPages);
+    final int rowsLeft = (totalCount - (offset + result.length)).clamp(
+      0,
+      totalCount,
     );
+
+    return {
+      'youth': result,
+      'pagesLeft': pagesLeft,
+      'totalPages': totalPages,
+      'totalCount': totalCount,
+      'currentPage': currentPage,
+      'rowsLeft': rowsLeft,
+    };
   }
-
-  final countQuery = selectOnly(youthUsers)
-    ..addColumns([youthUsers.youthUserId.count()]);
-
-  if (searchKeyword.isNotEmpty && userIds.isNotEmpty) {
-    countQuery.where(youthUsers.youthUserId.isIn(userIds));
-  }
-
-  final countRow = await countQuery.getSingle();
-  final int totalCount = countRow.read(youthUsers.youthUserId.count()) ?? 0;
-
-  final int totalPages = (totalCount / limit).ceil();
-  final int currentPage = (offset / limit).floor() + 1;
-  final int pagesLeft = (totalPages - currentPage).clamp(0, totalPages);
-  final int rowsLeft =
-      (totalCount - (offset + result.length)).clamp(0, totalCount);
-
-  return {
-    'youth': result,
-    'pagesLeft': pagesLeft,
-    'totalPages': totalPages,
-    'totalCount': totalCount,
-    'currentPage': currentPage,
-    'rowsLeft': rowsLeft,
-  };
-}
-
 
   @override
   int get schemaVersion => 2;

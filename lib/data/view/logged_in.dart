@@ -13,12 +13,15 @@ class LoggedIn extends StatefulWidget {
 final Dio dio = Dio();
 
 class _LoggedInState extends State<LoggedIn> {
-
   final storage = FlutterSecureStorage();
   late TextEditingController ipTextController;
   DioClient? client;
-  Future<Map<String, dynamic>>? data;
   Map<String, dynamic> errors = {};
+  final CancelToken cancelToken = CancelToken();
+
+  bool isHv = false;
+  int isPressed = 0; // 0=Scan, 1=Scanning, 2=Go, 3=Migrating, 4=Start
+  bool isRequested = false;
 
   @override
   void initState() {
@@ -30,16 +33,10 @@ class _LoggedInState extends State<LoggedIn> {
   Future<void> _loadIp() async {
     String? ip = await storage.read(key: 'ip');
     ipTextController.text = ip ?? '';
-
     if (ip != null && ip.isNotEmpty) {
       client = DioClient(ip);
     }
   }
-
-  final CancelToken cancelToken = CancelToken();
-
-  bool isHv = false;
-  bool isPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -49,117 +46,219 @@ class _LoggedInState extends State<LoggedIn> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(150),
-            onTapDown: (_) => setState(() => isHv = true),
-            onTapCancel: () => setState(() => isHv = false),
-            onLongPress: () async {
-              if (client == null) return;
-
-              if (isPressed) {
-                print('Aborting request...');
-                client!.cancelToken.cancel("User aborted request");
-                return;
-              }
-
-              setState(() {
-                isPressed = true;
-              });
-
-              print('Requesting.......');
-              final res = await client!.login('', '');
-
-              if (res['error'] is Map<String, dynamic>) {
-                final error = res['error'];
-                errors['password'] = error['errors']?['password']?.first;
-                errors['email'] = error['errors']?['email']?.first;
-
-                print(errors["password"]);
-                print(errors["email"]);
-              }
-
-              print('........Ended.......');
-              setState(() {
-                isPressed = false;
-              });
-            },
-
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (isPressed)
-                  SizedBox(
-                    height: 250,
-                    width: 250,
-                    child: CircularProgressIndicator(
-                      value: null,
-                      strokeWidth: 6,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color.fromARGB(255, 113, 63, 7),
-                      ),
-                      backgroundColor: Colors.transparent,
-                    ),
-                  ),
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 200),
-                  height: isPressed ? 200 : 300,
-                  width: isPressed ? 200 : 300,
-                  decoration: BoxDecoration(
-                    color:
-                        isPressed
-                            ? isHv
-                                ? const Color.fromARGB(146, 113, 64, 7)
-                                : const Color.fromARGB(255, 113, 63, 7)
-                            : isHv
-                            ? const Color.fromARGB(100, 27, 57, 70)
-                            : const Color.fromARGB(205, 27, 57, 70),
-
-                    borderRadius: BorderRadius.circular(150),
-                    border: Border.all(
-                      width: 4,
-                      color:
-                          isPressed
-                              ? const Color.fromARGB(255, 87, 51, 9)
-                              : const Color.fromARGB(255, 6, 64, 91),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      isPressed
-                          ? Icon(
-                            Icons.import_export_outlined,
-                            color: Colors.white,
-                            size: 35,
-                          )
-                          : Text(
-                            'Go',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 35,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                      isPressed
-                          ? Text(
-                            'Migrating data',
-                            style: TextStyle(color: Colors.white, fontSize: 13),
-                          )
-                          : Text(
-                            '< Long press to start >',
-                            style: TextStyle(color: Colors.white, fontSize: 15),
-                          ),
-                      isPressed
-                          ? Text(
-                            '< Long press to abort >',
-                            style: TextStyle(color: Colors.white, fontSize: 13),
-                          )
-                          : SizedBox.shrink(),
-                    ],
-                  ),
-                ),
-              ],
+          AnimatedContainer(
+            duration: Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors:
+                    isRequested
+                        ? [
+                          const Color.fromARGB(255, 27, 57, 70),
+                          const Color.fromARGB(166, 27, 57, 70),
+                          const Color.fromARGB(255, 27, 57, 70),
+                        ]
+                        : [
+                          const Color.fromARGB(0, 70, 40, 27),
+                          const Color.fromARGB(0, 70, 40, 27),
+                        ],
+              ),
             ),
+            padding: EdgeInsets.symmetric(vertical: 50, horizontal: 10),
+            width: double.infinity,
+            child: Center(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap:
+                          () => setState(() {
+                            if (isRequested) {
+                              isRequested = false;
+                              isPressed = 0;
+                            }
+                          }),
+                      borderRadius: BorderRadius.circular(150),
+                      onTapDown: (_) => setState(() => isHv = true),
+                      onTapCancel: () => setState(() => isHv = false),
+                      onLongPress: () async {
+                        if (client == null || (isPressed == 4 && isRequested)) return;
+
+                        if (isPressed == 3) {
+                          client!.cancelToken.cancel("Aborted");
+                          return;
+                        }
+
+                        if (isPressed == 0) {
+                          setState(() => isPressed = 1); // Scanning
+                          await Future.delayed(Duration(seconds: 2));
+                          setState(() => isPressed = 2); // Go
+                          return;
+                        }
+
+                        if (isPressed == 2) {
+                          setState(() => isPressed = 3); // Migrating
+                          await Future.delayed(Duration(seconds: 3));
+                          setState(() => isRequested = true); // Migrating
+                          setState(() => isPressed = 4); // Start
+                          return;
+                        }
+
+                        if (isPressed == 4) {
+                          setState(() => isPressed = 0); // Reset to Scan
+                          return;
+                        }
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (isPressed == 1 || isPressed == 3)
+                            SizedBox(
+                              height: 250,
+                              width: 250,
+                              child: CircularProgressIndicator(
+                                value: null,
+                                strokeWidth: 6,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  const Color.fromARGB(255, 113, 63, 7),
+                                ),
+                                backgroundColor: Colors.transparent,
+                              ),
+                            ),
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 200),
+                            height:
+                                isPressed == 1 || isPressed == 3
+                                    ? 200
+                                    : isPressed == 4
+                                    ? 130
+                                    : 150,
+                            width:
+                                isPressed == 1 || isPressed == 3
+                                    ? 200
+                                    : isPressed == 4
+                                    ? 130
+                                    : 150,
+                            decoration: BoxDecoration(
+                              color:
+                                  isRequested
+                                      ? const Color.fromARGB(218, 9, 53, 87)
+                                      : isPressed == 3
+                                      ? isHv
+                                          ? const Color.fromARGB(
+                                            146,
+                                            113,
+                                            64,
+                                            7,
+                                          )
+                                          : const Color.fromARGB(
+                                            255,
+                                            113,
+                                            63,
+                                            7,
+                                          )
+                                      : isHv
+                                      ? const Color.fromARGB(100, 27, 57, 70)
+                                      : const Color.fromARGB(205, 27, 57, 70),
+                              borderRadius: BorderRadius.circular(150),
+                              border: Border.all(
+                                width: 4,
+                                color:
+                                    isRequested
+                                        ? const Color.fromARGB(255, 9, 53, 87)
+                                        : isPressed == 3
+                                        ? const Color.fromARGB(255, 87, 51, 9)
+                                        : const Color.fromARGB(255, 6, 64, 91),
+                              ),
+                            ),
+                            child: _buttonText(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isRequested) SizedBox(width: 15),
+                    if (isRequested)
+                      AnimatedContainer(
+                        color: Colors.black,
+                        duration: Duration(milliseconds: 200),
+                        width: isRequested ? 160 : 0,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              _buildLegend(Colors.orange, "Attempted", "25"),
+                              _buildLegend(Colors.green, "Submitted", "23"),
+                              _buildLegend(Colors.red, "Failed", "2"),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buttonText() {
+    switch (isPressed) {
+      case 1:
+        return _label("Scanning", "Please wait...");
+      case 2:
+        return _label("Go", "Migrate data");
+      case 3:
+        return _label("Migrating", "Long press to abort");
+      case 4:
+        return _label("Start", "Scan again");
+      default:
+        return _label("Scan", "Ready to start");
+    }
+  }
+
+  Widget _label(String title, String subtitle) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(subtitle, style: TextStyle(color: Colors.white, fontSize: 14)),
+      ],
+    );
+  }
+
+  Widget _buildLegend(Color color, String label, String v) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 20,
+            child: Text(
+              v,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
         ],
       ),

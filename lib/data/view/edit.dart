@@ -90,12 +90,12 @@ class _EditState extends State<Edit> {
     'Single',
     'Married',
     'Divorce',
-    'Outside marriage',
+    'Outside-marriage',
   ];
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = ['Gender', 'Gay', 'Others'];
+  final List<String> gender = ['unselect','Transgender', 'Agender', 'Bigender', 'Non-binary', 'Others'];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -105,7 +105,7 @@ class _EditState extends State<Edit> {
     'Sittio Balunu',
     'Sittio Hapa',
     'Sittio Carreon',
-    'Sittio San Antonioay',
+    'Sittio San Antonio',
   ];
 
   // 3
@@ -595,7 +595,7 @@ class _EditState extends State<Edit> {
                         genVal = value;
                       });
                     }
-                    if (value == 'Gender') {
+                    if (value == 'unselect') {
                       setState(() {
                         genVal = null;
                       });
