@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:skyouthprofiling/data/view/logged_in.dart';
-// import 'package:skyouthprofiling/data/view/login.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skyouthprofiling/data/view/logged_in.dart';
 import 'package:skyouthprofiling/service/dio_client.dart';
 
 class MigrateScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
   int authenticated = 0;
   DioClient? client;
   final storage = FlutterSecureStorage();
-  bool hasError = false;
+  bool showRetry = false;
 
   @override
   void initState() {
@@ -52,36 +51,27 @@ class _MigrateScreenState extends State<MigrateScreen> {
   }
 
   Future<void> _auth() async {
-    setState(() {
-      hasError = false; // Reset error before trying
-      authenticated = 0; // Still loading
-    });
-
     try {
       final res = await client?.checkAuth().timeout(
         const Duration(seconds: 15),
-        onTimeout: () {
-          setState(() => hasError = true);
-          _showSnackBar('Server timeout. Please try again.');
-          return {}; // Return dummy map to avoid null
-        },
+        onTimeout: () => Future.value({'error': 'timeout'}),
       );
 
       if (res != null && res.containsKey('data')) {
         setState(() => authenticated = 1);
+      } else if (res != null && res.containsKey('error')) {
+        setState(() => authenticated = 2);
       } else {
+        _showSnackBar('Server not found or unreachable.');
         setState(() {
-          hasError = true;
-          authenticated = 0;
+          showRetry = true;
         });
-        _showSnackBar('Authentication failed or server not reachable.');
       }
     } catch (e) {
-      setState(() {
-        hasError = true;
-        authenticated = 0;
-      });
       _showSnackBar('Server not found or unreachable.');
+      setState(() {
+        showRetry = true;
+      });
     }
   }
 
@@ -89,15 +79,20 @@ class _MigrateScreenState extends State<MigrateScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-              label: 'close',
-            textColor: Colors.white,
-            onPressed: () {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            },
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: Text(message)),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+              ),
+            ],
           ),
+          duration: const Duration(seconds: 10),
+          backgroundColor: Colors.red,
         ),
       );
     });
@@ -106,40 +101,57 @@ class _MigrateScreenState extends State<MigrateScreen> {
   @override
   Widget build(BuildContext context) {
     Widget currentView;
-    switch (authenticated) {
-      case 1:
-        currentView = const LoggedIn();
-        break;
-      case 2:
-        currentView = _loginForm();
-        break;
-      default:
-        currentView = Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(
-                height: 15,
-                width: 15,
-                child: CircularProgressIndicator(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  strokeWidth: 2,
+
+    if (showRetry) {
+      currentView = Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Server unreachable.'),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  showRetry = false;
+                  authenticated = 0;
+                });
+                _auth();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      switch (authenticated) {
+        case 1:
+          currentView = const LoggedIn();
+          break;
+        case 2:
+          currentView = _loginForm();
+          break;
+        default:
+          currentView = const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 15,
+                  width: 15,
+                  child: CircularProgressIndicator(
+                    color: Color.fromARGB(255, 0, 0, 0),
+                    strokeWidth: 2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                hasError ? 'Failed to connect' : 'Please wait...',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
+                SizedBox(height: 5),
+                Text(
+                  'please wait',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
-              ),
-              if (hasError)
-                TextButton(onPressed: _auth, child: const Text('Retry')),
-            ],
-          ),
-        );
+              ],
+            ),
+          );
+      }
     }
 
     return Scaffold(body: currentView);
@@ -171,10 +183,8 @@ class _MigrateScreenState extends State<MigrateScreen> {
 
     Future<void> handleLogin() async {
       clearErrors();
-      print('Proceeding1');
       final isValid = formKey.currentState!.validate();
       if (!isValid) return;
-      print('Proceeding2');
 
       final res = await client?.login(
         unController.text.trim(),
@@ -211,7 +221,6 @@ class _MigrateScreenState extends State<MigrateScreen> {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-
             TextFormField(
               decoration: InputDecoration(
                 labelText: 'Email',
@@ -231,12 +240,10 @@ class _MigrateScreenState extends State<MigrateScreen> {
                 if (value == null || value.isEmpty) {
                   return 'Please input your Email address';
                 }
-
                 return null;
               },
             ),
             const SizedBox(height: 15),
-
             TextFormField(
               obscureText: true,
               decoration: InputDecoration(
@@ -261,7 +268,6 @@ class _MigrateScreenState extends State<MigrateScreen> {
               },
             ),
             const SizedBox(height: 15),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromRGBO(20, 126, 169, 1),

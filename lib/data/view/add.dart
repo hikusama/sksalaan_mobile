@@ -85,14 +85,14 @@ class _AddState extends State<Add> {
   // };
   // 2
   final List<String> youthType = ['OSY', 'ISY'];
-  final List<String> religion = ['Islam', 'Christianity', 'Agnostic', 'Others'];
+  final List<String> religion = ['Islam', 'Christianity', 'Judaism', 'Buddhism', 'Hinduism', 'Atheism', 'Others'];
   final List<String> civilStats = [
     'Single',
     'Married',
     'Divorce',
     'Outside-marriage',
   ];
-
+ 
   // 1
   final List<String> sex = ['Male', 'Female'];
   final List<String> gender = [
