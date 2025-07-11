@@ -15,11 +15,16 @@ final Dio dio = Dio();
 
 class _LoggedInState extends State<LoggedIn> {
   final storage = FlutterSecureStorage();
+  final ScrollController _scrollController = ScrollController();
+
   late TextEditingController ipTextController;
+  final db = DatabaseProvider.instance;
   DioClient? client;
   Map<String, dynamic> errors = {};
   final CancelToken cancelToken = CancelToken();
-
+  int sub = 0;
+  int fld = 0;
+  int attempted = 0;
   bool isHv = false;
   int isPressed = 0; // 0=Scan, 1=Scanning, 2=Go, 3=Migrating, 4=Start
   bool isRequested = false;
@@ -39,7 +44,6 @@ class _LoggedInState extends State<LoggedIn> {
     }
   }
 
-  final db = AppDatabase();
   int scanned = 0;
   @override
   Widget build(BuildContext context) {
@@ -73,6 +77,7 @@ class _LoggedInState extends State<LoggedIn> {
             child: Center(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
+                controller: _scrollController,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -88,8 +93,9 @@ class _LoggedInState extends State<LoggedIn> {
                       onTapDown: (_) => setState(() => isHv = true),
                       onTapCancel: () => setState(() => isHv = false),
                       onLongPress: () async {
-                        if (client == null || (isPressed == 4 && isRequested))
+                        if (client == null || (isPressed == 4 && isRequested)) {
                           return;
+                        }
 
                         if (isPressed == 3) {
                           client!.cancelToken.cancel("Aborted");
@@ -119,18 +125,24 @@ class _LoggedInState extends State<LoggedIn> {
                               data['submitted'] ?? [],
                             );
                             final failed = List<int>.from(data['failed'] ?? []);
+                            setState(() {
+                              attempted = submitted.length + failed.length;
+                              sub = submitted.length;
+                              fld = failed.length;
+                            });
                             await db.updateMigrationStatus(
                               submitted: submitted,
                               failed: failed,
                             );
+
                             print('Local statuses updated.');
                           } else {
                             print('Migration failed: ${resMigrate?['error']}');
                           }
 
                           setState(() => isPressed = 3); // Migrating
-                          await Future.delayed(Duration(seconds: 3));
                           setState(() => isRequested = true); // Migrating
+                          await Future.delayed(Duration(seconds: 2));
                           setState(() => isPressed = 4); // Start
                           return;
                         }
@@ -215,9 +227,21 @@ class _LoggedInState extends State<LoggedIn> {
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              _buildLegend(Colors.orange, "Attempted", "25"),
-                              _buildLegend(Colors.green, "Submitted", "23"),
-                              _buildLegend(Colors.red, "Failed", "2"),
+                              _buildLegend(
+                                Colors.orange,
+                                "Attempted",
+                                attempted.toString(),
+                              ),
+                              _buildLegend(
+                                Colors.green,
+                                "Submitted",
+                                sub.toString(),
+                              ),
+                              _buildLegend(
+                                Colors.red,
+                                "Failed",
+                                fld.toString(),
+                              ),
                             ],
                           ),
                         ),

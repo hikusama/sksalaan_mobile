@@ -11,6 +11,7 @@ class MigrateScreen extends StatefulWidget {
 }
 
 class _MigrateScreenState extends State<MigrateScreen> {
+  Map<String, String?> errors = {'email': null, 'password': null, 'auth': null};
   late TextEditingController ipTextController;
   final formKey = GlobalKey<FormState>();
   final unController = TextEditingController();
@@ -19,6 +20,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
   DioClient? client;
   final storage = FlutterSecureStorage();
   bool showRetry = false;
+  bool showFailedIp = false;
 
   @override
   void initState() {
@@ -46,7 +48,9 @@ class _MigrateScreenState extends State<MigrateScreen> {
     if (ip != null && ip.isNotEmpty) {
       client = DioClient(ip);
     } else {
-      _showSnackBar('Server IP not configured.');
+      setState(() {
+        showFailedIp = true;
+      });
     }
   }
 
@@ -60,49 +64,38 @@ class _MigrateScreenState extends State<MigrateScreen> {
       if (res != null && res.containsKey('data')) {
         setState(() => authenticated = 1);
       } else if (res != null && res.containsKey('error')) {
-        setState(() => authenticated = 2);
+        if (res['error']['message'] == 'Unauthenticated.') {
+          setState(() => authenticated = 2);
+        } else {
+          setState(() => showRetry = true);
+        }
       } else {
-        _showSnackBar('Server not found or unreachable.');
         setState(() {
           showRetry = true;
         });
       }
     } catch (e) {
-      _showSnackBar('Server not found or unreachable.');
       setState(() {
         showRetry = true;
       });
     }
   }
 
-  void _showSnackBar(String message) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(child: Text(message)),
-              IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                },
-              ),
-            ],
-          ),
-          duration: const Duration(seconds: 10),
-          backgroundColor: Colors.red,
-        ),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     Widget currentView;
 
-    if (showRetry) {
+    if (showFailedIp) {
+      currentView = Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Server IP not configured.'),
+            const Text('Setup the host IP in settings.'),
+          ],
+        ),
+      );
+    } else if (showRetry) {
       currentView = Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -158,18 +151,6 @@ class _MigrateScreenState extends State<MigrateScreen> {
   }
 
   Widget _loginForm() {
-    Map<String, String?> errors = {'email': null, 'password': null};
-
-    String? extractError(dynamic value) {
-      if (value is List && value.isNotEmpty) {
-        return value.first.toString();
-      }
-      if (value is String) {
-        return value;
-      }
-      return null;
-    }
-
     Future<void> setToken(String token) async {
       await storage.write(key: 'token', value: token.trim());
     }
@@ -178,7 +159,16 @@ class _MigrateScreenState extends State<MigrateScreen> {
       setState(() {
         errors['email'] = null;
         errors['password'] = null;
+        errors['auth'] = null;
       });
+    }
+
+    String? extractError(dynamic value) {
+      if (value is List && value.isNotEmpty) {
+        return value.first.toString();
+      }
+      if (value is String) return value;
+      return null;
     }
 
     Future<void> handleLogin() async {
@@ -197,18 +187,23 @@ class _MigrateScreenState extends State<MigrateScreen> {
         final token = res['data']['token'];
         await setToken(token);
         setState(() => authenticated = 1);
+        print('\n\ntoken');
+        print(token);
       } else if (res['error'] is Map<String, dynamic>) {
         final error = res['error'];
+        final errorMap = error['errors'] as Map<String, dynamic>?;
+
         setState(() {
-          errors['email'] = extractError(error['errors']?['email']);
-          errors['password'] = extractError(error['errors']?['password']);
+          errors['auth'] = extractError(errorMap?['auth']);
+          errors['email'] = extractError(errorMap?['email']);
+          errors['password'] = extractError(errorMap?['password']);
         });
+
         formKey.currentState!.validate();
       }
     }
 
-    return Container(
-      width: double.infinity,
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 85),
       child: Form(
         key: formKey,
@@ -267,6 +262,15 @@ class _MigrateScreenState extends State<MigrateScreen> {
                 return null;
               },
             ),
+            const SizedBox(height: 15),
+            errors['auth'] != null
+                ? SizedBox(
+                  child: Text(
+                    errors['auth'].toString(),
+                    style: TextStyle(color: Colors.red),
+                  ),
+                )
+                : SizedBox.shrink(),
             const SizedBox(height: 15),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

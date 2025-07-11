@@ -13,6 +13,7 @@ class OverviewScreen extends StatefulWidget {
 
 class _OverviewScreenState extends State<OverviewScreen> {
   final db = DatabaseProvider.instance;
+  final ScrollController _scrollController = ScrollController();
 
   List<FullYouthProfile> _youthProfiles = [];
 
@@ -36,6 +37,12 @@ class _OverviewScreenState extends State<OverviewScreen> {
     super.initState();
     _loadStats();
     _loadInitialData();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadStats() async {
@@ -109,18 +116,16 @@ class _OverviewScreenState extends State<OverviewScreen> {
                             _offset = 0;
                             _isInitialLoading = true;
                             isLoading = true;
+                            await _loadStats();
                             await _loadInitialData();
                           },
-                          child: Scrollbar(
-                            thumbVisibility: true,
-                            child:
-                                _youthProfiles.isEmpty
-                                    ? Center(
-                                      child: Text(
-                                        'No record...',
-                                      ),
-                                    )
-                                    : ListView.builder(
+                          child:
+                              _youthProfiles.isEmpty
+                                  ? Center(child: Text('No record...'))
+                                  : Scrollbar(
+                                    thumbVisibility: true,
+                                    controller: _scrollController,
+                                    child: ListView.builder(
                                       itemCount:
                                           _youthProfiles.length +
                                           (_isLoadingMore ? 1 : 0),
@@ -143,7 +148,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                         );
                                       },
                                     ),
-                          ),
+                                  ),
                         ),
               ),
             ],

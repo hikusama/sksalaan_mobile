@@ -34,7 +34,6 @@ class DioClient {
 
   Future<Map<String, dynamic>> login(String em, String pw) async {
     try {
-      print('Login....');
       final response = await _dio.post(
         '/loginOfficials',
         cancelToken: cancelToken,
@@ -46,10 +45,7 @@ class DioClient {
       if (data.containsKey('token')) {
         await _storage.write(key: 'token', value: data['token']);
       }
-      final token = await _storage.read(key: 'token');
-      print('\n\n\n');
-      print('token: $token');
-
+      
       return {'data': data, 'cancelToken': cancelToken};
     } on DioException catch (e) {
       if (CancelToken.isCancel(e)) {
@@ -60,7 +56,6 @@ class DioClient {
         final error = Map<String, dynamic>.from(e.response!.data);
         return {'error': error};
       }
-      print({'error': e.message});
 
       return {'error': e.message ?? 'Unknown Dio error'};
     } catch (e) {
@@ -70,7 +65,6 @@ class DioClient {
 
   Future<Map<String, dynamic>> checkAuth() async {
     try {
-      print('Requesting auth....');
       final response = await _dio.get('/userAPI');
       return {'data': response.data};
     } on DioException catch (e) {
@@ -84,7 +78,6 @@ class DioClient {
     List<Map<String, dynamic>> data,
   ) async {
     try {
-      print('Sending migration data...');
       final response = await _dio.post('/migrate', data: data);
       return {'data': response.data};
     } on DioException catch (e) {
