@@ -179,6 +179,106 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  Future<List<Map<String, dynamic>>> migrate() async {
+    final standbyUsers =
+        await (select(youthUsers)
+          ..where((tbl) => tbl.status.equals('Standby'))).get();
+
+    final List<Map<String, dynamic>> exportData = [];
+
+    for (final user in standbyUsers) {
+      final info =
+          await (select(youthInfos)..where(
+            (tbl) => tbl.youthUserId.equals(user.youthUserId),
+          )).getSingleOrNull();
+
+      final educs =
+          await (select(educBgs)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+      final civics =
+          await (select(civicInvolvements)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+      exportData.add({
+        'user': {
+          'id': user.youthUserId,
+          'youthType': user.youthType,
+          'skills': user.skills,
+        },
+        'info':
+            info != null
+                ? {
+                  'fname': info.fname,
+                  'mname': info.mname,
+                  'lname': info.lname,
+                  'sex': info.sex,
+                  'gender': info.gender,
+                  'age': info.age,
+                  'address': info.placeOfBirth,
+                  'dateOfBirth': info.dateOfBirth,
+                  'placeOfBirth': info.placeOfBirth,
+                  'contactNo': info.contactNo,
+                  'height': info.height,
+                  'weight': info.weight,
+                  'religion': info.religion,
+                  'occupation': info.occupation,
+                  'civilStatus': info.civilStatus,
+                  'noOfChildren': info.noOfChildren,
+                }
+                : null,
+        'educBG':
+            educs
+                .map(
+                  (e) => {
+                    'level': e.level,
+                    'nameOfSchool': e.nameOfSchool,
+                    'periodOfAttendance': e.periodOfAttendance,
+                    'yearGraduate': e.yearGraduate,
+                  },
+                )
+                .toList(),
+        'civic':
+            civics
+                .map(
+                  (c) => {
+                    'nameOfOrganization': c.nameOfOrganization,
+                    'addressOfOrganization': c.addressOfOrganization,
+                    'start': c.start,
+                    'end': c.end,
+                    'yearGraduated': c.yearGraduated,
+                  },
+                )
+                .toList(),
+      });
+    }
+
+    return exportData;
+  }
+
+  Future<void> updateMigrationStatus({
+    required List<int> submitted,
+    required List<int> failed,
+  }) async {
+    await batch((batch) {
+      if (submitted.isNotEmpty) {
+        batch.update(
+          youthUsers,
+          YouthUsersCompanion(status: const Value('Submitted')),
+          where: (tbl) => tbl.youthUserId.isIn(submitted),
+        );
+      }
+
+      // Update failed users
+      if (failed.isNotEmpty) {
+        batch.update(
+          youthUsers,
+          YouthUsersCompanion(status: const Value('Failed')),
+          where: (tbl) => tbl.youthUserId.isIn(failed),
+        );
+      }
+    });
+  }
+
   Future<Map<String, dynamic>> getAllYouthProfiles({
     String searchKeyword = '',
     int limit = 10,

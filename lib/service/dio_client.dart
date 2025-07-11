@@ -50,11 +50,7 @@ class DioClient {
       print('\n\n\n');
       print('token: $token');
 
-
-      return {
-        'data': data,
-        'cancelToken': cancelToken,
-      };
+      return {'data': data, 'cancelToken': cancelToken};
     } on DioException catch (e) {
       if (CancelToken.isCancel(e)) {
         return {'error': 'Request cancelled'};
@@ -70,13 +66,26 @@ class DioClient {
     } catch (e) {
       return {'error': e.toString()};
     }
-    
   }
 
   Future<Map<String, dynamic>> checkAuth() async {
     try {
       print('Requesting auth....');
       final response = await _dio.get('/userAPI');
+      return {'data': response.data};
+    } on DioException catch (e) {
+      return {'error': e.response?.data ?? e.message};
+    } catch (e) {
+      return {'error': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> migrateData(
+    List<Map<String, dynamic>> data,
+  ) async {
+    try {
+      print('Sending migration data...');
+      final response = await _dio.post('/migrate', data: data);
       return {'data': response.data};
     } on DioException catch (e) {
       return {'error': e.response?.data ?? e.message};

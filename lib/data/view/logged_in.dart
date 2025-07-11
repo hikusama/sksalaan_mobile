@@ -38,6 +38,7 @@ class _LoggedInState extends State<LoggedIn> {
       client = DioClient(ip);
     }
   }
+
   final db = AppDatabase();
   int scanned = 0;
   @override
@@ -87,7 +88,8 @@ class _LoggedInState extends State<LoggedIn> {
                       onTapDown: (_) => setState(() => isHv = true),
                       onTapCancel: () => setState(() => isHv = false),
                       onLongPress: () async {
-                        if (client == null || (isPressed == 4 && isRequested)) return;
+                        if (client == null || (isPressed == 4 && isRequested))
+                          return;
 
                         if (isPressed == 3) {
                           client!.cancelToken.cancel("Aborted");
@@ -104,7 +106,28 @@ class _LoggedInState extends State<LoggedIn> {
                         }
 
                         if (isPressed == 2) {
-                          if(scanned < 1) return;
+                          if (scanned < 1) return;
+                          final youthBulk = await db.migrate();
+                          final resMigrate = await client?.migrateData(
+                            youthBulk,
+                          );
+
+                          if (resMigrate != null &&
+                              resMigrate.containsKey('data')) {
+                            final data = resMigrate['data'];
+                            final submitted = List<int>.from(
+                              data['submitted'] ?? [],
+                            );
+                            final failed = List<int>.from(data['failed'] ?? []);
+                            await db.updateMigrationStatus(
+                              submitted: submitted,
+                              failed: failed,
+                            );
+                            print('Local statuses updated.');
+                          } else {
+                            print('Migration failed: ${resMigrate?['error']}');
+                          }
+
                           setState(() => isPressed = 3); // Migrating
                           await Future.delayed(Duration(seconds: 3));
                           setState(() => isRequested = true); // Migrating
@@ -237,8 +260,11 @@ class _LoggedInState extends State<LoggedIn> {
           ),
         ),
         Text(subtitle, style: TextStyle(color: Colors.white, fontSize: 14)),
-        if(title == "Go")
-          Text('Migrate now', style: TextStyle(color: Colors.white, fontSize: 14)),
+        if (title == "Go")
+          Text(
+            'Migrate now',
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
       ],
     );
   }

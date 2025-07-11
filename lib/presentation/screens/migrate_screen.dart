@@ -4,7 +4,6 @@ import 'package:skyouthprofiling/data/view/logged_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:skyouthprofiling/service/dio_client.dart';
 
-
 class MigrateScreen extends StatefulWidget {
   const MigrateScreen({super.key});
 
@@ -14,16 +13,27 @@ class MigrateScreen extends StatefulWidget {
 
 class _MigrateScreenState extends State<MigrateScreen> {
   late TextEditingController ipTextController;
-
-  int authenticated = 1;
+  final formKey = GlobalKey<FormState>();
+  final unController = TextEditingController();
+  final pwController = TextEditingController();
+  int authenticated = 0;
   DioClient? client;
   final storage = FlutterSecureStorage();
+  bool hasError = false;
 
   @override
   void initState() {
     super.initState();
     ipTextController = TextEditingController();
     _init();
+  }
+
+  @override
+  void dispose() {
+    ipTextController.dispose();
+    unController.dispose();
+    pwController.dispose();
+    super.dispose();
   }
 
   Future<void> _init() async {
@@ -36,16 +46,61 @@ class _MigrateScreenState extends State<MigrateScreen> {
     ipTextController.text = ip ?? '';
     if (ip != null && ip.isNotEmpty) {
       client = DioClient(ip);
+    } else {
+      _showSnackBar('Server IP not configured.');
     }
   }
 
   Future<void> _auth() async {
-    final res = await client?.checkAuth();
-    if (res != null && res.containsKey('data')) {
-      setState(() => authenticated = 1);
-    } else {
-      setState(() => authenticated = 2);
+    setState(() {
+      hasError = false; // Reset error before trying
+      authenticated = 0; // Still loading
+    });
+
+    try {
+      final res = await client?.checkAuth().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          setState(() => hasError = true);
+          _showSnackBar('Server timeout. Please try again.');
+          return {}; // Return dummy map to avoid null
+        },
+      );
+
+      if (res != null && res.containsKey('data')) {
+        setState(() => authenticated = 1);
+      } else {
+        setState(() {
+          hasError = true;
+          authenticated = 0;
+        });
+        _showSnackBar('Authentication failed or server not reachable.');
+      }
+    } catch (e) {
+      setState(() {
+        hasError = true;
+        authenticated = 0;
+      });
+      _showSnackBar('Server not found or unreachable.');
     }
+  }
+
+  void _showSnackBar(String message) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+              label: 'close',
+            textColor: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ),
+        ),
+      );
+    });
   }
 
   @override
@@ -59,12 +114,12 @@ class _MigrateScreenState extends State<MigrateScreen> {
         currentView = _loginForm();
         break;
       default:
-        currentView = const Center(
+        currentView = Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 15,
                 width: 15,
                 child: CircularProgressIndicator(
@@ -72,11 +127,16 @@ class _MigrateScreenState extends State<MigrateScreen> {
                   strokeWidth: 2,
                 ),
               ),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
               Text(
-                'please wait',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                hasError ? 'Failed to connect' : 'Please wait...',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              if (hasError)
+                TextButton(onPressed: _auth, child: const Text('Retry')),
             ],
           ),
         );
@@ -85,12 +145,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
     return Scaffold(body: currentView);
   }
 
-
-
   Widget _loginForm() {
-    final formKey = GlobalKey<FormState>();
-    final unController = TextEditingController();
-    final pwController = TextEditingController();
     Map<String, String?> errors = {'email': null, 'password': null};
 
     String? extractError(dynamic value) {
@@ -116,9 +171,10 @@ class _MigrateScreenState extends State<MigrateScreen> {
 
     Future<void> handleLogin() async {
       clearErrors();
-
+      print('Proceeding1');
       final isValid = formKey.currentState!.validate();
       if (!isValid) return;
+      print('Proceeding2');
 
       final res = await client?.login(
         unController.text.trim(),
