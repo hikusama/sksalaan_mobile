@@ -112,37 +112,40 @@ class _LoggedInState extends State<LoggedIn> {
                         }
 
                         if (isPressed == 2) {
+                          setState(() => isPressed = 3); //
+                          print('------------');
+
                           if (scanned < 1) return;
                           final youthBulk = await db.migrate();
                           final resMigrate = await client?.migrateData(
                             youthBulk,
                           );
 
-                          if (resMigrate != null &&
-                              resMigrate.containsKey('data')) {
-                            final data = resMigrate['data'];
-                            final submitted = List<int>.from(
-                              data['submitted'] ?? [],
-                            );
-                            final failed = List<int>.from(data['failed'] ?? []);
-                            setState(() {
-                              attempted = submitted.length + failed.length;
-                              sub = submitted.length;
-                              fld = failed.length;
-                            });
-                            await db.updateMigrationStatus(
-                              submitted: submitted,
-                              failed: failed,
-                            );
+                          try {
+                            if (resMigrate != null &&
+                                resMigrate.containsKey('data')) {
+                              final data = resMigrate['data'];
+                              final submitted = List<int>.from(
+                                data['submitted'] ?? [],
+                              );
+                              final failed = List<int>.from(
+                                data['failed'] ?? [],
+                              );
+                              setState(() {
+                                attempted = submitted.length + failed.length;
+                                sub = submitted.length;
+                                fld = failed.length;
+                              });
 
-                            print('Local statuses updated.');
-                          } else {
-                            print('Migration failed: ${resMigrate?['error']}');
+                              await db.updateMigrationStatus(
+                                submitted: submitted,
+                                failed: failed,
+                              );
+                            } else {}
+                          } catch (e) {
+                            print(e);
                           }
-
-                          setState(() => isPressed = 3); // Migrating
                           setState(() => isRequested = true); // Migrating
-                          await Future.delayed(Duration(seconds: 2));
                           setState(() => isPressed = 4); // Start
                           return;
                         }
@@ -225,6 +228,7 @@ class _LoggedInState extends State<LoggedIn> {
                         duration: Duration(milliseconds: 200),
                         width: isRequested ? 160 : 0,
                         child: SingleChildScrollView(
+                          controller: _scrollController,
                           child: Column(
                             children: [
                               _buildLegend(

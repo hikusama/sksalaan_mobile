@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:confetti/confetti.dart';
+import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/presentation/main_screen.dart';
 
 class Add extends StatefulWidget {
@@ -85,14 +86,22 @@ class _AddState extends State<Add> {
   // };
   // 2
   final List<String> youthType = ['OSY', 'ISY'];
-  final List<String> religion = ['Islam', 'Christianity', 'Judaism', 'Buddhism', 'Hinduism', 'Atheism', 'Others'];
+  final List<String> religion = [
+    'Islam',
+    'Christianity',
+    'Judaism',
+    'Buddhism',
+    'Hinduism',
+    'Atheism',
+    'Others',
+  ];
   final List<String> civilStats = [
     'Single',
     'Married',
     'Divorce',
     'Outside-marriage',
   ];
- 
+
   // 1
   final List<String> sex = ['Male', 'Female'];
   final List<String> gender = [
@@ -323,7 +332,7 @@ class _AddState extends State<Add> {
                                       _pobController.text.trim(),
                                     ),
                                     contactNo: drift.Value(
-                                      _cnController.text.trim(),
+                                      int.tryParse(_cnController.text) ?? 0,
                                     ),
                                     noOfChildren: drift.Value(
                                       int.tryParse(_nocController.text) ?? 0,
@@ -344,7 +353,7 @@ class _AddState extends State<Add> {
                                       civilStatsVal.toString().trim(),
                                     ),
                                     gender: drift.Value(
-                                      genVal.toString().trim(),
+                                      genVal,
                                     ),
                                     religion: drift.Value(
                                       religionVal.toString().trim(),
@@ -509,10 +518,10 @@ class _AddState extends State<Add> {
                     }
 
                     try {
-                      final parts = value.split('/');
-                      final month = int.parse(parts[0]);
-                      final day = int.parse(parts[1]);
-                      final year = int.parse(parts[2]);
+                      final parts = value.split('-');
+                      final year = int.parse(parts[0]);
+                      final month = int.parse(parts[1]);
+                      final day = int.parse(parts[2]);
                       final dob = DateTime(year, month, day);
                       final today = DateTime.now();
                       final age =
@@ -554,8 +563,10 @@ class _AddState extends State<Add> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      String formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+                      // String formattedDate = DateFormat('MMMM d, yyy').format(pickedDate);
                       final today = DateTime.now();
                       int age = today.year - pickedDate.year;
                       if (today.month < pickedDate.month ||
@@ -1187,8 +1198,10 @@ class _AddState extends State<Add> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      String formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+
                       setState(() {
                         _poaController.text = formattedDate;
                       });
@@ -1281,12 +1294,13 @@ class _AddState extends State<Add> {
                 SizedBox(height: 10),
 
                 Container(
+
                   width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(12, 32, 12, 12),
+                  padding: EdgeInsets.fromLTRB(8, 32, 8, 12),
 
                   child: SizedBox(
                     height: 150,
-                    width: 220,
+                    width: 240,
                     child:
                         educbg.isEmpty
                             ? Align(
@@ -1354,7 +1368,13 @@ class _AddState extends State<Add> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['periodOfAttendance'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          data['periodOfAttendance'],
+                                                        ),
+                                                      ),
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1547,8 +1567,10 @@ class _AddState extends State<Add> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      String formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+
                       setState(() {
                         _startController.text = formattedDate;
                       });
@@ -1607,8 +1629,10 @@ class _AddState extends State<Add> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      String formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+
                       setState(() {
                         _endedController.text = formattedDate;
                       });
@@ -1703,11 +1727,11 @@ class _AddState extends State<Add> {
 
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(12, 32, 12, 12),
+                  padding: EdgeInsets.fromLTRB(8, 32, 8, 12),
 
                   child: SizedBox(
                     height: 150,
-                    width: 220,
+                    width: 240,
                     child:
                         civic.isEmpty
                             ? Align(
@@ -1775,7 +1799,13 @@ class _AddState extends State<Add> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['start'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          data['start'],
+                                                        ),
+                                                      ),
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1796,7 +1826,13 @@ class _AddState extends State<Add> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['end'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          data['end'],
+                                                        ),
+                                                      ),
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1997,7 +2033,9 @@ class _AddState extends State<Add> {
                                   Text(
                                     _dobController.text.isEmpty
                                         ? '--'
-                                        : _dobController.text,
+                                        : DateFormat('MMMM d, yyy').format(
+                                          DateTime.parse(_dobController.text),
+                                        ),
                                   ),
                                 ],
                               ),
@@ -2740,8 +2778,14 @@ class _AddState extends State<Add> {
                                                       MainAxisSize.min,
                                                   children: [
                                                     Text(
-                                                      entry
-                                                          .value['periodOfAttendance'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          entry
+                                                              .value['periodOfAttendance'],
+                                                        ),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
@@ -3017,7 +3061,15 @@ class _AddState extends State<Add> {
                                                   mainAxisSize:
                                                       MainAxisSize.min,
                                                   children: [
-                                                    Text(entry.value['start']),
+                                                    Text(
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          entry.value['start'],
+                                                        ),
+                                                      ),
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -3112,7 +3164,15 @@ class _AddState extends State<Add> {
                                                   mainAxisSize:
                                                       MainAxisSize.min,
                                                   children: [
-                                                    Text(entry.value['end']),
+                                                    Text(
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          entry.value['end'],
+                                                        ),
+                                                      ),
+                                                    ),
                                                   ],
                                                 ),
                                               ),

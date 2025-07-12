@@ -287,7 +287,9 @@ class _EditState extends State<Edit> {
                                     placeOfBirth: drift.Value(
                                       _pobController.text,
                                     ),
-                                    contactNo: drift.Value(_cnController.text),
+                                    contactNo: drift.Value(
+                                      int.tryParse(_cnController.text) ?? 0,
+                                    ),
                                     noOfChildren: drift.Value(
                                       int.tryParse(_nocController.text) ?? 0,
                                     ),

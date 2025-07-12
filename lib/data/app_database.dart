@@ -49,7 +49,7 @@ class YouthInfos extends Table {
   TextColumn get dateOfBirth => text()();
 
   TextColumn get placeOfBirth => text()();
-  TextColumn get contactNo => text()();
+  IntColumn get contactNo => integer()();
   RealColumn get height => real()();
   RealColumn get weight => real()();
   TextColumn get religion => text()();
@@ -259,6 +259,7 @@ class AppDatabase extends _$AppDatabase {
     required List<int> submitted,
     required List<int> failed,
   }) async {
+    
     await batch((batch) {
       if (submitted.isNotEmpty) {
         batch.update(

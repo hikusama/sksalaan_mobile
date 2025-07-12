@@ -47,7 +47,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   Future<void> _loadStats() async {
     final stat = await db.getStatus();
-
     setState(() {
       isLoading = false;
       sm = stat['Submitted'];
@@ -126,6 +125,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                     thumbVisibility: true,
                                     controller: _scrollController,
                                     child: ListView.builder(
+                                      controller: _scrollController,
+
                                       itemCount:
                                           _youthProfiles.length +
                                           (_isLoadingMore ? 1 : 0),
@@ -347,7 +348,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
         statColor = const Color.fromARGB(255, 255, 0, 0);
         break;
       case 'Submitted':
-        statColor = Colors.red;
+        statColor = Colors.green;
         break;
     }
     return Column(
@@ -414,7 +415,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 50,
+                      width: 55,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -430,8 +431,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
                         ],
                       ),
                     ),
+                    SizedBox(width: 8),
                     SizedBox(
-                      width: 73,
+                      width: 63,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

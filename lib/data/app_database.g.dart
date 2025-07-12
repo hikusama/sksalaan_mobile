@@ -707,7 +707,7 @@ class $YouthInfosTable extends YouthInfos
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     $customConstraints:
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE ',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE NOT NULL',
   );
   static const VerificationMeta _fnameMeta = const VerificationMeta('fname');
   @override
@@ -789,11 +789,11 @@ class $YouthInfosTable extends YouthInfos
     'contactNo',
   );
   @override
-  late final GeneratedColumn<String> contactNo = GeneratedColumn<String>(
+  late final GeneratedColumn<int> contactNo = GeneratedColumn<int>(
     'contact_no',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _heightMeta = const VerificationMeta('height');
@@ -1100,7 +1100,7 @@ class $YouthInfosTable extends YouthInfos
           )!,
       contactNo:
           attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
+            DriftSqlType.int,
             data['${effectivePrefix}contact_no'],
           )!,
       height:
@@ -1153,7 +1153,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
   final String sex;
   final String dateOfBirth;
   final String placeOfBirth;
-  final String contactNo;
+  final int contactNo;
   final double height;
   final double weight;
   final String religion;
@@ -1194,7 +1194,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     map['sex'] = Variable<String>(sex);
     map['date_of_birth'] = Variable<String>(dateOfBirth);
     map['place_of_birth'] = Variable<String>(placeOfBirth);
-    map['contact_no'] = Variable<String>(contactNo);
+    map['contact_no'] = Variable<int>(contactNo);
     map['height'] = Variable<double>(height);
     map['weight'] = Variable<double>(weight);
     map['religion'] = Variable<String>(religion);
@@ -1243,7 +1243,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       sex: serializer.fromJson<String>(json['sex']),
       dateOfBirth: serializer.fromJson<String>(json['dateOfBirth']),
       placeOfBirth: serializer.fromJson<String>(json['placeOfBirth']),
-      contactNo: serializer.fromJson<String>(json['contactNo']),
+      contactNo: serializer.fromJson<int>(json['contactNo']),
       height: serializer.fromJson<double>(json['height']),
       weight: serializer.fromJson<double>(json['weight']),
       religion: serializer.fromJson<String>(json['religion']),
@@ -1266,7 +1266,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       'sex': serializer.toJson<String>(sex),
       'dateOfBirth': serializer.toJson<String>(dateOfBirth),
       'placeOfBirth': serializer.toJson<String>(placeOfBirth),
-      'contactNo': serializer.toJson<String>(contactNo),
+      'contactNo': serializer.toJson<int>(contactNo),
       'height': serializer.toJson<double>(height),
       'weight': serializer.toJson<double>(weight),
       'religion': serializer.toJson<String>(religion),
@@ -1287,7 +1287,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     String? sex,
     String? dateOfBirth,
     String? placeOfBirth,
-    String? contactNo,
+    int? contactNo,
     double? height,
     double? weight,
     String? religion,
@@ -1426,7 +1426,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
   final Value<String> sex;
   final Value<String> dateOfBirth;
   final Value<String> placeOfBirth;
-  final Value<String> contactNo;
+  final Value<int> contactNo;
   final Value<double> height;
   final Value<double> weight;
   final Value<String> religion;
@@ -1463,7 +1463,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     required String sex,
     required String dateOfBirth,
     required String placeOfBirth,
-    required String contactNo,
+    required int contactNo,
     required double height,
     required double weight,
     required String religion,
@@ -1496,7 +1496,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Expression<String>? sex,
     Expression<String>? dateOfBirth,
     Expression<String>? placeOfBirth,
-    Expression<String>? contactNo,
+    Expression<int>? contactNo,
     Expression<double>? height,
     Expression<double>? weight,
     Expression<String>? religion,
@@ -1536,7 +1536,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Value<String>? sex,
     Value<String>? dateOfBirth,
     Value<String>? placeOfBirth,
-    Value<String>? contactNo,
+    Value<int>? contactNo,
     Value<double>? height,
     Value<double>? weight,
     Value<String>? religion,
@@ -1599,7 +1599,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
       map['place_of_birth'] = Variable<String>(placeOfBirth.value);
     }
     if (contactNo.present) {
-      map['contact_no'] = Variable<String>(contactNo.value);
+      map['contact_no'] = Variable<int>(contactNo.value);
     }
     if (height.present) {
       map['height'] = Variable<double>(height.value);
@@ -3349,7 +3349,7 @@ typedef $$YouthInfosTableCreateCompanionBuilder =
       required String sex,
       required String dateOfBirth,
       required String placeOfBirth,
-      required String contactNo,
+      required int contactNo,
       required double height,
       required double weight,
       required String religion,
@@ -3369,7 +3369,7 @@ typedef $$YouthInfosTableUpdateCompanionBuilder =
       Value<String> sex,
       Value<String> dateOfBirth,
       Value<String> placeOfBirth,
-      Value<String> contactNo,
+      Value<int> contactNo,
       Value<double> height,
       Value<double> weight,
       Value<String> religion,
@@ -3459,7 +3459,7 @@ class $$YouthInfosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get contactNo => $composableBuilder(
+  ColumnFilters<int> get contactNo => $composableBuilder(
     column: $table.contactNo,
     builder: (column) => ColumnFilters(column),
   );
@@ -3572,7 +3572,7 @@ class $$YouthInfosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get contactNo => $composableBuilder(
+  ColumnOrderings<int> get contactNo => $composableBuilder(
     column: $table.contactNo,
     builder: (column) => ColumnOrderings(column),
   );
@@ -3673,7 +3673,7 @@ class $$YouthInfosTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get contactNo =>
+  GeneratedColumn<int> get contactNo =>
       $composableBuilder(column: $table.contactNo, builder: (column) => column);
 
   GeneratedColumn<double> get height =>
@@ -3762,7 +3762,7 @@ class $$YouthInfosTableTableManager
                 Value<String> sex = const Value.absent(),
                 Value<String> dateOfBirth = const Value.absent(),
                 Value<String> placeOfBirth = const Value.absent(),
-                Value<String> contactNo = const Value.absent(),
+                Value<int> contactNo = const Value.absent(),
                 Value<double> height = const Value.absent(),
                 Value<double> weight = const Value.absent(),
                 Value<String> religion = const Value.absent(),
@@ -3800,7 +3800,7 @@ class $$YouthInfosTableTableManager
                 required String sex,
                 required String dateOfBirth,
                 required String placeOfBirth,
-                required String contactNo,
+                required int contactNo,
                 required double height,
                 required double weight,
                 required String religion,

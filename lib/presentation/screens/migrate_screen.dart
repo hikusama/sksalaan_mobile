@@ -21,6 +21,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
   final storage = FlutterSecureStorage();
   bool showRetry = false;
   bool showFailedIp = false;
+  bool loggingin = false;
 
   @override
   void initState() {
@@ -174,21 +175,27 @@ class _MigrateScreenState extends State<MigrateScreen> {
     Future<void> handleLogin() async {
       clearErrors();
       final isValid = formKey.currentState!.validate();
-      if (!isValid) return;
+      if (!isValid || loggingin) return;
+      setState(() {
+        loggingin = true;
+      });
 
       final res = await client?.login(
         unController.text.trim(),
         pwController.text.trim(),
       );
-
+      setState(() {
+        loggingin = false;
+      });
       if (res == null) return;
+        print(res);
 
       if (res.containsKey('data')) {
         final token = res['data']['token'];
         await setToken(token);
         setState(() => authenticated = 1);
-        print('\n\ntoken');
-        print(token);
+        // print('\n\ntoken');
+        // print(token);
       } else if (res['error'] is Map<String, dynamic>) {
         final error = res['error'];
         final errorMap = error['errors'] as Map<String, dynamic>?;
@@ -203,7 +210,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
       }
     }
 
-    return SingleChildScrollView(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 85),
       child: Form(
         key: formKey,
@@ -274,11 +281,30 @@ class _MigrateScreenState extends State<MigrateScreen> {
             const SizedBox(height: 15),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromRGBO(20, 126, 169, 1),
+                backgroundColor:
+                    loggingin
+                        ? const Color.fromARGB(134, 15, 97, 130)
+                        : const Color.fromRGBO(20, 126, 169, 1),
                 foregroundColor: Colors.white,
               ),
               onPressed: handleLogin,
-              child: const Text('Login'),
+              child: SizedBox(
+                height: 15,
+                width: loggingin ? 15 : 30,
+                child:
+                    !loggingin
+                        ? Text('Login')
+                        : CircularProgressIndicator(
+                          value: null,
+                          strokeWidth: 2,
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            255,
+                            255,
+                            255,
+                          ),
+                        ),
+              ),
             ),
           ],
         ),
