@@ -45,7 +45,7 @@ class DioClient {
       if (data.containsKey('token')) {
         await _storage.write(key: 'token', value: data['token']);
       }
-      
+
       return {'data': data, 'cancelToken': cancelToken};
     } on DioException catch (e) {
       if (CancelToken.isCancel(e)) {
@@ -77,14 +77,16 @@ class DioClient {
   Future<Map<String, dynamic>> migrateData(
     List<Map<String, dynamic>> data,
   ) async {
- 
+    print('\n\n\n------------4');
+print(data);
     try {
       final response = await _dio.post('/migrate', data: data);
 
       return {'data': response.data};
-    } on DioException catch (e) {
-      return {'error': e.response?.data ?? e.message};
+
     } catch (e) {
+      print('=====||');
+      print(e);
       return {'error': e.toString()};
     }
   }
