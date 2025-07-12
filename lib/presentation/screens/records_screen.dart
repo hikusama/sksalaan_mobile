@@ -332,7 +332,7 @@ class RecordsScreenState extends State<RecordsScreen> {
         statColor = const Color.fromARGB(255, 255, 0, 0);
         break;
       case 'Submitted':
-        statColor = Colors.red;
+        statColor = Colors.green;
         break;
     }
     return Column(
@@ -399,7 +399,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 50,
+                      width: 55,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -415,6 +415,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                         ],
                       ),
                     ),
+                    SizedBox(width: 8),
                     SizedBox(
                       width: 73,
                       child: Column(

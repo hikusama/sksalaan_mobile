@@ -29,6 +29,7 @@ class YouthUsers extends Table {
   TextColumn get youthType => text()();
   TextColumn get skills => text()();
   TextColumn get status => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get registerAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -56,6 +57,7 @@ class YouthInfos extends Table {
   TextColumn get occupation => text()();
   TextColumn get civilStatus => text()();
   IntColumn get noOfChildren => integer()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 class EducBgs extends Table {
@@ -70,6 +72,7 @@ class EducBgs extends Table {
   TextColumn get nameOfSchool => text()();
   TextColumn get periodOfAttendance => text()();
   TextColumn get yearGraduate => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 class CivicInvolvements extends Table {
@@ -85,6 +88,7 @@ class CivicInvolvements extends Table {
   TextColumn get start => text()();
   TextColumn get end => text()();
   TextColumn get yearGraduated => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 class DatabaseProvider {
@@ -224,6 +228,7 @@ class AppDatabase extends _$AppDatabase {
                   'occupation': info.occupation,
                   'civilStatus': info.civilStatus,
                   'noOfChildren': info.noOfChildren,
+                  'created_at': info.createdAt,
                 }
                 : null,
         'educBG':
@@ -234,6 +239,7 @@ class AppDatabase extends _$AppDatabase {
                     'nameOfSchool': e.nameOfSchool,
                     'periodOfAttendance': e.periodOfAttendance,
                     'yearGraduate': e.yearGraduate,
+                    'created_at': e.createdAt,
                   },
                 )
                 .toList(),
@@ -246,6 +252,7 @@ class AppDatabase extends _$AppDatabase {
                     'start': c.start,
                     'end': c.end,
                     'yearGraduated': c.yearGraduated,
+                    'created_at': c.createdAt,
                   },
                 )
                 .toList(),
@@ -259,7 +266,6 @@ class AppDatabase extends _$AppDatabase {
     required List<int> submitted,
     required List<int> failed,
   }) async {
-    
     await batch((batch) {
       if (submitted.isNotEmpty) {
         batch.update(

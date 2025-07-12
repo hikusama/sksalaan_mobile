@@ -327,6 +327,18 @@ class $YouthUsersTable extends YouthUsers
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   static const VerificationMeta _registerAtMeta = const VerificationMeta(
     'registerAt',
   );
@@ -346,6 +358,7 @@ class $YouthUsersTable extends YouthUsers
     youthType,
     skills,
     status,
+    createdAt,
     registerAt,
   ];
   @override
@@ -399,6 +412,12 @@ class $YouthUsersTable extends YouthUsers
     } else if (isInserting) {
       context.missing(_statusMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
     if (data.containsKey('register_at')) {
       context.handle(
         _registerAtMeta,
@@ -438,6 +457,11 @@ class $YouthUsersTable extends YouthUsers
             DriftSqlType.string,
             data['${effectivePrefix}status'],
           )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
       registerAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -458,6 +482,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   final String youthType;
   final String skills;
   final String status;
+  final DateTime createdAt;
   final DateTime registerAt;
   const YouthUser({
     required this.youthUserId,
@@ -465,6 +490,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     required this.youthType,
     required this.skills,
     required this.status,
+    required this.createdAt,
     required this.registerAt,
   });
   @override
@@ -477,6 +503,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     map['youth_type'] = Variable<String>(youthType);
     map['skills'] = Variable<String>(skills);
     map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
     map['register_at'] = Variable<DateTime>(registerAt);
     return map;
   }
@@ -489,6 +516,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       youthType: Value(youthType),
       skills: Value(skills),
       status: Value(status),
+      createdAt: Value(createdAt),
       registerAt: Value(registerAt),
     );
   }
@@ -504,6 +532,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       youthType: serializer.fromJson<String>(json['youthType']),
       skills: serializer.fromJson<String>(json['skills']),
       status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       registerAt: serializer.fromJson<DateTime>(json['registerAt']),
     );
   }
@@ -516,6 +545,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       'youthType': serializer.toJson<String>(youthType),
       'skills': serializer.toJson<String>(skills),
       'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
       'registerAt': serializer.toJson<DateTime>(registerAt),
     };
   }
@@ -526,6 +556,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     String? youthType,
     String? skills,
     String? status,
+    DateTime? createdAt,
     DateTime? registerAt,
   }) => YouthUser(
     youthUserId: youthUserId ?? this.youthUserId,
@@ -533,6 +564,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     youthType: youthType ?? this.youthType,
     skills: skills ?? this.skills,
     status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
     registerAt: registerAt ?? this.registerAt,
   );
   YouthUser copyWithCompanion(YouthUsersCompanion data) {
@@ -543,6 +575,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       youthType: data.youthType.present ? data.youthType.value : this.youthType,
       skills: data.skills.present ? data.skills.value : this.skills,
       status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       registerAt:
           data.registerAt.present ? data.registerAt.value : this.registerAt,
     );
@@ -556,14 +589,22 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
           ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
           ..write('registerAt: $registerAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(youthUserId, userId, youthType, skills, status, registerAt);
+  int get hashCode => Object.hash(
+    youthUserId,
+    userId,
+    youthType,
+    skills,
+    status,
+    createdAt,
+    registerAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -573,6 +614,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
           other.youthType == this.youthType &&
           other.skills == this.skills &&
           other.status == this.status &&
+          other.createdAt == this.createdAt &&
           other.registerAt == this.registerAt);
 }
 
@@ -582,6 +624,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   final Value<String> youthType;
   final Value<String> skills;
   final Value<String> status;
+  final Value<DateTime> createdAt;
   final Value<DateTime> registerAt;
   const YouthUsersCompanion({
     this.youthUserId = const Value.absent(),
@@ -589,6 +632,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     this.youthType = const Value.absent(),
     this.skills = const Value.absent(),
     this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
     this.registerAt = const Value.absent(),
   });
   YouthUsersCompanion.insert({
@@ -597,6 +641,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     required String youthType,
     required String skills,
     required String status,
+    this.createdAt = const Value.absent(),
     this.registerAt = const Value.absent(),
   }) : youthType = Value(youthType),
        skills = Value(skills),
@@ -607,6 +652,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     Expression<String>? youthType,
     Expression<String>? skills,
     Expression<String>? status,
+    Expression<DateTime>? createdAt,
     Expression<DateTime>? registerAt,
   }) {
     return RawValuesInsertable({
@@ -615,6 +661,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
       if (youthType != null) 'youth_type': youthType,
       if (skills != null) 'skills': skills,
       if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
       if (registerAt != null) 'register_at': registerAt,
     });
   }
@@ -625,6 +672,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     Value<String>? youthType,
     Value<String>? skills,
     Value<String>? status,
+    Value<DateTime>? createdAt,
     Value<DateTime>? registerAt,
   }) {
     return YouthUsersCompanion(
@@ -633,6 +681,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
       youthType: youthType ?? this.youthType,
       skills: skills ?? this.skills,
       status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
       registerAt: registerAt ?? this.registerAt,
     );
   }
@@ -655,6 +704,9 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
     if (registerAt.present) {
       map['register_at'] = Variable<DateTime>(registerAt.value);
     }
@@ -669,6 +721,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
           ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
           ..write('registerAt: $registerAt')
           ..write(')'))
         .toString();
@@ -858,6 +911,18 @@ class $YouthInfosTable extends YouthInfos
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     youthInfosId,
@@ -877,6 +942,7 @@ class $YouthInfosTable extends YouthInfos
     occupation,
     civilStatus,
     noOfChildren,
+    createdAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1040,6 +1106,12 @@ class $YouthInfosTable extends YouthInfos
     } else if (isInserting) {
       context.missing(_noOfChildrenMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
     return context;
   }
 
@@ -1133,6 +1205,11 @@ class $YouthInfosTable extends YouthInfos
             DriftSqlType.int,
             data['${effectivePrefix}no_of_children'],
           )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
     );
   }
 
@@ -1160,6 +1237,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
   final String occupation;
   final String civilStatus;
   final int noOfChildren;
+  final DateTime createdAt;
   const YouthInfo({
     required this.youthInfosId,
     required this.youthUserId,
@@ -1178,6 +1256,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     required this.occupation,
     required this.civilStatus,
     required this.noOfChildren,
+    required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1201,6 +1280,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     map['occupation'] = Variable<String>(occupation);
     map['civil_status'] = Variable<String>(civilStatus);
     map['no_of_children'] = Variable<int>(noOfChildren);
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -1224,6 +1304,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       occupation: Value(occupation),
       civilStatus: Value(civilStatus),
       noOfChildren: Value(noOfChildren),
+      createdAt: Value(createdAt),
     );
   }
 
@@ -1250,6 +1331,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       occupation: serializer.fromJson<String>(json['occupation']),
       civilStatus: serializer.fromJson<String>(json['civilStatus']),
       noOfChildren: serializer.fromJson<int>(json['noOfChildren']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -1273,6 +1355,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       'occupation': serializer.toJson<String>(occupation),
       'civilStatus': serializer.toJson<String>(civilStatus),
       'noOfChildren': serializer.toJson<int>(noOfChildren),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -1294,6 +1377,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     String? occupation,
     String? civilStatus,
     int? noOfChildren,
+    DateTime? createdAt,
   }) => YouthInfo(
     youthInfosId: youthInfosId ?? this.youthInfosId,
     youthUserId: youthUserId ?? this.youthUserId,
@@ -1312,6 +1396,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     occupation: occupation ?? this.occupation,
     civilStatus: civilStatus ?? this.civilStatus,
     noOfChildren: noOfChildren ?? this.noOfChildren,
+    createdAt: createdAt ?? this.createdAt,
   );
   YouthInfo copyWithCompanion(YouthInfosCompanion data) {
     return YouthInfo(
@@ -1345,6 +1430,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
           data.noOfChildren.present
               ? data.noOfChildren.value
               : this.noOfChildren,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -1367,7 +1453,8 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
           ..write('religion: $religion, ')
           ..write('occupation: $occupation, ')
           ..write('civilStatus: $civilStatus, ')
-          ..write('noOfChildren: $noOfChildren')
+          ..write('noOfChildren: $noOfChildren, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -1391,6 +1478,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     occupation,
     civilStatus,
     noOfChildren,
+    createdAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -1412,7 +1500,8 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
           other.religion == this.religion &&
           other.occupation == this.occupation &&
           other.civilStatus == this.civilStatus &&
-          other.noOfChildren == this.noOfChildren);
+          other.noOfChildren == this.noOfChildren &&
+          other.createdAt == this.createdAt);
 }
 
 class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
@@ -1433,6 +1522,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
   final Value<String> occupation;
   final Value<String> civilStatus;
   final Value<int> noOfChildren;
+  final Value<DateTime> createdAt;
   const YouthInfosCompanion({
     this.youthInfosId = const Value.absent(),
     this.youthUserId = const Value.absent(),
@@ -1451,6 +1541,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     this.occupation = const Value.absent(),
     this.civilStatus = const Value.absent(),
     this.noOfChildren = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   YouthInfosCompanion.insert({
     this.youthInfosId = const Value.absent(),
@@ -1470,6 +1561,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     required String occupation,
     required String civilStatus,
     required int noOfChildren,
+    this.createdAt = const Value.absent(),
   }) : youthUserId = Value(youthUserId),
        fname = Value(fname),
        mname = Value(mname),
@@ -1503,6 +1595,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Expression<String>? occupation,
     Expression<String>? civilStatus,
     Expression<int>? noOfChildren,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (youthInfosId != null) 'youth_infos_id': youthInfosId,
@@ -1522,6 +1615,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
       if (occupation != null) 'occupation': occupation,
       if (civilStatus != null) 'civil_status': civilStatus,
       if (noOfChildren != null) 'no_of_children': noOfChildren,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -1543,6 +1637,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Value<String>? occupation,
     Value<String>? civilStatus,
     Value<int>? noOfChildren,
+    Value<DateTime>? createdAt,
   }) {
     return YouthInfosCompanion(
       youthInfosId: youthInfosId ?? this.youthInfosId,
@@ -1562,6 +1657,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
       occupation: occupation ?? this.occupation,
       civilStatus: civilStatus ?? this.civilStatus,
       noOfChildren: noOfChildren ?? this.noOfChildren,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -1619,6 +1715,9 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     if (noOfChildren.present) {
       map['no_of_children'] = Variable<int>(noOfChildren.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
     return map;
   }
 
@@ -1641,7 +1740,8 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
           ..write('religion: $religion, ')
           ..write('occupation: $occupation, ')
           ..write('civilStatus: $civilStatus, ')
-          ..write('noOfChildren: $noOfChildren')
+          ..write('noOfChildren: $noOfChildren, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -1722,6 +1822,18 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     educBgId,
@@ -1730,6 +1842,7 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
     nameOfSchool,
     periodOfAttendance,
     yearGraduate,
+    createdAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1801,6 +1914,12 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
     } else if (isInserting) {
       context.missing(_yearGraduateMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
     return context;
   }
 
@@ -1840,6 +1959,11 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
             DriftSqlType.string,
             data['${effectivePrefix}year_graduate'],
           )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
     );
   }
 
@@ -1856,6 +1980,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
   final String nameOfSchool;
   final String periodOfAttendance;
   final String yearGraduate;
+  final DateTime createdAt;
   const EducBg({
     required this.educBgId,
     required this.youthUserId,
@@ -1863,6 +1988,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     required this.nameOfSchool,
     required this.periodOfAttendance,
     required this.yearGraduate,
+    required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1873,6 +1999,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     map['name_of_school'] = Variable<String>(nameOfSchool);
     map['period_of_attendance'] = Variable<String>(periodOfAttendance);
     map['year_graduate'] = Variable<String>(yearGraduate);
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -1884,6 +2011,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
       nameOfSchool: Value(nameOfSchool),
       periodOfAttendance: Value(periodOfAttendance),
       yearGraduate: Value(yearGraduate),
+      createdAt: Value(createdAt),
     );
   }
 
@@ -1901,6 +2029,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
         json['periodOfAttendance'],
       ),
       yearGraduate: serializer.fromJson<String>(json['yearGraduate']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -1913,6 +2042,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
       'nameOfSchool': serializer.toJson<String>(nameOfSchool),
       'periodOfAttendance': serializer.toJson<String>(periodOfAttendance),
       'yearGraduate': serializer.toJson<String>(yearGraduate),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -1923,6 +2053,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     String? nameOfSchool,
     String? periodOfAttendance,
     String? yearGraduate,
+    DateTime? createdAt,
   }) => EducBg(
     educBgId: educBgId ?? this.educBgId,
     youthUserId: youthUserId ?? this.youthUserId,
@@ -1930,6 +2061,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     nameOfSchool: nameOfSchool ?? this.nameOfSchool,
     periodOfAttendance: periodOfAttendance ?? this.periodOfAttendance,
     yearGraduate: yearGraduate ?? this.yearGraduate,
+    createdAt: createdAt ?? this.createdAt,
   );
   EducBg copyWithCompanion(EducBgsCompanion data) {
     return EducBg(
@@ -1949,6 +2081,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
           data.yearGraduate.present
               ? data.yearGraduate.value
               : this.yearGraduate,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -1960,7 +2093,8 @@ class EducBg extends DataClass implements Insertable<EducBg> {
           ..write('level: $level, ')
           ..write('nameOfSchool: $nameOfSchool, ')
           ..write('periodOfAttendance: $periodOfAttendance, ')
-          ..write('yearGraduate: $yearGraduate')
+          ..write('yearGraduate: $yearGraduate, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -1973,6 +2107,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     nameOfSchool,
     periodOfAttendance,
     yearGraduate,
+    createdAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -1983,7 +2118,8 @@ class EducBg extends DataClass implements Insertable<EducBg> {
           other.level == this.level &&
           other.nameOfSchool == this.nameOfSchool &&
           other.periodOfAttendance == this.periodOfAttendance &&
-          other.yearGraduate == this.yearGraduate);
+          other.yearGraduate == this.yearGraduate &&
+          other.createdAt == this.createdAt);
 }
 
 class EducBgsCompanion extends UpdateCompanion<EducBg> {
@@ -1993,6 +2129,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
   final Value<String> nameOfSchool;
   final Value<String> periodOfAttendance;
   final Value<String> yearGraduate;
+  final Value<DateTime> createdAt;
   const EducBgsCompanion({
     this.educBgId = const Value.absent(),
     this.youthUserId = const Value.absent(),
@@ -2000,6 +2137,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
     this.nameOfSchool = const Value.absent(),
     this.periodOfAttendance = const Value.absent(),
     this.yearGraduate = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   EducBgsCompanion.insert({
     this.educBgId = const Value.absent(),
@@ -2008,6 +2146,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
     required String nameOfSchool,
     required String periodOfAttendance,
     required String yearGraduate,
+    this.createdAt = const Value.absent(),
   }) : youthUserId = Value(youthUserId),
        level = Value(level),
        nameOfSchool = Value(nameOfSchool),
@@ -2020,6 +2159,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
     Expression<String>? nameOfSchool,
     Expression<String>? periodOfAttendance,
     Expression<String>? yearGraduate,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (educBgId != null) 'educ_bg_id': educBgId,
@@ -2029,6 +2169,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
       if (periodOfAttendance != null)
         'period_of_attendance': periodOfAttendance,
       if (yearGraduate != null) 'year_graduate': yearGraduate,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -2039,6 +2180,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
     Value<String>? nameOfSchool,
     Value<String>? periodOfAttendance,
     Value<String>? yearGraduate,
+    Value<DateTime>? createdAt,
   }) {
     return EducBgsCompanion(
       educBgId: educBgId ?? this.educBgId,
@@ -2047,6 +2189,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
       nameOfSchool: nameOfSchool ?? this.nameOfSchool,
       periodOfAttendance: periodOfAttendance ?? this.periodOfAttendance,
       yearGraduate: yearGraduate ?? this.yearGraduate,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -2071,6 +2214,9 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
     if (yearGraduate.present) {
       map['year_graduate'] = Variable<String>(yearGraduate.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
     return map;
   }
 
@@ -2082,7 +2228,8 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
           ..write('level: $level, ')
           ..write('nameOfSchool: $nameOfSchool, ')
           ..write('periodOfAttendance: $periodOfAttendance, ')
-          ..write('yearGraduate: $yearGraduate')
+          ..write('yearGraduate: $yearGraduate, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -2172,6 +2319,18 @@ class $CivicInvolvementsTable extends CivicInvolvements
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     civicInvolvementId,
@@ -2181,6 +2340,7 @@ class $CivicInvolvementsTable extends CivicInvolvements
     start,
     end,
     yearGraduated,
+    createdAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2263,6 +2423,12 @@ class $CivicInvolvementsTable extends CivicInvolvements
     } else if (isInserting) {
       context.missing(_yearGraduatedMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2307,6 +2473,11 @@ class $CivicInvolvementsTable extends CivicInvolvements
             DriftSqlType.string,
             data['${effectivePrefix}year_graduated'],
           )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
     );
   }
 
@@ -2325,6 +2496,7 @@ class CivicInvolvement extends DataClass
   final String start;
   final String end;
   final String yearGraduated;
+  final DateTime createdAt;
   const CivicInvolvement({
     required this.civicInvolvementId,
     required this.youthUserId,
@@ -2333,6 +2505,7 @@ class CivicInvolvement extends DataClass
     required this.start,
     required this.end,
     required this.yearGraduated,
+    required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2344,6 +2517,7 @@ class CivicInvolvement extends DataClass
     map['start'] = Variable<String>(start);
     map['end'] = Variable<String>(end);
     map['year_graduated'] = Variable<String>(yearGraduated);
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -2356,6 +2530,7 @@ class CivicInvolvement extends DataClass
       start: Value(start),
       end: Value(end),
       yearGraduated: Value(yearGraduated),
+      createdAt: Value(createdAt),
     );
   }
 
@@ -2376,6 +2551,7 @@ class CivicInvolvement extends DataClass
       start: serializer.fromJson<String>(json['start']),
       end: serializer.fromJson<String>(json['end']),
       yearGraduated: serializer.fromJson<String>(json['yearGraduated']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -2389,6 +2565,7 @@ class CivicInvolvement extends DataClass
       'start': serializer.toJson<String>(start),
       'end': serializer.toJson<String>(end),
       'yearGraduated': serializer.toJson<String>(yearGraduated),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -2400,6 +2577,7 @@ class CivicInvolvement extends DataClass
     String? start,
     String? end,
     String? yearGraduated,
+    DateTime? createdAt,
   }) => CivicInvolvement(
     civicInvolvementId: civicInvolvementId ?? this.civicInvolvementId,
     youthUserId: youthUserId ?? this.youthUserId,
@@ -2408,6 +2586,7 @@ class CivicInvolvement extends DataClass
     start: start ?? this.start,
     end: end ?? this.end,
     yearGraduated: yearGraduated ?? this.yearGraduated,
+    createdAt: createdAt ?? this.createdAt,
   );
   CivicInvolvement copyWithCompanion(CivicInvolvementsCompanion data) {
     return CivicInvolvement(
@@ -2431,6 +2610,7 @@ class CivicInvolvement extends DataClass
           data.yearGraduated.present
               ? data.yearGraduated.value
               : this.yearGraduated,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -2443,7 +2623,8 @@ class CivicInvolvement extends DataClass
           ..write('addressOfOrganization: $addressOfOrganization, ')
           ..write('start: $start, ')
           ..write('end: $end, ')
-          ..write('yearGraduated: $yearGraduated')
+          ..write('yearGraduated: $yearGraduated, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -2457,6 +2638,7 @@ class CivicInvolvement extends DataClass
     start,
     end,
     yearGraduated,
+    createdAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -2468,7 +2650,8 @@ class CivicInvolvement extends DataClass
           other.addressOfOrganization == this.addressOfOrganization &&
           other.start == this.start &&
           other.end == this.end &&
-          other.yearGraduated == this.yearGraduated);
+          other.yearGraduated == this.yearGraduated &&
+          other.createdAt == this.createdAt);
 }
 
 class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
@@ -2479,6 +2662,7 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
   final Value<String> start;
   final Value<String> end;
   final Value<String> yearGraduated;
+  final Value<DateTime> createdAt;
   const CivicInvolvementsCompanion({
     this.civicInvolvementId = const Value.absent(),
     this.youthUserId = const Value.absent(),
@@ -2487,6 +2671,7 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
     this.start = const Value.absent(),
     this.end = const Value.absent(),
     this.yearGraduated = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   CivicInvolvementsCompanion.insert({
     this.civicInvolvementId = const Value.absent(),
@@ -2496,6 +2681,7 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
     required String start,
     required String end,
     required String yearGraduated,
+    this.createdAt = const Value.absent(),
   }) : youthUserId = Value(youthUserId),
        nameOfOrganization = Value(nameOfOrganization),
        addressOfOrganization = Value(addressOfOrganization),
@@ -2510,6 +2696,7 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
     Expression<String>? start,
     Expression<String>? end,
     Expression<String>? yearGraduated,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (civicInvolvementId != null)
@@ -2522,6 +2709,7 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
       if (start != null) 'start': start,
       if (end != null) 'end': end,
       if (yearGraduated != null) 'year_graduated': yearGraduated,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -2533,6 +2721,7 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
     Value<String>? start,
     Value<String>? end,
     Value<String>? yearGraduated,
+    Value<DateTime>? createdAt,
   }) {
     return CivicInvolvementsCompanion(
       civicInvolvementId: civicInvolvementId ?? this.civicInvolvementId,
@@ -2543,6 +2732,7 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
       start: start ?? this.start,
       end: end ?? this.end,
       yearGraduated: yearGraduated ?? this.yearGraduated,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -2572,6 +2762,9 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
     if (yearGraduated.present) {
       map['year_graduated'] = Variable<String>(yearGraduated.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
     return map;
   }
 
@@ -2584,7 +2777,8 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
           ..write('addressOfOrganization: $addressOfOrganization, ')
           ..write('start: $start, ')
           ..write('end: $end, ')
-          ..write('yearGraduated: $yearGraduated')
+          ..write('yearGraduated: $yearGraduated, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -2805,6 +2999,7 @@ typedef $$YouthUsersTableCreateCompanionBuilder =
       required String youthType,
       required String skills,
       required String status,
+      Value<DateTime> createdAt,
       Value<DateTime> registerAt,
     });
 typedef $$YouthUsersTableUpdateCompanionBuilder =
@@ -2814,6 +3009,7 @@ typedef $$YouthUsersTableUpdateCompanionBuilder =
       Value<String> youthType,
       Value<String> skills,
       Value<String> status,
+      Value<DateTime> createdAt,
       Value<DateTime> registerAt,
     });
 
@@ -2926,6 +3122,11 @@ class $$YouthUsersTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3044,6 +3245,11 @@ class $$YouthUsersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get registerAt => $composableBuilder(
     column: $table.registerAt,
     builder: (column) => ColumnOrderings(column),
@@ -3075,6 +3281,9 @@ class $$YouthUsersTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   GeneratedColumn<DateTime> get registerAt => $composableBuilder(
     column: $table.registerAt,
@@ -3195,6 +3404,7 @@ class $$YouthUsersTableTableManager
                 Value<String> youthType = const Value.absent(),
                 Value<String> skills = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion(
                 youthUserId: youthUserId,
@@ -3202,6 +3412,7 @@ class $$YouthUsersTableTableManager
                 youthType: youthType,
                 skills: skills,
                 status: status,
+                createdAt: createdAt,
                 registerAt: registerAt,
               ),
           createCompanionCallback:
@@ -3211,6 +3422,7 @@ class $$YouthUsersTableTableManager
                 required String youthType,
                 required String skills,
                 required String status,
+                Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion.insert(
                 youthUserId: youthUserId,
@@ -3218,6 +3430,7 @@ class $$YouthUsersTableTableManager
                 youthType: youthType,
                 skills: skills,
                 status: status,
+                createdAt: createdAt,
                 registerAt: registerAt,
               ),
           withReferenceMapper:
@@ -3356,6 +3569,7 @@ typedef $$YouthInfosTableCreateCompanionBuilder =
       required String occupation,
       required String civilStatus,
       required int noOfChildren,
+      Value<DateTime> createdAt,
     });
 typedef $$YouthInfosTableUpdateCompanionBuilder =
     YouthInfosCompanion Function({
@@ -3376,6 +3590,7 @@ typedef $$YouthInfosTableUpdateCompanionBuilder =
       Value<String> occupation,
       Value<String> civilStatus,
       Value<int> noOfChildren,
+      Value<DateTime> createdAt,
     });
 
 final class $$YouthInfosTableReferences
@@ -3494,6 +3709,11 @@ class $$YouthInfosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$YouthUsersTableFilterComposer get youthUserId {
     final $$YouthUsersTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -3607,6 +3827,11 @@ class $$YouthInfosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$YouthUsersTableOrderingComposer get youthUserId {
     final $$YouthUsersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3700,6 +3925,9 @@ class $$YouthInfosTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
   $$YouthUsersTableAnnotationComposer get youthUserId {
     final $$YouthUsersTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -3769,6 +3997,7 @@ class $$YouthInfosTableTableManager
                 Value<String> occupation = const Value.absent(),
                 Value<String> civilStatus = const Value.absent(),
                 Value<int> noOfChildren = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
               }) => YouthInfosCompanion(
                 youthInfosId: youthInfosId,
                 youthUserId: youthUserId,
@@ -3787,6 +4016,7 @@ class $$YouthInfosTableTableManager
                 occupation: occupation,
                 civilStatus: civilStatus,
                 noOfChildren: noOfChildren,
+                createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
@@ -3807,6 +4037,7 @@ class $$YouthInfosTableTableManager
                 required String occupation,
                 required String civilStatus,
                 required int noOfChildren,
+                Value<DateTime> createdAt = const Value.absent(),
               }) => YouthInfosCompanion.insert(
                 youthInfosId: youthInfosId,
                 youthUserId: youthUserId,
@@ -3825,6 +4056,7 @@ class $$YouthInfosTableTableManager
                 occupation: occupation,
                 civilStatus: civilStatus,
                 noOfChildren: noOfChildren,
+                createdAt: createdAt,
               ),
           withReferenceMapper:
               (p0) =>
@@ -3903,6 +4135,7 @@ typedef $$EducBgsTableCreateCompanionBuilder =
       required String nameOfSchool,
       required String periodOfAttendance,
       required String yearGraduate,
+      Value<DateTime> createdAt,
     });
 typedef $$EducBgsTableUpdateCompanionBuilder =
     EducBgsCompanion Function({
@@ -3912,6 +4145,7 @@ typedef $$EducBgsTableUpdateCompanionBuilder =
       Value<String> nameOfSchool,
       Value<String> periodOfAttendance,
       Value<String> yearGraduate,
+      Value<DateTime> createdAt,
     });
 
 final class $$EducBgsTableReferences
@@ -3969,6 +4203,11 @@ class $$EducBgsTableFilterComposer
 
   ColumnFilters<String> get yearGraduate => $composableBuilder(
     column: $table.yearGraduate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4030,6 +4269,11 @@ class $$EducBgsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$YouthUsersTableOrderingComposer get youthUserId {
     final $$YouthUsersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4083,6 +4327,9 @@ class $$EducBgsTableAnnotationComposer
     column: $table.yearGraduate,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   $$YouthUsersTableAnnotationComposer get youthUserId {
     final $$YouthUsersTableAnnotationComposer composer = $composerBuilder(
@@ -4142,6 +4389,7 @@ class $$EducBgsTableTableManager
                 Value<String> nameOfSchool = const Value.absent(),
                 Value<String> periodOfAttendance = const Value.absent(),
                 Value<String> yearGraduate = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
               }) => EducBgsCompanion(
                 educBgId: educBgId,
                 youthUserId: youthUserId,
@@ -4149,6 +4397,7 @@ class $$EducBgsTableTableManager
                 nameOfSchool: nameOfSchool,
                 periodOfAttendance: periodOfAttendance,
                 yearGraduate: yearGraduate,
+                createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
@@ -4158,6 +4407,7 @@ class $$EducBgsTableTableManager
                 required String nameOfSchool,
                 required String periodOfAttendance,
                 required String yearGraduate,
+                Value<DateTime> createdAt = const Value.absent(),
               }) => EducBgsCompanion.insert(
                 educBgId: educBgId,
                 youthUserId: youthUserId,
@@ -4165,6 +4415,7 @@ class $$EducBgsTableTableManager
                 nameOfSchool: nameOfSchool,
                 periodOfAttendance: periodOfAttendance,
                 yearGraduate: yearGraduate,
+                createdAt: createdAt,
               ),
           withReferenceMapper:
               (p0) =>
@@ -4244,6 +4495,7 @@ typedef $$CivicInvolvementsTableCreateCompanionBuilder =
       required String start,
       required String end,
       required String yearGraduated,
+      Value<DateTime> createdAt,
     });
 typedef $$CivicInvolvementsTableUpdateCompanionBuilder =
     CivicInvolvementsCompanion Function({
@@ -4254,6 +4506,7 @@ typedef $$CivicInvolvementsTableUpdateCompanionBuilder =
       Value<String> start,
       Value<String> end,
       Value<String> yearGraduated,
+      Value<DateTime> createdAt,
     });
 
 final class $$CivicInvolvementsTableReferences
@@ -4331,6 +4584,11 @@ class $$CivicInvolvementsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$YouthUsersTableFilterComposer get youthUserId {
     final $$YouthUsersTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -4394,6 +4652,11 @@ class $$CivicInvolvementsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$YouthUsersTableOrderingComposer get youthUserId {
     final $$YouthUsersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4452,6 +4715,9 @@ class $$CivicInvolvementsTableAnnotationComposer
     column: $table.yearGraduated,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   $$YouthUsersTableAnnotationComposer get youthUserId {
     final $$YouthUsersTableAnnotationComposer composer = $composerBuilder(
@@ -4523,6 +4789,7 @@ class $$CivicInvolvementsTableTableManager
                 Value<String> start = const Value.absent(),
                 Value<String> end = const Value.absent(),
                 Value<String> yearGraduated = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
               }) => CivicInvolvementsCompanion(
                 civicInvolvementId: civicInvolvementId,
                 youthUserId: youthUserId,
@@ -4531,6 +4798,7 @@ class $$CivicInvolvementsTableTableManager
                 start: start,
                 end: end,
                 yearGraduated: yearGraduated,
+                createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
@@ -4541,6 +4809,7 @@ class $$CivicInvolvementsTableTableManager
                 required String start,
                 required String end,
                 required String yearGraduated,
+                Value<DateTime> createdAt = const Value.absent(),
               }) => CivicInvolvementsCompanion.insert(
                 civicInvolvementId: civicInvolvementId,
                 youthUserId: youthUserId,
@@ -4549,6 +4818,7 @@ class $$CivicInvolvementsTableTableManager
                 start: start,
                 end: end,
                 yearGraduated: yearGraduated,
+                createdAt: createdAt,
               ),
           withReferenceMapper:
               (p0) =>
