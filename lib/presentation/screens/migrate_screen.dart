@@ -205,7 +205,6 @@ class _MigrateScreenState extends State<MigrateScreen> {
           errors['email'] = extractError(errorMap?['email']);
           errors['password'] = extractError(errorMap?['password']);
         });
-
         formKey.currentState!.validate();
       }
     }
