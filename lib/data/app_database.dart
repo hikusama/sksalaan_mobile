@@ -190,6 +190,9 @@ class AppDatabase extends _$AppDatabase {
 
     final List<Map<String, dynamic>> exportData = [];
 
+try{
+
+
     for (final user in standbyUsers) {
       final info =
           await (select(youthInfos)..where(
@@ -208,6 +211,7 @@ class AppDatabase extends _$AppDatabase {
           'id': user.youthUserId,
           'youthType': user.youthType,
           'skills': user.skills,
+          'created_at': user.createdAt.toIso8601String(),
         },
         'info':
             info != null
@@ -228,7 +232,7 @@ class AppDatabase extends _$AppDatabase {
                   'occupation': info.occupation,
                   'civilStatus': info.civilStatus,
                   'noOfChildren': info.noOfChildren,
-                  'created_at': info.createdAt,
+                  'created_at': info.createdAt.toIso8601String(),
                 }
                 : null,
         'educBG':
@@ -239,7 +243,7 @@ class AppDatabase extends _$AppDatabase {
                     'nameOfSchool': e.nameOfSchool,
                     'periodOfAttendance': e.periodOfAttendance,
                     'yearGraduate': e.yearGraduate,
-                    'created_at': e.createdAt,
+                    'created_at': e.createdAt.toIso8601String(),
                   },
                 )
                 .toList(),
@@ -252,13 +256,15 @@ class AppDatabase extends _$AppDatabase {
                     'start': c.start,
                     'end': c.end,
                     'yearGraduated': c.yearGraduated,
-                    'created_at': c.createdAt,
+                    'created_at': c.createdAt.toIso8601String(),
                   },
                 )
                 .toList(),
       });
     }
-
+}catch(e){
+  print(e);
+}
     return exportData;
   }
 
