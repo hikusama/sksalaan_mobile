@@ -337,7 +337,7 @@ class $YouthUsersTable extends YouthUsers
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
+    defaultValue: currentDate,
   );
   static const VerificationMeta _registerAtMeta = const VerificationMeta(
     'registerAt',
@@ -349,7 +349,7 @@ class $YouthUsersTable extends YouthUsers
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
+    defaultValue: currentDate,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -760,7 +760,7 @@ class $YouthInfosTable extends YouthInfos
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     $customConstraints:
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE NOT NULL',
+        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE ',
   );
   static const VerificationMeta _fnameMeta = const VerificationMeta('fname');
   @override
@@ -921,7 +921,7 @@ class $YouthInfosTable extends YouthInfos
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
+    defaultValue: currentDate,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -1832,7 +1832,7 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
+    defaultValue: currentDate,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -2329,7 +2329,7 @@ class $CivicInvolvementsTable extends CivicInvolvements
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
+    defaultValue: currentDate,
   );
   @override
   List<GeneratedColumn> get $columns => [
