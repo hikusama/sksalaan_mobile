@@ -116,12 +116,17 @@ class _LoggedInState extends State<LoggedIn> {
                           print('------------');
 
                           if (scanned < 1) return;
+                          try {
                           final youthBulk = await db.migrate();
                           final resMigrate = await client?.migrateData(
                             youthBulk,
                           );
+                          print('------------2');
+                          print(youthBulk);
+                          print('------------3');
+                          print(resMigrate);
 
-                          try {
+
                             if (resMigrate != null &&
                                 resMigrate.containsKey('data')) {
                               final data = resMigrate['data'];
@@ -143,6 +148,7 @@ class _LoggedInState extends State<LoggedIn> {
                               );
                             } else {}
                           } catch (e) {
+                          await Future.delayed(Duration(seconds: 2));
                             print(e);
                           }
                           setState(() => isRequested = true); // Migrating
