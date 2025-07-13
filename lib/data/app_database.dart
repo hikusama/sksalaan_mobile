@@ -190,81 +190,79 @@ class AppDatabase extends _$AppDatabase {
 
     final List<Map<String, dynamic>> exportData = [];
 
-try{
+    try {
+      for (final user in standbyUsers) {
+        final info =
+            await (select(youthInfos)..where(
+              (tbl) => tbl.youthUserId.equals(user.youthUserId),
+            )).getSingleOrNull();
 
+        final educs =
+            await (select(educBgs)
+              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
 
-    for (final user in standbyUsers) {
-      final info =
-          await (select(youthInfos)..where(
-            (tbl) => tbl.youthUserId.equals(user.youthUserId),
-          )).getSingleOrNull();
-
-      final educs =
-          await (select(educBgs)
-            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-
-      final civics =
-          await (select(civicInvolvements)
-            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-      exportData.add({
-        'user': {
-          'id': user.youthUserId,
-          'youthType': user.youthType,
-          'skills': user.skills,
-          'created_at': user.createdAt.toIso8601String(),
-        },
-        'info':
-            info != null
-                ? {
-                  'fname': info.fname,
-                  'mname': info.mname,
-                  'lname': info.lname,
-                  'sex': info.sex,
-                  'gender': info.gender,
-                  'age': info.age,
-                  'address': info.placeOfBirth,
-                  'dateOfBirth': info.dateOfBirth,
-                  'placeOfBirth': info.placeOfBirth,
-                  'contactNo': info.contactNo,
-                  'height': info.height,
-                  'weight': info.weight,
-                  'religion': info.religion,
-                  'occupation': info.occupation,
-                  'civilStatus': info.civilStatus,
-                  'noOfChildren': info.noOfChildren,
-                  'created_at': info.createdAt.toIso8601String(),
-                }
-                : null,
-        'educBG':
-            educs
-                .map(
-                  (e) => {
-                    'level': e.level,
-                    'nameOfSchool': e.nameOfSchool,
-                    'periodOfAttendance': e.periodOfAttendance,
-                    'yearGraduate': e.yearGraduate,
-                    'created_at': e.createdAt.toIso8601String(),
-                  },
-                )
-                .toList(),
-        'civic':
-            civics
-                .map(
-                  (c) => {
-                    'nameOfOrganization': c.nameOfOrganization,
-                    'addressOfOrganization': c.addressOfOrganization,
-                    'start': c.start,
-                    'end': c.end,
-                    'yearGraduated': c.yearGraduated,
-                    'created_at': c.createdAt.toIso8601String(),
-                  },
-                )
-                .toList(),
-      });
+        final civics =
+            await (select(civicInvolvements)
+              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+        exportData.add({
+          'user': {
+            'id': user.youthUserId,
+            'youthType': user.youthType,
+            'skills': user.skills,
+            'created_at': user.createdAt.toIso8601String(),
+          },
+          'info':
+              info != null
+                  ? {
+                    'fname': info.fname,
+                    'mname': info.mname,
+                    'lname': info.lname,
+                    'sex': info.sex,
+                    'gender': info.gender,
+                    'age': info.age,
+                    'address': info.placeOfBirth,
+                    'dateOfBirth': info.dateOfBirth,
+                    'placeOfBirth': info.placeOfBirth,
+                    'contactNo': info.contactNo,
+                    'height': info.height,
+                    'weight': info.weight,
+                    'religion': info.religion,
+                    'occupation': info.occupation,
+                    'civilStatus': info.civilStatus,
+                    'noOfChildren': info.noOfChildren,
+                    'created_at': info.createdAt.toIso8601String(),
+                  }
+                  : null,
+          'educBG':
+              educs
+                  .map(
+                    (e) => {
+                      'level': e.level,
+                      'nameOfSchool': e.nameOfSchool,
+                      'periodOfAttendance': e.periodOfAttendance,
+                      'yearGraduate': e.yearGraduate,
+                      'created_at': e.createdAt.toIso8601String(),
+                    },
+                  )
+                  .toList(),
+          'civic':
+              civics
+                  .map(
+                    (c) => {
+                      'nameOfOrganization': c.nameOfOrganization,
+                      'addressOfOrganization': c.addressOfOrganization,
+                      'start': c.start,
+                      'end': c.end,
+                      'yearGraduated': c.yearGraduated,
+                      'created_at': c.createdAt.toIso8601String(),
+                    },
+                  )
+                  .toList(),
+        });
+      }
+    } catch (e) {
+      print(e);
     }
-}catch(e){
-  print(e);
-}
     return exportData;
   }
 
