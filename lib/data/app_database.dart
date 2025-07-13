@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:skyouthprofiling/service/connection.dart';
+import 'package:intl/intl.dart';
 
 part 'app_database.g.dart';
 
@@ -204,12 +205,19 @@ class AppDatabase extends _$AppDatabase {
         final civics =
             await (select(civicInvolvements)
               ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+      print("------------|f");
+
+        print(user.createdAt.runtimeType);
+        print(info?.createdAt.runtimeType);
+
+
+      print("------------|f");
         exportData.add({
           'user': {
             'id': user.youthUserId,
             'youthType': user.youthType,
             'skills': user.skills,
-            'created_at': user.createdAt.toIso8601String(),
+            'created_at': DateFormat('yyyy-MM-dd').format(user.createdAt),
           },
           'info':
               info != null
@@ -230,7 +238,9 @@ class AppDatabase extends _$AppDatabase {
                     'occupation': info.occupation,
                     'civilStatus': info.civilStatus,
                     'noOfChildren': info.noOfChildren,
-                    'created_at': info.createdAt.toIso8601String(),
+                    'created_at': DateFormat(
+                      'yyyy-MM-dd',
+                    ).format(info.createdAt),
                   }
                   : null,
           'educBG':
@@ -241,7 +251,9 @@ class AppDatabase extends _$AppDatabase {
                       'nameOfSchool': e.nameOfSchool,
                       'periodOfAttendance': e.periodOfAttendance,
                       'yearGraduate': e.yearGraduate,
-                      'created_at': e.createdAt.toIso8601String(),
+                      'created_at': DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(e.createdAt),
                     },
                   )
                   .toList(),
@@ -254,13 +266,16 @@ class AppDatabase extends _$AppDatabase {
                       'start': c.start,
                       'end': c.end,
                       'yearGraduated': c.yearGraduated,
-                      'created_at': c.createdAt.toIso8601String(),
+                      'created_at': DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(c.createdAt),
                     },
                   )
                   .toList(),
         });
       }
     } catch (e) {
+      print("------------=");
       print(e);
     }
     return exportData;

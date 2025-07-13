@@ -352,9 +352,7 @@ class _AddState extends State<Add> {
                                     civilStatus: drift.Value(
                                       civilStatsVal.toString().trim(),
                                     ),
-                                    gender: drift.Value(
-                                      genVal,
-                                    ),
+                                    gender: drift.Value(genVal),
                                     religion: drift.Value(
                                       religionVal.toString().trim(),
                                     ),
@@ -543,19 +541,25 @@ class _AddState extends State<Add> {
                     return null;
                   },
                   onTap: () async {
-                    DateTime today = DateTime.now();
-                    DateTime maxDate = DateTime(
+                    final now = DateTime.now();
+                    final today = DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                    ); // normalize
+
+                    final maxDate = DateTime(
                       today.year - 15,
                       today.month,
                       today.day,
                     );
-                    DateTime minDate = DateTime(
+                    final minDate = DateTime(
                       today.year - 30,
                       today.month,
                       today.day,
                     );
 
-                    DateTime? pickedDate = await showDatePicker(
+                    final pickedDate = await showDatePicker(
                       context: context,
                       initialDate: maxDate,
                       firstDate: minDate,
@@ -563,17 +567,18 @@ class _AddState extends State<Add> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate = DateFormat(
+                      final formattedDate = DateFormat(
                         'yyyy-MM-dd',
                       ).format(pickedDate);
-                      // String formattedDate = DateFormat('MMMM d, yyy').format(pickedDate);
-                      final today = DateTime.now();
-                      int age = today.year - pickedDate.year;
-                      if (today.month < pickedDate.month ||
-                          (today.month == pickedDate.month &&
-                              today.day < pickedDate.day)) {
-                        age--;
-                      }
+                      final age =
+                          today.year -
+                          pickedDate.year -
+                          ((today.month < pickedDate.month ||
+                                  (today.month == pickedDate.month &&
+                                      today.day < pickedDate.day))
+                              ? 1
+                              : 0);
+
                       setState(() {
                         _dobController.text = formattedDate;
                         _ageController.text = age.toString();
@@ -1294,7 +1299,6 @@ class _AddState extends State<Add> {
                 SizedBox(height: 10),
 
                 Container(
-
                   width: double.infinity,
                   padding: EdgeInsets.fromLTRB(8, 32, 8, 12),
 

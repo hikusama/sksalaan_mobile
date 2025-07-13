@@ -142,10 +142,10 @@ class _LoggedInState extends State<LoggedIn> {
                                 fld = failed.length;
                               });
 
-                              await db.updateMigrationStatus(
-                                submitted: submitted,
-                                failed: failed,
-                              );
+                              // await db.updateMigrationStatus(
+                              //   submitted: submitted,
+                              //   failed: failed,
+                              // );
                             } else {}
                           } catch (e) {
                           await Future.delayed(Duration(seconds: 2));
