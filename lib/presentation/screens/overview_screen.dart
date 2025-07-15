@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
-import 'package:skyouthprofiling/data/view/edit.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class OverviewScreen extends StatefulWidget {
@@ -464,14 +463,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               },
                             );
                             break;
-                          case 'edit':
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const Edit(),
-                              ),
-                            );
-                            break;
+
                         }
                       },
                       itemBuilder:

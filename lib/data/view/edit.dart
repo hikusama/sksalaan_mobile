@@ -6,8 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/presentation/main_screen.dart';
 
 class Edit extends StatefulWidget {
-  const Edit({super.key});
+  final FullYouthProfile profiles;
 
+  const Edit({super.key, required this.profiles});
   @override
   State<Edit> createState() => _EditState();
 }
@@ -31,6 +32,12 @@ class _EditState extends State<Edit> {
       default:
         return _formKeyStep1;
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fill();
   }
 
   int _steps = 1;
@@ -148,6 +155,7 @@ class _EditState extends State<Edit> {
     _wController.dispose();
     _occController.dispose();
     _nosController.dispose();
+
     _poaController.dispose();
     _ygschoolController.dispose();
 
@@ -159,6 +167,21 @@ class _EditState extends State<Edit> {
     confettiController.dispose();
 
     super.dispose();
+  }
+
+  void fill() {
+    final profiles = widget.profiles;
+
+    setState(() {
+      _fnameController.text = profiles.youthInfo!.fname;
+      _mnameController.text = profiles.youthInfo!.mname;
+      _lnameController.text = profiles.youthInfo!.lname;
+      _ageController.text = profiles.youthInfo!.age.toString();
+      _dobController.text = profiles.youthInfo!.dateOfBirth;
+      _cnController.text = profiles.youthInfo!.contactNo.toString();
+      _pobController.text = profiles.youthInfo!.placeOfBirth;
+      _nocController.text = profiles.youthInfo!.noOfChildren.toString();
+    });
   }
 
   @override

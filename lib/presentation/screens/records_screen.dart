@@ -39,6 +39,8 @@ class RecordsScreenState extends State<RecordsScreen> {
       limit: _limit,
       searchKeyword: arg,
     );
+
+    print(res['youth']);
     setState(() {
       _youthProfiles = List<FullYouthProfile>.from(res['youth']);
       _offset += _limit;
@@ -98,7 +100,8 @@ class RecordsScreenState extends State<RecordsScreen> {
                           await _loadInitialData('');
                         },
                         child: Scrollbar(
-                          thumbVisibility: _youthProfiles.isEmpty ? false : true,
+                          thumbVisibility:
+                              _youthProfiles.isEmpty ? false : true,
                           child:
                               _youthProfiles.isEmpty
                                   ? Text('No record...')
@@ -452,7 +455,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const Edit(),
+                                builder: (context) => Edit(profiles: profile),
                               ),
                             );
                             break;
