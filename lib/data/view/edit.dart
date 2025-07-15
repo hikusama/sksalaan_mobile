@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:confetti/confetti.dart';
+import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/presentation/main_screen.dart';
 
 class Edit extends StatefulWidget {
@@ -85,7 +86,15 @@ class _EditState extends State<Edit> {
   // };
   // 2
   final List<String> youthType = ['OSY', 'ISY'];
-  final List<String> religion = ['Islam', 'Christianity', 'Agnostic', 'Others'];
+  final List<String> religion = [
+    'Islam',
+    'Christianity',
+    'Judaism',
+    'Buddhism',
+    'Hinduism',
+    'Atheism',
+    'Others',
+  ];
   final List<String> civilStats = [
     'Single',
     'Married',
@@ -95,7 +104,14 @@ class _EditState extends State<Edit> {
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = ['unselect','Transgender', 'Agender', 'Bigender', 'Non-binary', 'Others'];
+  final List<String> gender = [
+    'unselect',
+    'Transgender',
+    'Agender',
+    'Bigender',
+    'Non-binary',
+    'Others',
+  ];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -247,7 +263,8 @@ class _EditState extends State<Edit> {
                         backgroundColor: Color.fromRGBO(20, 126, 169, 1),
                       ),
                       onPressed: () async {
-                        if (_steps >= 3 || _formKeyForCurrentStep().currentState!.validate()) {
+                        if (_steps >= 3 ||
+                            _formKeyForCurrentStep().currentState!.validate()) {
                           if (_steps == 5) {
                             final db = AppDatabase();
                             int youthUserID = 0;
@@ -277,15 +294,42 @@ class _EditState extends State<Edit> {
                                 await db.insertYouthInfo(
                                   YouthInfosCompanion(
                                     youthUserId: drift.Value(youthUserID),
-                                    fname: drift.Value(_fnameController.text),
-                                    mname: drift.Value(_mnameController.text),
-                                    lname: drift.Value(_lnameController.text),
+                                    fname: drift.Value(
+                                      _fnameController.text
+                                              .toUpperCase()
+                                              .characters
+                                              .first +
+                                          _fnameController.text
+                                              .toString()
+                                              .substring(1)
+                                              .trim(),
+                                    ),
+                                    mname: drift.Value(
+                                      _mnameController.text
+                                              .toUpperCase()
+                                              .characters
+                                              .first +
+                                          _mnameController.text
+                                              .toString()
+                                              .substring(1)
+                                              .trim(),
+                                    ),
+                                    lname: drift.Value(
+                                      _lnameController.text
+                                              .toUpperCase()
+                                              .characters
+                                              .first +
+                                          _lnameController.text
+                                              .toString()
+                                              .substring(1)
+                                              .trim(),
+                                    ),
 
                                     occupation: drift.Value(
-                                      _occController.text,
+                                      _occController.text.trim(),
                                     ),
                                     placeOfBirth: drift.Value(
-                                      _pobController.text,
+                                      _pobController.text.trim(),
                                     ),
                                     contactNo: drift.Value(
                                       int.tryParse(_cnController.text) ?? 0,
@@ -300,17 +344,19 @@ class _EditState extends State<Edit> {
                                       double.tryParse(_wController.text) ?? 0,
                                     ),
                                     dateOfBirth: drift.Value(
-                                      _dobController.text,
+                                      _dobController.text.trim(),
                                     ),
                                     age: drift.Value(
                                       int.tryParse(_ageController.text) ?? 0,
                                     ),
                                     civilStatus: drift.Value(
-                                      civilStatsVal ?? 'Unknown',
+                                      civilStatsVal.toString().trim(),
                                     ),
-                                    gender: drift.Value(genVal ?? ''),
-                                    religion: drift.Value(religionVal ?? ''),
-                                    sex: drift.Value(sexVal ?? ''),
+                                    gender: drift.Value(genVal),
+                                    religion: drift.Value(
+                                      religionVal.toString().trim(),
+                                    ),
+                                    sex: drift.Value(sexVal.toString().trim()),
                                   ),
                                 );
                                 if (educbg.isNotEmpty) {
@@ -470,10 +516,10 @@ class _EditState extends State<Edit> {
                     }
 
                     try {
-                      final parts = value.split('/');
-                      final month = int.parse(parts[0]);
-                      final day = int.parse(parts[1]);
-                      final year = int.parse(parts[2]);
+                      final parts = value.split('-');
+                      final year = int.parse(parts[0]);
+                      final month = int.parse(parts[1]);
+                      final day = int.parse(parts[2]);
                       final dob = DateTime(year, month, day);
                       final today = DateTime.now();
                       final age =
@@ -495,19 +541,25 @@ class _EditState extends State<Edit> {
                     return null;
                   },
                   onTap: () async {
-                    DateTime today = DateTime.now();
-                    DateTime maxDate = DateTime(
+                    final now = DateTime.now();
+                    final today = DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                    ); // normalize
+
+                    final maxDate = DateTime(
                       today.year - 15,
                       today.month,
                       today.day,
                     );
-                    DateTime minDate = DateTime(
+                    final minDate = DateTime(
                       today.year - 30,
                       today.month,
                       today.day,
                     );
 
-                    DateTime? pickedDate = await showDatePicker(
+                    final pickedDate = await showDatePicker(
                       context: context,
                       initialDate: maxDate,
                       firstDate: minDate,
@@ -515,15 +567,18 @@ class _EditState extends State<Edit> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
-                      final today = DateTime.now();
-                      int age = today.year - pickedDate.year;
-                      if (today.month < pickedDate.month ||
-                          (today.month == pickedDate.month &&
-                              today.day < pickedDate.day)) {
-                        age--;
-                      }
+                      final formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+                      final age =
+                          today.year -
+                          pickedDate.year -
+                          ((today.month < pickedDate.month ||
+                                  (today.month == pickedDate.month &&
+                                      today.day < pickedDate.day))
+                              ? 1
+                              : 0);
+
                       setState(() {
                         _dobController.text = formattedDate;
                         _ageController.text = age.toString();
@@ -778,14 +833,12 @@ class _EditState extends State<Edit> {
                           style: TextStyle(fontSize: 12, color: Colors.black),
                           controller: _skillsController,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              if (skills.isEmpty) {
-                                return 'Please enter the skills';
+                            if (skills.isEmpty) {
+                              return 'Please enter the skills';
+                            } else {
+                              if (value!.length > 30) {
+                                return 'Use only 30 characters';
                               }
-                              return null;
-                            }
-                            if (value.length > 30) {
-                              return 'Use only 30 characters';
                             }
                             return null;
                           },
@@ -1148,8 +1201,10 @@ class _EditState extends State<Edit> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      String formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+
                       setState(() {
                         _poaController.text = formattedDate;
                       });
@@ -1243,11 +1298,11 @@ class _EditState extends State<Edit> {
 
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(12, 32, 12, 12),
+                  padding: EdgeInsets.fromLTRB(8, 32, 8, 12),
 
                   child: SizedBox(
                     height: 150,
-                    width: 220,
+                    width: 240,
                     child:
                         educbg.isEmpty
                             ? Align(
@@ -1315,7 +1370,13 @@ class _EditState extends State<Edit> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['periodOfAttendance'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          data['periodOfAttendance'],
+                                                        ),
+                                                      ),
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1508,8 +1569,10 @@ class _EditState extends State<Edit> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      String formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+
                       setState(() {
                         _startController.text = formattedDate;
                       });
@@ -1568,8 +1631,10 @@ class _EditState extends State<Edit> {
                     );
 
                     if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
+                      String formattedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(pickedDate);
+
                       setState(() {
                         _endedController.text = formattedDate;
                       });
@@ -1664,11 +1729,11 @@ class _EditState extends State<Edit> {
 
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(12, 32, 12, 12),
+                  padding: EdgeInsets.fromLTRB(8, 32, 8, 12),
 
                   child: SizedBox(
                     height: 150,
-                    width: 220,
+                    width: 240,
                     child:
                         civic.isEmpty
                             ? Align(
@@ -1736,7 +1801,13 @@ class _EditState extends State<Edit> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['start'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          data['start'],
+                                                        ),
+                                                      ),
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1757,7 +1828,13 @@ class _EditState extends State<Edit> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['end'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          data['end'],
+                                                        ),
+                                                      ),
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1958,7 +2035,9 @@ class _EditState extends State<Edit> {
                                   Text(
                                     _dobController.text.isEmpty
                                         ? '--'
-                                        : _dobController.text,
+                                        : DateFormat('MMMM d, yyy').format(
+                                          DateTime.parse(_dobController.text),
+                                        ),
                                   ),
                                 ],
                               ),
@@ -2701,8 +2780,14 @@ class _EditState extends State<Edit> {
                                                       MainAxisSize.min,
                                                   children: [
                                                     Text(
-                                                      entry
-                                                          .value['periodOfAttendance'],
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          entry
+                                                              .value['periodOfAttendance'],
+                                                        ),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
@@ -2978,7 +3063,15 @@ class _EditState extends State<Edit> {
                                                   mainAxisSize:
                                                       MainAxisSize.min,
                                                   children: [
-                                                    Text(entry.value['start']),
+                                                    Text(
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          entry.value['start'],
+                                                        ),
+                                                      ),
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -3073,7 +3166,15 @@ class _EditState extends State<Edit> {
                                                   mainAxisSize:
                                                       MainAxisSize.min,
                                                   children: [
-                                                    Text(entry.value['end']),
+                                                    Text(
+                                                      DateFormat(
+                                                        'MMM d, yyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          entry.value['end'],
+                                                        ),
+                                                      ),
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -3208,7 +3309,9 @@ class _EditState extends State<Edit> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const MainScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const MainScreen(),
+                        ),
                       );
                     },
                     color: Color.fromRGBO(20, 126, 169, 1),
