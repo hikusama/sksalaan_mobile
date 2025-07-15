@@ -833,13 +833,10 @@ class _AddState extends State<Add> {
                           style: TextStyle(fontSize: 12, color: Colors.black),
                           controller: _skillsController,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              if (skills.isEmpty) {
+                            if (skills.isEmpty) {
                                 return 'Please enter the skills';
-                              }
-                              return null;
                             }
-                            if (value.length > 30) {
+                            if (value!.length > 30) {
                               return 'Use only 30 characters';
                             }
                             return null;
