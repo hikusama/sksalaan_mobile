@@ -834,10 +834,11 @@ class _AddState extends State<Add> {
                           controller: _skillsController,
                           validator: (value) {
                             if (skills.isEmpty) {
-                                return 'Please enter the skills';
-                            }
-                            if (value!.length > 30) {
-                              return 'Use only 30 characters';
+                              return 'Please enter the skills';
+                            } else {
+                              if (value!.length > 30) {
+                                return 'Use only 30 characters';
+                              }
                             }
                             return null;
                           },

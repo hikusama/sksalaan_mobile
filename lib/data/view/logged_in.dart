@@ -117,15 +117,14 @@ class _LoggedInState extends State<LoggedIn> {
 
                           if (scanned < 1) return;
                           try {
-                          final youthBulk = await db.migrate();
-                          final resMigrate = await client?.migrateData(
-                            youthBulk,
-                          );
-                          print('------------2');
-                          print(youthBulk);
-                          print('------------3');
-                          print(resMigrate);
-
+                            final youthBulk = await db.migrate();
+                            final resMigrate = await client?.migrateData(
+                              youthBulk,
+                            );
+                            print('------------2');
+                            print(youthBulk);
+                            print('------------3');
+                            print(resMigrate);
 
                             if (resMigrate != null &&
                                 resMigrate.containsKey('data')) {
@@ -148,7 +147,7 @@ class _LoggedInState extends State<LoggedIn> {
                               );
                             } else {}
                           } catch (e) {
-                          await Future.delayed(Duration(seconds: 2));
+                            await Future.delayed(Duration(seconds: 2));
                             print(e);
                           }
                           setState(() => isRequested = true); // Migrating
@@ -273,7 +272,7 @@ class _LoggedInState extends State<LoggedIn> {
       case 2:
         return _label("Go", "$scanned scanned data");
       case 3:
-        return _label("Migrating", "Long press to abort");
+        return _label("Migrating", "............");
       case 4:
         return _label("Start", "Scan again");
       default:
