@@ -144,6 +144,11 @@ class _LoggedInState extends State<LoggedIn> {
                                     sub = submitted.length;
                                     fld = failed.length;
                                   });
+
+                                  await db.updateMigrationStatus(
+                                    submitted: submitted,
+                                    failed: failed,
+                                  );
                                 } else {
                                   setState(() {
                                     errors['cycleErr'] =
