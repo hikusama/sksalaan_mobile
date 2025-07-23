@@ -5,7 +5,8 @@ import 'package:skyouthprofiling/service/dio_client.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 
 class LoggedIn extends StatefulWidget {
-  const LoggedIn({super.key});
+  final void Function(int) authenticated;
+  const LoggedIn({super.key, required this.authenticated});
 
   @override
   State<LoggedIn> createState() => _LoggedInState();
@@ -78,183 +79,234 @@ class _LoggedInState extends State<LoggedIn> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 controller: _scrollController,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Column(
                   children: [
-                    InkWell(
-                      onTap:
-                          () => setState(() {
-                            if (isRequested) {
-                              isRequested = false;
-                              isPressed = 0;
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap:
+                              () => setState(() {
+                                if (isRequested) {
+                                  isRequested = false;
+                                  isPressed = 0;
+                                }
+                              }),
+                          borderRadius: BorderRadius.circular(150),
+                          onTapDown: (_) => setState(() => isHv = true),
+                          onTapCancel: () => setState(() => isHv = false),
+                          onLongPress: () async {
+                            if (client == null ||
+                                (isPressed == 4 && isRequested)) {
+                              return;
                             }
-                          }),
-                      borderRadius: BorderRadius.circular(150),
-                      onTapDown: (_) => setState(() => isHv = true),
-                      onTapCancel: () => setState(() => isHv = false),
-                      onLongPress: () async {
-                        if (client == null || (isPressed == 4 && isRequested)) {
-                          return;
-                        }
 
-                        if (isPressed == 3) {
-                          client!.cancelToken.cancel("Aborted");
-                          return;
-                        }
+                            if (isPressed == 3) {
+                              client!.cancelToken.cancel("Aborted");
+                              return;
+                            }
 
-                        if (isPressed == 0) {
-                          setState(() => isPressed = 1); // Scanning
-                          final count = await db.countStandbyYouthUsers();
-                          await Future.delayed(Duration(seconds: 2));
-                          setState(() => scanned = count); // Go
-                          setState(() => isPressed = 2); // Go
-                          return;
-                        }
+                            if (isPressed == 0) {
+                              setState(() => isPressed = 1); // Scanning
+                              final count = await db.countStandbyYouthUsers();
+                              await Future.delayed(Duration(seconds: 2));
+                              setState(() => scanned = count); // Go
+                              setState(() => isPressed = 2); // Go
+                              return;
+                            }
 
-                        if (isPressed == 2) {
-                          setState(() => isPressed = 3); //
-                          print('------------');
+                            if (isPressed == 2) {
+                              if (scanned < 1) return;
+                              setState(() => isPressed = 3); //
+                              print('------------');
 
-                          if (scanned < 1) return;
-                          try {
-                            final youthBulk = await db.migrate();
-                            final resMigrate = await client?.migrateData(
-                              youthBulk,
-                            );
-                            print('------------2');
-                            print(youthBulk);
-                            print('------------3');
-                            print(resMigrate);
+                              try {
+                                final youthBulk = await db.migrate();
+                                final resMigrate = await client?.migrateData(
+                                  youthBulk,
+                                );
+                                print('------------2');
+                                print(youthBulk);
+                                print('------------3');
+                                // print(resMigrate);
 
-                            if (resMigrate != null &&
-                                resMigrate.containsKey('data')) {
-                              final data = resMigrate['data'];
-                              final submitted = List<int>.from(
-                                data['submitted'] ?? [],
-                              );
-                              final failed = List<int>.from(
-                                data['failed'] ?? [],
-                              );
+                                if (resMigrate?['data'] != null) {
+                                  final data = resMigrate!['data'];
+                                  final submitted = List<int>.from(
+                                    data['submitted'] ?? [],
+                                  );
+                                  final failed = List<int>.from(
+                                    data['failed'] ?? [],
+                                  );
+                                  setState(() {
+                                    attempted =
+                                        submitted.length + failed.length;
+                                    sub = submitted.length;
+                                    fld = failed.length;
+                                  });
+                                } else {
+                                  setState(() {
+                                    errors['cycleErr'] =
+                                        resMigrate?['error']['error']
+                                            .toString();
+                                  });
+                                  print(
+                                    'Error: ${resMigrate?['error']['error'].toString()}',
+                                  );
+                                }
+                              } catch (e) {
+                                await Future.delayed(Duration(seconds: 2));
+                                print(e);
+                              }
+                              setState(() => isRequested = true); // Migrating
                               setState(() {
-                                attempted = submitted.length + failed.length;
-                                sub = submitted.length;
-                                fld = failed.length;
-                              });
+                                if (errors.containsKey('cycleErr')) {
+                                  widget.authenticated(2);
+                                } else {
+                                  isPressed = 4;
+                                }
+                              }); // Start
+                              return;
+                            }
 
-                              await db.updateMigrationStatus(
-                                submitted: submitted,
-                                failed: failed,
-                              );
-                            } else {}
-                          } catch (e) {
-                            await Future.delayed(Duration(seconds: 2));
-                            print(e);
-                          }
-                          setState(() => isRequested = true); // Migrating
-                          setState(() => isPressed = 4); // Start
-                          return;
-                        }
-
-                        if (isPressed == 4) {
-                          setState(() => isPressed = 0); // Reset to Scan
-                          return;
-                        }
-                      },
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (isPressed == 1 || isPressed == 3)
-                            SizedBox(
-                              height: 250,
-                              width: 250,
-                              child: CircularProgressIndicator(
-                                value: null,
-                                strokeWidth: 6,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  const Color.fromARGB(255, 113, 63, 7),
+                            if (isPressed == 4) {
+                              setState(() => isPressed = 0); // Reset to Scan
+                              return;
+                            }
+                          },
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              if (isPressed == 1 || isPressed == 3)
+                                SizedBox(
+                                  height: 250,
+                                  width: 250,
+                                  child: CircularProgressIndicator(
+                                    value: null,
+                                    strokeWidth: 6,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      const Color.fromARGB(255, 113, 63, 7),
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                  ),
                                 ),
-                                backgroundColor: Colors.transparent,
-                              ),
-                            ),
-                          AnimatedContainer(
-                            duration: Duration(milliseconds: 200),
-                            height:
-                                isPressed == 1 || isPressed == 3
-                                    ? 200
-                                    : isPressed == 4
-                                    ? 130
-                                    : 150,
-                            width:
-                                isPressed == 1 || isPressed == 3
-                                    ? 200
-                                    : isPressed == 4
-                                    ? 130
-                                    : 150,
-                            decoration: BoxDecoration(
-                              color:
-                                  isRequested
-                                      ? const Color.fromARGB(218, 9, 53, 87)
-                                      : isPressed == 3
-                                      ? isHv
+                              AnimatedContainer(
+                                duration: Duration(milliseconds: 200),
+                                height:
+                                    isPressed == 1 || isPressed == 3
+                                        ? 200
+                                        : isPressed == 4
+                                        ? 130
+                                        : 150,
+                                width:
+                                    isPressed == 1 || isPressed == 3
+                                        ? 200
+                                        : isPressed == 4
+                                        ? 130
+                                        : 150,
+                                decoration: BoxDecoration(
+                                  color:
+                                      isRequested
+                                          ? const Color.fromARGB(218, 9, 53, 87)
+                                          : isPressed == 3
+                                          ? isHv
+                                              ? const Color.fromARGB(
+                                                146,
+                                                113,
+                                                64,
+                                                7,
+                                              )
+                                              : const Color.fromARGB(
+                                                255,
+                                                113,
+                                                63,
+                                                7,
+                                              )
+                                          : isHv
                                           ? const Color.fromARGB(
-                                            146,
-                                            113,
-                                            64,
-                                            7,
+                                            100,
+                                            27,
+                                            57,
+                                            70,
                                           )
                                           : const Color.fromARGB(
-                                            255,
-                                            113,
-                                            63,
-                                            7,
-                                          )
-                                      : isHv
-                                      ? const Color.fromARGB(100, 27, 57, 70)
-                                      : const Color.fromARGB(205, 27, 57, 70),
-                              borderRadius: BorderRadius.circular(150),
-                              border: Border.all(
-                                width: 4,
-                                color:
-                                    isRequested
-                                        ? const Color.fromARGB(255, 9, 53, 87)
-                                        : isPressed == 3
-                                        ? const Color.fromARGB(255, 87, 51, 9)
-                                        : const Color.fromARGB(255, 6, 64, 91),
-                              ),
-                            ),
-                            child: _buttonText(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isRequested) SizedBox(width: 15),
-                    if (isRequested)
-                      AnimatedContainer(
-                        duration: Duration(milliseconds: 200),
-                        width: isRequested ? 160 : 0,
-                        child: SingleChildScrollView(
-                          controller: _scrollController,
-                          child: Column(
-                            children: [
-                              _buildLegend(
-                                Colors.orange,
-                                "Attempted",
-                                attempted.toString(),
-                              ),
-                              _buildLegend(
-                                Colors.green,
-                                "Submitted",
-                                sub.toString(),
-                              ),
-                              _buildLegend(
-                                Colors.red,
-                                "Failed",
-                                fld.toString(),
+                                            205,
+                                            27,
+                                            57,
+                                            70,
+                                          ),
+                                  borderRadius: BorderRadius.circular(150),
+                                  border: Border.all(
+                                    width: 4,
+                                    color:
+                                        isRequested
+                                            ? const Color.fromARGB(
+                                              255,
+                                              9,
+                                              53,
+                                              87,
+                                            )
+                                            : isPressed == 3
+                                            ? const Color.fromARGB(
+                                              255,
+                                              87,
+                                              51,
+                                              9,
+                                            )
+                                            : const Color.fromARGB(
+                                              255,
+                                              6,
+                                              64,
+                                              91,
+                                            ),
+                                  ),
+                                ),
+                                child: _buttonText(),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                        if (isRequested) SizedBox(width: 15),
+                        if (isRequested)
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 200),
+                            width: isRequested ? 160 : 0,
+                            child: SingleChildScrollView(
+                              controller: _scrollController,
+                              child: Column(
+                                children: [
+                                  _buildLegend(
+                                    Colors.orange,
+                                    "Attempted",
+                                    attempted.toString(),
+                                  ),
+                                  _buildLegend(
+                                    Colors.green,
+                                    "Submitted",
+                                    sub.toString(),
+                                  ),
+                                  _buildLegend(
+                                    Colors.red,
+                                    "Failed",
+                                    fld.toString(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (errors['cycleErr'] != null &&
+                        errors['cycleErr']!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          errors['auth'] ?? '',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      )
+                    else
+                      const SizedBox.shrink(),
                   ],
                 ),
               ),
@@ -268,15 +320,15 @@ class _LoggedInState extends State<LoggedIn> {
   Widget _buttonText() {
     switch (isPressed) {
       case 1:
-        return _label("Scanning", "Please wait...");
+        return _label("Fetching", "Please wait...");
       case 2:
-        return _label("Go", "$scanned scanned data");
+        return _label("Upload", "$scanned fetched data");
       case 3:
-        return _label("Migrating", "............");
+        return _label("Uploading", "............");
       case 4:
-        return _label("Start", "Scan again");
+        return _label("Start", "Start again");
       default:
-        return _label("Scan", "Scan youth");
+        return _label("Fetch", "Fetch youth");
     }
   }
 

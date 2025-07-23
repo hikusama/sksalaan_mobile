@@ -77,17 +77,19 @@ class DioClient {
   Future<Map<String, dynamic>> migrateData(
     List<Map<String, dynamic>> data,
   ) async {
-    print('\n\n\n------------4');
-print(data);
     try {
       final response = await _dio.post('/migrate', data: data);
-
       return {'data': response.data};
-
+    } on DioException catch (e) {
+      return {
+        'error': {
+          'error': e.response?.data?['auth'] ?? 'Something went wrong.',
+        },
+      };
     } catch (e) {
-      print('=====||');
-      print(e);
-      return {'error': e.toString()};
+      return {
+        'error': {'error': e.toString()},
+      };
     }
   }
 

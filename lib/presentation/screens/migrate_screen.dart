@@ -43,6 +43,12 @@ class _MigrateScreenState extends State<MigrateScreen> {
     await _auth();
   }
 
+  void chageToLogin(int value) {
+    setState(() {
+      authenticated = value;
+    });
+  }
+
   Future<void> _loadIp() async {
     String? ip = await storage.read(key: 'ip');
     ipTextController.text = ip ?? '';
@@ -61,6 +67,8 @@ class _MigrateScreenState extends State<MigrateScreen> {
         const Duration(seconds: 15),
         onTimeout: () => Future.value({'error': 'timeout'}),
       );
+      print('======');
+      print(res.toString());
 
       if (res != null && res.containsKey('data')) {
         setState(() => authenticated = 1);
@@ -119,7 +127,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
     } else {
       switch (authenticated) {
         case 1:
-          currentView = const LoggedIn();
+          currentView = LoggedIn(authenticated: chageToLogin);
           break;
         case 2:
           currentView = _loginForm();
@@ -188,10 +196,11 @@ class _MigrateScreenState extends State<MigrateScreen> {
         loggingin = false;
       });
       if (res == null) return;
-        print(res);
+      print(res);
 
       if (res.containsKey('data')) {
         final token = res['data']['token'];
+        print('Token: $token');
         await setToken(token);
         setState(() => authenticated = 1);
         // print('\n\ntoken');
@@ -269,14 +278,17 @@ class _MigrateScreenState extends State<MigrateScreen> {
               },
             ),
             const SizedBox(height: 15),
-            errors['auth'] != null
-                ? SizedBox(
-                  child: Text(
-                    errors['auth'].toString(),
-                    style: TextStyle(color: Colors.red),
-                  ),
-                )
-                : SizedBox.shrink(),
+            if (errors['auth'] != null && errors['auth']!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  errors['auth'] ?? '',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              )
+            else
+              const SizedBox.shrink(),
+
             const SizedBox(height: 15),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

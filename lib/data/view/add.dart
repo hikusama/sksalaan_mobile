@@ -357,6 +357,7 @@ class _AddState extends State<Add> {
                                       religionVal.toString().trim(),
                                     ),
                                     sex: drift.Value(sexVal.toString().trim()),
+                                    address: drift.Value(addrVal.toString().trim()),
                                   ),
                                 );
                                 if (educbg.isNotEmpty) {

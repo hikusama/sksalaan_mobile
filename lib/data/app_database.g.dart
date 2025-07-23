@@ -337,7 +337,7 @@ class $YouthUsersTable extends YouthUsers
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDate,
+    defaultValue: currentDateAndTime,
   );
   static const VerificationMeta _registerAtMeta = const VerificationMeta(
     'registerAt',
@@ -349,7 +349,7 @@ class $YouthUsersTable extends YouthUsers
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDate,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -827,6 +827,17 @@ class $YouthInfosTable extends YouthInfos
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _addressMeta = const VerificationMeta(
+    'address',
+  );
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+    'address',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _placeOfBirthMeta = const VerificationMeta(
     'placeOfBirth',
   );
@@ -921,7 +932,7 @@ class $YouthInfosTable extends YouthInfos
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDate,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -934,6 +945,7 @@ class $YouthInfosTable extends YouthInfos
     gender,
     sex,
     dateOfBirth,
+    address,
     placeOfBirth,
     contactNo,
     height,
@@ -1032,6 +1044,14 @@ class $YouthInfosTable extends YouthInfos
       );
     } else if (isInserting) {
       context.missing(_dateOfBirthMeta);
+    }
+    if (data.containsKey('address')) {
+      context.handle(
+        _addressMeta,
+        address.isAcceptableOrUnknown(data['address']!, _addressMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_addressMeta);
     }
     if (data.containsKey('place_of_birth')) {
       context.handle(
@@ -1165,6 +1185,11 @@ class $YouthInfosTable extends YouthInfos
             DriftSqlType.string,
             data['${effectivePrefix}date_of_birth'],
           )!,
+      address:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}address'],
+          )!,
       placeOfBirth:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -1229,6 +1254,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
   final String? gender;
   final String sex;
   final String dateOfBirth;
+  final String address;
   final String placeOfBirth;
   final int contactNo;
   final double height;
@@ -1248,6 +1274,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     this.gender,
     required this.sex,
     required this.dateOfBirth,
+    required this.address,
     required this.placeOfBirth,
     required this.contactNo,
     required this.height,
@@ -1272,6 +1299,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     }
     map['sex'] = Variable<String>(sex);
     map['date_of_birth'] = Variable<String>(dateOfBirth);
+    map['address'] = Variable<String>(address);
     map['place_of_birth'] = Variable<String>(placeOfBirth);
     map['contact_no'] = Variable<int>(contactNo);
     map['height'] = Variable<double>(height);
@@ -1296,6 +1324,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
           gender == null && nullToAbsent ? const Value.absent() : Value(gender),
       sex: Value(sex),
       dateOfBirth: Value(dateOfBirth),
+      address: Value(address),
       placeOfBirth: Value(placeOfBirth),
       contactNo: Value(contactNo),
       height: Value(height),
@@ -1323,6 +1352,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       gender: serializer.fromJson<String?>(json['gender']),
       sex: serializer.fromJson<String>(json['sex']),
       dateOfBirth: serializer.fromJson<String>(json['dateOfBirth']),
+      address: serializer.fromJson<String>(json['address']),
       placeOfBirth: serializer.fromJson<String>(json['placeOfBirth']),
       contactNo: serializer.fromJson<int>(json['contactNo']),
       height: serializer.fromJson<double>(json['height']),
@@ -1347,6 +1377,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       'gender': serializer.toJson<String?>(gender),
       'sex': serializer.toJson<String>(sex),
       'dateOfBirth': serializer.toJson<String>(dateOfBirth),
+      'address': serializer.toJson<String>(address),
       'placeOfBirth': serializer.toJson<String>(placeOfBirth),
       'contactNo': serializer.toJson<int>(contactNo),
       'height': serializer.toJson<double>(height),
@@ -1369,6 +1400,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     Value<String?> gender = const Value.absent(),
     String? sex,
     String? dateOfBirth,
+    String? address,
     String? placeOfBirth,
     int? contactNo,
     double? height,
@@ -1388,6 +1420,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     gender: gender.present ? gender.value : this.gender,
     sex: sex ?? this.sex,
     dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+    address: address ?? this.address,
     placeOfBirth: placeOfBirth ?? this.placeOfBirth,
     contactNo: contactNo ?? this.contactNo,
     height: height ?? this.height,
@@ -1414,6 +1447,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       sex: data.sex.present ? data.sex.value : this.sex,
       dateOfBirth:
           data.dateOfBirth.present ? data.dateOfBirth.value : this.dateOfBirth,
+      address: data.address.present ? data.address.value : this.address,
       placeOfBirth:
           data.placeOfBirth.present
               ? data.placeOfBirth.value
@@ -1446,6 +1480,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
           ..write('gender: $gender, ')
           ..write('sex: $sex, ')
           ..write('dateOfBirth: $dateOfBirth, ')
+          ..write('address: $address, ')
           ..write('placeOfBirth: $placeOfBirth, ')
           ..write('contactNo: $contactNo, ')
           ..write('height: $height, ')
@@ -1470,6 +1505,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     gender,
     sex,
     dateOfBirth,
+    address,
     placeOfBirth,
     contactNo,
     height,
@@ -1493,6 +1529,7 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
           other.gender == this.gender &&
           other.sex == this.sex &&
           other.dateOfBirth == this.dateOfBirth &&
+          other.address == this.address &&
           other.placeOfBirth == this.placeOfBirth &&
           other.contactNo == this.contactNo &&
           other.height == this.height &&
@@ -1514,6 +1551,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
   final Value<String?> gender;
   final Value<String> sex;
   final Value<String> dateOfBirth;
+  final Value<String> address;
   final Value<String> placeOfBirth;
   final Value<int> contactNo;
   final Value<double> height;
@@ -1533,6 +1571,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     this.gender = const Value.absent(),
     this.sex = const Value.absent(),
     this.dateOfBirth = const Value.absent(),
+    this.address = const Value.absent(),
     this.placeOfBirth = const Value.absent(),
     this.contactNo = const Value.absent(),
     this.height = const Value.absent(),
@@ -1553,6 +1592,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     this.gender = const Value.absent(),
     required String sex,
     required String dateOfBirth,
+    required String address,
     required String placeOfBirth,
     required int contactNo,
     required double height,
@@ -1569,6 +1609,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
        age = Value(age),
        sex = Value(sex),
        dateOfBirth = Value(dateOfBirth),
+       address = Value(address),
        placeOfBirth = Value(placeOfBirth),
        contactNo = Value(contactNo),
        height = Value(height),
@@ -1587,6 +1628,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Expression<String>? gender,
     Expression<String>? sex,
     Expression<String>? dateOfBirth,
+    Expression<String>? address,
     Expression<String>? placeOfBirth,
     Expression<int>? contactNo,
     Expression<double>? height,
@@ -1607,6 +1649,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
       if (gender != null) 'gender': gender,
       if (sex != null) 'sex': sex,
       if (dateOfBirth != null) 'date_of_birth': dateOfBirth,
+      if (address != null) 'address': address,
       if (placeOfBirth != null) 'place_of_birth': placeOfBirth,
       if (contactNo != null) 'contact_no': contactNo,
       if (height != null) 'height': height,
@@ -1629,6 +1672,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Value<String?>? gender,
     Value<String>? sex,
     Value<String>? dateOfBirth,
+    Value<String>? address,
     Value<String>? placeOfBirth,
     Value<int>? contactNo,
     Value<double>? height,
@@ -1649,6 +1693,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
       gender: gender ?? this.gender,
       sex: sex ?? this.sex,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      address: address ?? this.address,
       placeOfBirth: placeOfBirth ?? this.placeOfBirth,
       contactNo: contactNo ?? this.contactNo,
       height: height ?? this.height,
@@ -1690,6 +1735,9 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     }
     if (dateOfBirth.present) {
       map['date_of_birth'] = Variable<String>(dateOfBirth.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
     }
     if (placeOfBirth.present) {
       map['place_of_birth'] = Variable<String>(placeOfBirth.value);
@@ -1733,6 +1781,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
           ..write('gender: $gender, ')
           ..write('sex: $sex, ')
           ..write('dateOfBirth: $dateOfBirth, ')
+          ..write('address: $address, ')
           ..write('placeOfBirth: $placeOfBirth, ')
           ..write('contactNo: $contactNo, ')
           ..write('height: $height, ')
@@ -1832,7 +1881,7 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDate,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -2329,7 +2378,7 @@ class $CivicInvolvementsTable extends CivicInvolvements
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDate,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -3561,6 +3610,7 @@ typedef $$YouthInfosTableCreateCompanionBuilder =
       Value<String?> gender,
       required String sex,
       required String dateOfBirth,
+      required String address,
       required String placeOfBirth,
       required int contactNo,
       required double height,
@@ -3582,6 +3632,7 @@ typedef $$YouthInfosTableUpdateCompanionBuilder =
       Value<String?> gender,
       Value<String> sex,
       Value<String> dateOfBirth,
+      Value<String> address,
       Value<String> placeOfBirth,
       Value<int> contactNo,
       Value<double> height,
@@ -3666,6 +3717,11 @@ class $$YouthInfosTableFilterComposer
 
   ColumnFilters<String> get dateOfBirth => $composableBuilder(
     column: $table.dateOfBirth,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get address => $composableBuilder(
+    column: $table.address,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3787,6 +3843,11 @@ class $$YouthInfosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get placeOfBirth => $composableBuilder(
     column: $table.placeOfBirth,
     builder: (column) => ColumnOrderings(column),
@@ -3893,6 +3954,9 @@ class $$YouthInfosTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
   GeneratedColumn<String> get placeOfBirth => $composableBuilder(
     column: $table.placeOfBirth,
     builder: (column) => column,
@@ -3989,6 +4053,7 @@ class $$YouthInfosTableTableManager
                 Value<String?> gender = const Value.absent(),
                 Value<String> sex = const Value.absent(),
                 Value<String> dateOfBirth = const Value.absent(),
+                Value<String> address = const Value.absent(),
                 Value<String> placeOfBirth = const Value.absent(),
                 Value<int> contactNo = const Value.absent(),
                 Value<double> height = const Value.absent(),
@@ -4008,6 +4073,7 @@ class $$YouthInfosTableTableManager
                 gender: gender,
                 sex: sex,
                 dateOfBirth: dateOfBirth,
+                address: address,
                 placeOfBirth: placeOfBirth,
                 contactNo: contactNo,
                 height: height,
@@ -4029,6 +4095,7 @@ class $$YouthInfosTableTableManager
                 Value<String?> gender = const Value.absent(),
                 required String sex,
                 required String dateOfBirth,
+                required String address,
                 required String placeOfBirth,
                 required int contactNo,
                 required double height,
@@ -4048,6 +4115,7 @@ class $$YouthInfosTableTableManager
                 gender: gender,
                 sex: sex,
                 dateOfBirth: dateOfBirth,
+                address: address,
                 placeOfBirth: placeOfBirth,
                 contactNo: contactNo,
                 height: height,

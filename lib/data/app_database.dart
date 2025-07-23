@@ -49,6 +49,7 @@ class YouthInfos extends Table {
   TextColumn get gender => text().nullable()();
   TextColumn get sex => text()();
   TextColumn get dateOfBirth => text()();
+  TextColumn get address => text()();
 
   TextColumn get placeOfBirth => text()();
   IntColumn get contactNo => integer()();
@@ -228,7 +229,7 @@ class AppDatabase extends _$AppDatabase {
                     'sex': info.sex,
                     'gender': info.gender,
                     'age': info.age,
-                    'address': info.placeOfBirth,
+                    'address': info.address,
                     'dateOfBirth': info.dateOfBirth,
                     'placeOfBirth': info.placeOfBirth,
                     'contactNo': info.contactNo,
