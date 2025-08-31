@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/view/add.dart';
 import 'package:skyouthprofiling/presentation/screens/overview_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/records_screen.dart';
-import 'package:skyouthprofiling/presentation/screens/migrate_screen.dart';
+import 'package:skyouthprofiling/presentation/screens/hun_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/settings_screen.dart';
 import 'package:flutter_exit_app/flutter_exit_app.dart';
 
@@ -19,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const OverviewScreen(),
     const RecordsScreen(),
-    const MigrateScreen(),
+    const HubScreen(),
     const SettingsScreen(),
   ];
 
@@ -77,7 +77,7 @@ class _MainScreenState extends State<MainScreen> {
               _buildNavItem(Icons.grid_view, "Overview", 0),
               _buildNavItem(Icons.storage, "Records", 1),
               const SizedBox(width: 40),
-              _buildNavItem(Icons.import_export_sharp, "Migrate", 2),
+              _buildNavItem(Icons.hub, "Hub", 2),
               _buildNavItem(Icons.settings, "Settings", 3),
             ],
           ),
