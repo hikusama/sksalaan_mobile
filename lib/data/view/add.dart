@@ -74,6 +74,7 @@ class _AddState extends State<Add> {
 
   bool isResponse = false;
   bool success = false;
+  bool lastyr = false;
   // Map<String, String> firstForm() => {
   //   'fname': _fnameController.text,
   //   'mname': _mnameController.text,
@@ -104,14 +105,7 @@ class _AddState extends State<Add> {
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = [
-    'unselect',
-    'Transgender',
-    'Agender',
-    'Bigender',
-    'Non-binary',
-    'Others',
-  ];
+  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Others'];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -221,7 +215,7 @@ class _AddState extends State<Add> {
                 isResponse
                     ? contentStep[_steps.clamp(1, contentStep.length) - 1]
                     : Scrollbar(
-                      thumbVisibility: true, // Optional
+                      thumbVisibility: true,
                       child: SingleChildScrollView(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -234,7 +228,8 @@ class _AddState extends State<Add> {
           ),
           isResponse
               ? SizedBox.shrink()
-              : Padding(
+              : Container(
+                margin: EdgeInsets.only(bottom: 45),
                 padding: const EdgeInsets.fromLTRB(25, 2, 25, 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -332,7 +327,7 @@ class _AddState extends State<Add> {
                                       _pobController.text.trim(),
                                     ),
                                     contactNo: drift.Value(
-                                      int.tryParse(_cnController.text) ?? 0,
+                                      _cnController.text.trim(),
                                     ),
                                     noOfChildren: drift.Value(
                                       int.tryParse(_nocController.text) ?? 0,
@@ -357,7 +352,9 @@ class _AddState extends State<Add> {
                                       religionVal.toString().trim(),
                                     ),
                                     sex: drift.Value(sexVal.toString().trim()),
-                                    address: drift.Value(addrVal.toString().trim()),
+                                    address: drift.Value(
+                                      addrVal.toString().trim(),
+                                    ),
                                   ),
                                 );
                                 if (educbg.isNotEmpty) {
@@ -599,7 +596,7 @@ class _AddState extends State<Add> {
                       style: TextStyle(fontSize: 17),
                     ),
                     Text(
-                      'Generated age',
+                      'Age',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
@@ -755,7 +752,7 @@ class _AddState extends State<Add> {
             decoration: InputDecoration(
               labelText: 'Contact no.',
               labelStyle: TextStyle(fontSize: 12),
-              hintText: '9554433221',
+              hintText: '09554433221',
               border: OutlineInputBorder(),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
@@ -769,8 +766,12 @@ class _AddState extends State<Add> {
               if (value == null || value.isEmpty) {
                 return 'Please enter the contact no.';
               }
-              if (value.length != 10) {
-                return 'Use correct formmat 10-Digits.';
+              if (value[0] != "0" && value[1] != "9") {
+                return 'Invalid format contact no.';
+              }
+
+              if (value.length != 11) {
+                return 'Use correct formmat 11-Digits.';
               }
               return null;
             },
@@ -956,7 +957,7 @@ class _AddState extends State<Add> {
                             decoration: InputDecoration(
                               labelText: 'Height (cm)',
                               labelStyle: TextStyle(fontSize: 12),
-                              hintText: 'Height',
+                              hintText: '(optional)',
                               border: OutlineInputBorder(),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
@@ -968,10 +969,15 @@ class _AddState extends State<Add> {
                             controller: _hController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Required';
+                                return null;
                               }
-                              if (int.parse(value) > 160) {
-                                return 'max: 160cm';
+                              if (value is! int) {
+                                return "invalid value.";
+                              }
+                              if (int.parse(value) > 200) {
+                                return 'max: 200cm';
+                              } else if (int.parse(value) < 140) {
+                                return 'min: 140cm';
                               }
                               return null;
                             },
@@ -984,7 +990,7 @@ class _AddState extends State<Add> {
                             decoration: InputDecoration(
                               labelText: 'Weight (kg)',
                               labelStyle: TextStyle(fontSize: 12),
-                              hintText: 'Weight',
+                              hintText: '(optional)',
                               border: OutlineInputBorder(),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
@@ -996,11 +1002,15 @@ class _AddState extends State<Add> {
                             controller: _wController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Required';
+                                return null;
+                              }
+                              if (value is! int) {
+                                return "invalid value.";
                               }
                               if (int.parse(value) > 200) {
-                                return 'max: 200kg';
+                                return 'min: 20kg';
                               }
+
                               return null;
                             },
                           ),
@@ -1070,7 +1080,7 @@ class _AddState extends State<Add> {
             width: 200,
             child: DropdownButtonFormField<String>(
               value: schoolLevelVal,
-              hint: Text('School level'),
+              hint: Text(lastyr ? 'Nothing follows!!' : 'School level'),
               decoration: InputDecoration(
                 labelStyle: TextStyle(fontSize: 12),
                 labelText: 'Select School level',
@@ -1083,18 +1093,20 @@ class _AddState extends State<Add> {
               ),
               style: TextStyle(fontSize: 12, color: Colors.black),
               items:
-                  [
-                        level[educbg.length < level.length
-                            ? educbg.length
-                            : level.length - 1],
-                      ]
-                      .map(
-                        (String value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        ),
-                      )
-                      .toList(),
+                  lastyr
+                      ? []
+                      : [
+                            level[educbg.length < level.length
+                                ? educbg.length
+                                : level.length - 1],
+                          ]
+                          .map(
+                            (String value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
               onChanged: (value) {
                 if (value != null) {
                   if (value == '') {
@@ -1233,14 +1245,14 @@ class _AddState extends State<Add> {
                   ),
                   style: TextStyle(fontSize: 12, color: Colors.black),
                   validator: (value) {
-                    if ((value == null || value.isEmpty) &&
-                        (schoolLevelVal != null ||
-                            qCheck(_nosController) ||
-                            qCheck(_poaController))) {
-                      return 'Required';
+                    if (value == null || value.isEmpty) {
+                      return null;
+                    }
+                    if (value is! int) {
+                      return "Invalid format";
                     }
 
-                    final parsed = int.tryParse(value ?? '');
+                    final parsed = int.tryParse(value);
                     if (parsed != null) {
                       final currentYear = DateTime.now().year;
                       final minYear = currentYear - 33;
@@ -1273,13 +1285,13 @@ class _AddState extends State<Add> {
                     if (_formKeyForCurrentStep().currentState!.validate() &&
                         (schoolLevelVal != null &&
                             qCheck(_nosController) &&
-                            qCheck(_poaController) &&
-                            qCheck(_ygschoolController))) {
+                            qCheck(_poaController))) {
                       final idx =
                           educbg.length < level.length
                               ? educbg.length
                               : level.length - 1;
                       setState(() {
+                        lastyr = true;
                         educbg[level[idx]] = {
                           'level': schoolLevelVal,
                           'nameOfSchool': _nosController.text,
@@ -1398,7 +1410,8 @@ class _AddState extends State<Add> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['yearGraduate'],
+                                                      data['yearGraduate'] ??
+                                                          '',
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1433,6 +1446,7 @@ class _AddState extends State<Add> {
                                                   ),
                                                   onPressed: () {
                                                     setState(() {
+                                                      lastyr = false;
                                                       educbg.remove(key);
                                                     });
                                                   },
@@ -1730,11 +1744,11 @@ class _AddState extends State<Add> {
 
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(8, 32, 8, 12),
+                  padding: EdgeInsets.fromLTRB(0, 32, 0, 12),
 
                   child: SizedBox(
                     height: 150,
-                    width: 240,
+                    width: 260,
                     child:
                         civic.isEmpty
                             ? Align(
@@ -2642,7 +2656,6 @@ class _AddState extends State<Add> {
           // card 3
           Container(
             width: double.infinity,
-            height: educbg.isEmpty || educbg.length <= 1 ? 210 : null,
             padding: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: Color.fromRGBO(20, 127, 169, 0.484),
@@ -2678,9 +2691,8 @@ class _AddState extends State<Add> {
                     ),
                   ),
                 ),
-
                 Container(
-                  padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                  padding: EdgeInsets.fromLTRB(20, 40, 20, 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
@@ -2693,219 +2705,206 @@ class _AddState extends State<Add> {
                               ),
                             ]
                             : educbg.entries.map((entry) {
-                              return Container(
-                                padding: EdgeInsets.only(bottom: 5),
-                                margin: EdgeInsets.only(bottom: 20),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: const Color.fromARGB(144, 0, 0, 0),
-                                      width: 1.4,
-                                    ),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
+                              return Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
                                                     ),
+                                                    width: 0.8,
                                                   ),
                                                 ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(entry.value['level']),
-                                                  ],
-                                                ),
                                               ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                "Level",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
                                               ),
-                                            ],
-                                          ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(entry.value['level']),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(height: 2),
+                                            Text(
+                                              "Level",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(
-                                          width: 113,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
+                                      ),
+                                      SizedBox(
+                                        width: 130,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
                                                     ),
+                                                    width: 0.8,
                                                   ),
                                                 ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      DateFormat(
-                                                        'MMM d, yyy',
-                                                      ).format(
-                                                        DateTime.parse(
-                                                          entry
-                                                              .value['periodOfAttendance'],
-                                                        ),
+                                              ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    DateFormat(
+                                                      'MMM d, yyy',
+                                                    ).format(
+                                                      DateTime.parse(
+                                                        entry
+                                                            .value['periodOfAttendance'],
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                "Period of Attendance",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                            ),
+                                            SizedBox(height: 2),
+                                            Text(
+                                              softWrap: false,
+                                              "Period of Attendance",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
                                                     ),
+                                                    width: 0.8,
                                                   ),
                                                 ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      entry
-                                                          .value['nameOfSchool'],
-                                                    ),
-                                                  ],
-                                                ),
                                               ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                "School",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
                                               ),
-                                            ],
-                                          ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    entry.value['nameOfSchool'],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              "School",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(
-                                          width: 113,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
+                                      ),
+                                      SizedBox(
+                                        width: 113,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
                                                     ),
+                                                    width: 0.8,
                                                   ),
                                                 ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      entry
-                                                          .value['yearGraduate'],
-                                                    ),
-                                                  ],
-                                                ),
                                               ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                "Year Graduate",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
                                               ),
-                                            ],
-                                          ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    entry.value['yearGraduate'] ==
+                                                            null
+                                                        ? entry
+                                                            .value['yearGraduate']
+                                                        : "unfinished",
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              "Year Graduate",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               );
                             }).toList(),
                   ),
@@ -2918,8 +2917,7 @@ class _AddState extends State<Add> {
           // card 4
           Container(
             width: double.infinity,
-            height: educbg.isEmpty || educbg.length <= 1 ? 237 : null,
-            padding: EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.only(top: 10, bottom: 0),
             decoration: BoxDecoration(
               color: Color.fromRGBO(20, 127, 169, 0.484),
               border: Border.all(
@@ -2956,12 +2954,7 @@ class _AddState extends State<Add> {
                 ),
 
                 Container(
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    40,
-                    20,
-                    civic.length <= 1 ? 15 : 20,
-                  ),
+                  padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
@@ -2974,232 +2967,16 @@ class _AddState extends State<Add> {
                               ),
                             ]
                             : civic.entries.map((entry) {
-                              return Container(
-                                padding: EdgeInsets.only(bottom: 5),
-                                margin: EdgeInsets.only(bottom: 20),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: const Color.fromARGB(144, 0, 0, 0),
-                                      width: 1.4,
-                                    ),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
-                                                    ),
-                                                  ),
-                                                ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      entry
-                                                          .value['nameOfOrganization'],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                "Organization",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 113,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
-                                                    ),
-                                                  ),
-                                                ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      DateFormat(
-                                                        'MMM d, yyy',
-                                                      ).format(
-                                                        DateTime.parse(
-                                                          entry.value['start'],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                "Started",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
-                                                    ),
-                                                  ),
-                                                ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      entry
-                                                          .value['addressOfOrganization'],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                "Address",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 113,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            81,
-                                                            81,
-                                                            81,
-                                                          ),
-                                                      width: 0.8,
-                                                    ),
-                                                  ),
-                                                ),
-                                                padding: EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      DateFormat(
-                                                        'MMM d, yyy',
-                                                      ).format(
-                                                        DateTime.parse(
-                                                          entry.value['end'],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                "Ended",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-
-                                      children: [
-                                        Column(
+                              return Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.center,
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Container(
                                               decoration: BoxDecoration(
@@ -3223,14 +3000,14 @@ class _AddState extends State<Add> {
                                                 children: [
                                                   Text(
                                                     entry
-                                                        .value['yearGraduated'],
+                                                        .value['nameOfOrganization'],
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            SizedBox(height: 4),
+                                            SizedBox(height: 2),
                                             Text(
-                                              "Year Graduated",
+                                              "Organization",
                                               style: TextStyle(
                                                 color: Colors.black,
                                                 fontWeight: FontWeight.bold,
@@ -3238,10 +3015,204 @@ class _AddState extends State<Add> {
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                      ),
+                                      SizedBox(
+                                        width: 113,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
+                                                    ),
+                                                    width: 0.8,
+                                                  ),
+                                                ),
+                                              ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    DateFormat(
+                                                      'MMM d, yyy',
+                                                    ).format(
+                                                      DateTime.parse(
+                                                        entry.value['start'],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(height: 2),
+                                            Text(
+                                              "Started",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
+                                                    ),
+                                                    width: 0.8,
+                                                  ),
+                                                ),
+                                              ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    entry
+                                                        .value['addressOfOrganization'],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              "Address",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 113,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: const Color.fromARGB(
+                                                      255,
+                                                      81,
+                                                      81,
+                                                      81,
+                                                    ),
+                                                    width: 0.8,
+                                                  ),
+                                                ),
+                                              ),
+                                              padding: EdgeInsets.only(
+                                                bottom: 4,
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    DateFormat(
+                                                      'MMM d, yyy',
+                                                    ).format(
+                                                      DateTime.parse(
+                                                        entry.value['end'],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              "Ended",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                bottom: BorderSide(
+                                                  color: const Color.fromARGB(
+                                                    255,
+                                                    81,
+                                                    81,
+                                                    81,
+                                                  ),
+                                                  width: 0.8,
+                                                ),
+                                              ),
+                                            ),
+                                            padding: EdgeInsets.only(bottom: 4),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  entry.value['yearGraduated'],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            "Year Graduated",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               );
                             }).toList(),
                   ),
@@ -3378,7 +3349,9 @@ class _AddState extends State<Add> {
               )
               .toList(),
       onChanged: onChanged,
-      validator: (value) => value == null ? 'Please select $label' : null,
+      validator:
+          (value) =>
+              (value == null || value.isEmpty) ? 'Please select $label' : null,
     );
   }
 
