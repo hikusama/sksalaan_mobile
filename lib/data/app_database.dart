@@ -6,13 +6,13 @@ part 'app_database.g.dart';
 
 class FullYouthProfile {
   final YouthUser youthUser;
-  final YouthInfo? youthInfo;
+  final YouthInfo youthInfo;
   final List<EducBg> educBgs;
   final List<CivicInvolvement> civicInvolvements;
 
   FullYouthProfile({
     required this.youthUser,
-    this.youthInfo,
+    required this.youthInfo,
     required this.educBgs,
     required this.civicInvolvements,
   });
@@ -190,7 +190,7 @@ class AppDatabase extends _$AppDatabase {
         final info =
             await (select(youthInfos)..where(
               (tbl) => tbl.youthUserId.equals(user.youthUserId),
-            )).getSingleOrNull();
+            )).getSingle();
 
         final educs =
             await (select(educBgs)
@@ -207,30 +207,25 @@ class AppDatabase extends _$AppDatabase {
             'skills': user.skills,
             'created_at': DateFormat('yyyy-MM-dd').format(user.createdAt),
           },
-          'info':
-              info != null
-                  ? {
-                    'fname': info.fname,
-                    'mname': info.mname,
-                    'lname': info.lname,
-                    'sex': info.sex,
-                    'gender': info.gender,
-                    'age': info.age,
-                    'address': info.address,
-                    'dateOfBirth': info.dateOfBirth,
-                    'placeOfBirth': info.placeOfBirth,
-                    'contactNo': info.contactNo,
-                    'height': info.height,
-                    'weight': info.weight,
-                    'religion': info.religion,
-                    'occupation': info.occupation,
-                    'civilStatus': info.civilStatus,
-                    'noOfChildren': info.noOfChildren,
-                    'created_at': DateFormat(
-                      'yyyy-MM-dd',
-                    ).format(info.createdAt),
-                  }
-                  : null,
+          'info': {
+            'fname': info.fname,
+            'mname': info.mname,
+            'lname': info.lname,
+            'sex': info.sex,
+            'gender': info.gender,
+            'age': info.age,
+            'address': info.address,
+            'dateOfBirth': info.dateOfBirth,
+            'placeOfBirth': info.placeOfBirth,
+            'contactNo': info.contactNo,
+            'height': info.height,
+            'weight': info.weight,
+            'religion': info.religion,
+            'occupation': info.occupation,
+            'civilStatus': info.civilStatus,
+            'noOfChildren': info.noOfChildren,
+            'created_at': DateFormat('yyyy-MM-dd').format(info.createdAt),
+          },
           'educBG':
               educs
                   .map(
@@ -293,16 +288,12 @@ class AppDatabase extends _$AppDatabase {
   Future<Map<String, dynamic>> getSingleProfile({required int id}) async {
     final user =
         await (select(youthUsers)
-          ..where((tbl) => tbl.youthUserId.equals(id))).getSingleOrNull();
-
-    if (user == null) {
-      return {'profile': null};
-    }
+          ..where((tbl) => tbl.youthUserId.equals(id))).getSingle();
 
     final youthInfo =
         await (select(youthInfos)..where(
           (tbl) => tbl.youthUserId.equals(user.youthUserId),
-        )).getSingleOrNull();
+        )).getSingle();
 
     final educs =
         await (select(educBgs)
@@ -360,7 +351,7 @@ class AppDatabase extends _$AppDatabase {
       final youthInfo =
           await (select(youthInfos)..where(
             (tbl) => tbl.youthUserId.equals(user.youthUserId),
-          )).getSingleOrNull();
+          )).getSingle();
 
       final educs =
           await (select(educBgs)
