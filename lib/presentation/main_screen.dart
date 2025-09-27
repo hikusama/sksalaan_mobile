@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/view/add.dart';
 import 'package:skyouthprofiling/presentation/screens/overview_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/records_screen.dart';
-import 'package:skyouthprofiling/presentation/screens/hun_screen.dart';
+import 'package:skyouthprofiling/presentation/screens/hub_screen.dart';
+import 'package:skyouthprofiling/presentation/screens/validation_screen.dart';
 import 'package:skyouthprofiling/presentation/screens/settings_screen.dart';
 import 'package:flutter_exit_app/flutter_exit_app.dart';
 
@@ -15,12 +16,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  bool isHv = false;
+  int? _hoveredIndex;
   final List<Widget> _screens = [
     const OverviewScreen(),
     const RecordsScreen(),
     const HubScreen(),
     const SettingsScreen(),
+    const ValidationScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -66,75 +68,167 @@ class _MainScreenState extends State<MainScreen> {
         }
       },
       child: Scaffold(
-        body: _screens[_selectedIndex],
-        bottomNavigationBar: BottomAppBar(
-                      color: const Color.fromARGB(255, 30, 65, 80),
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 18.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(Icons.grid_view, "Overview", 0),
-              _buildNavItem(Icons.storage, "Records", 1),
-              const SizedBox(width: 40),
-              _buildNavItem(Icons.hub, "Hub", 2),
-              _buildNavItem(Icons.settings, "Settings", 3),
-            ],
+        body: Stack(children: [_screens[_selectedIndex], SizedBox()]),
+        bottomNavigationBar: SafeArea(
+          child: BottomAppBar(
+            padding: EdgeInsets.all(0),
+            height: 52,
+            color: const Color.fromARGB(255, 30, 65, 80),
+            // shape: const CircularNotchedRectangle(),
+            // notchMargin: 18.0,
+            // height: 70,
+            child: SizedBox(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.horizontal(
+                          right: Radius.circular(25),
+                        ),
+                        color: const Color.fromARGB(255, 8, 26, 35),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(child: _buildNavItem(Icons.add, "Add", 34)),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color:
+                                      _selectedIndex == 4
+                                          ? Color.fromARGB(142, 0, 0, 0)
+                                          : Colors.transparent,
+                                  width: _selectedIndex == 4 ? 1 : 0,
+                                ),
+                                borderRadius: BorderRadius.horizontal(
+                                  right: Radius.circular(25),
+                                  left: Radius.circular(25),
+                                ),
+                                color:
+                                    _selectedIndex == 4
+                                        ? Color.fromARGB(188, 0, 72, 136)
+                                        : Colors.transparent,
+                              ),
+                              child: _buildNavItem(
+                                Icons.fact_check,
+                                "Validate",
+                                35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 5,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildNavItem(Icons.grid_view, "Home", 0),
+                        ),
+                        Expanded(
+                          child: _buildNavItem(Icons.storage, "Data", 1),
+                        ),
+                        Expanded(child: _buildNavItem(Icons.hub, "Hub", 2)),
+                        Expanded(
+                          child: _buildNavItem(Icons.settings, "Settings", 3),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-        floatingActionButton: MouseRegion(
-          onEnter: (_) => setState(() => isHv = true),
-          onExit: (_) => setState(() => isHv = false),
-          child: FloatingActionButton(
-            backgroundColor:
-                isHv ? Colors.black : const Color.fromRGBO(20, 126, 169, 1),
-            shape: const CircleBorder(),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Add()),
-              );
-              // showModalBottomSheet(
-              //   context: context,
-              //   enableDrag: true,
-              //   isScrollControlled: true,
-              //   builder: (context) => Add(),
-              // );
-              // Handle FAB click (e.g., open a modal, new screen, etc.)
-            },
-            child: const Icon(Icons.add, color: Colors.white),
-          ),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
+      //   floatingActionButton: MouseRegion(
+      //     onEnter: (_) => setState(() => isHv = true),
+      //     onExit: (_) => setState(() => isHv = false),
+      //     child: FloatingActionButton(
+      //       backgroundColor:
+      //           isHv ? Colors.black : const Color.fromRGBO(20, 126, 169, 1),
+      //       shape: const CircleBorder(),
+      //       onPressed: () {
+      //         Navigator.push(
+      //           context,
+      //           MaterialPageRoute(builder: (context) => const Add()),
+      //         );
+      //         // showModalBottomSheet(
+      //         //   context: context,
+      //         //   enableDrag: true,
+      //         //   isScrollControlled: true,
+      //         //   builder: (context) => Add(),
+      //         // );
+      //         // Handle FAB click (e.g., open a modal, new screen, etc.)
+      //       },
+      //       child: const Icon(Icons.add, color: Colors.white),
+      //     ),
+      //   ),
+      //   floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final bool isSelected = _selectedIndex == index;
-    return InkWell(
-      onTap: () => _onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color:
-                isSelected
-                    ? const Color.fromRGBO(20, 126, 169, 1)
-                    : const Color.fromARGB(144, 200, 200, 200),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
+    final bool isHovered = _hoveredIndex == index;
+    final bool isActive = isSelected || isHovered;
+
+    return GestureDetector(
+      onTap: () {
+        if (index == 34) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Add()),
+          );
+        } else if (index == 35) {
+          _onItemTapped(4);
+        } else {
+          _onItemTapped(index);
+        }
+      },
+      onTapDown: (_) {
+        setState(() => _hoveredIndex = index);
+      },
+      onTapCancel: () {
+        setState(() => _hoveredIndex = null);
+      },
+      onTapUp: (_) {
+        setState(() => _hoveredIndex = null);
+      },
+      child: Container(
+        color: const Color.fromARGB(0, 187, 10, 10),
+        height: double.infinity,
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
               color:
-                  isSelected
+                  isActive
                       ? const Color.fromRGBO(20, 126, 169, 1)
                       : const Color.fromARGB(144, 200, 200, 200),
             ),
-          ),
-        ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color:
+                    isActive
+                        ? const Color.fromRGBO(20, 126, 169, 1)
+                        : const Color.fromARGB(144, 200, 200, 200),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
