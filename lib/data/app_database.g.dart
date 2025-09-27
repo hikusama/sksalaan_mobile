@@ -3,271 +3,6 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _userNameMeta = const VerificationMeta(
-    'userName',
-  );
-  @override
-  late final GeneratedColumn<String> userName = GeneratedColumn<String>(
-    'user_name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _passwordMeta = const VerificationMeta(
-    'password',
-  );
-  @override
-  late final GeneratedColumn<String> password = GeneratedColumn<String>(
-    'password',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _tokenMeta = const VerificationMeta('token');
-  @override
-  late final GeneratedColumn<String> token = GeneratedColumn<String>(
-    'token',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [userName, password, token];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'users';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<User> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('user_name')) {
-      context.handle(
-        _userNameMeta,
-        userName.isAcceptableOrUnknown(data['user_name']!, _userNameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_userNameMeta);
-    }
-    if (data.containsKey('password')) {
-      context.handle(
-        _passwordMeta,
-        password.isAcceptableOrUnknown(data['password']!, _passwordMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_passwordMeta);
-    }
-    if (data.containsKey('token')) {
-      context.handle(
-        _tokenMeta,
-        token.isAcceptableOrUnknown(data['token']!, _tokenMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_tokenMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => const {};
-  @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
-      userName:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}user_name'],
-          )!,
-      password:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}password'],
-          )!,
-      token:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}token'],
-          )!,
-    );
-  }
-
-  @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
-  }
-}
-
-class User extends DataClass implements Insertable<User> {
-  final String userName;
-  final String password;
-  final String token;
-  const User({
-    required this.userName,
-    required this.password,
-    required this.token,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['user_name'] = Variable<String>(userName);
-    map['password'] = Variable<String>(password);
-    map['token'] = Variable<String>(token);
-    return map;
-  }
-
-  UsersCompanion toCompanion(bool nullToAbsent) {
-    return UsersCompanion(
-      userName: Value(userName),
-      password: Value(password),
-      token: Value(token),
-    );
-  }
-
-  factory User.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return User(
-      userName: serializer.fromJson<String>(json['userName']),
-      password: serializer.fromJson<String>(json['password']),
-      token: serializer.fromJson<String>(json['token']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'userName': serializer.toJson<String>(userName),
-      'password': serializer.toJson<String>(password),
-      'token': serializer.toJson<String>(token),
-    };
-  }
-
-  User copyWith({String? userName, String? password, String? token}) => User(
-    userName: userName ?? this.userName,
-    password: password ?? this.password,
-    token: token ?? this.token,
-  );
-  User copyWithCompanion(UsersCompanion data) {
-    return User(
-      userName: data.userName.present ? data.userName.value : this.userName,
-      password: data.password.present ? data.password.value : this.password,
-      token: data.token.present ? data.token.value : this.token,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('User(')
-          ..write('userName: $userName, ')
-          ..write('password: $password, ')
-          ..write('token: $token')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(userName, password, token);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is User &&
-          other.userName == this.userName &&
-          other.password == this.password &&
-          other.token == this.token);
-}
-
-class UsersCompanion extends UpdateCompanion<User> {
-  final Value<String> userName;
-  final Value<String> password;
-  final Value<String> token;
-  final Value<int> rowid;
-  const UsersCompanion({
-    this.userName = const Value.absent(),
-    this.password = const Value.absent(),
-    this.token = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  UsersCompanion.insert({
-    required String userName,
-    required String password,
-    required String token,
-    this.rowid = const Value.absent(),
-  }) : userName = Value(userName),
-       password = Value(password),
-       token = Value(token);
-  static Insertable<User> custom({
-    Expression<String>? userName,
-    Expression<String>? password,
-    Expression<String>? token,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (userName != null) 'user_name': userName,
-      if (password != null) 'password': password,
-      if (token != null) 'token': token,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  UsersCompanion copyWith({
-    Value<String>? userName,
-    Value<String>? password,
-    Value<String>? token,
-    Value<int>? rowid,
-  }) {
-    return UsersCompanion(
-      userName: userName ?? this.userName,
-      password: password ?? this.password,
-      token: token ?? this.token,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (userName.present) {
-      map['user_name'] = Variable<String>(userName.value);
-    }
-    if (password.present) {
-      map['password'] = Variable<String>(password.value);
-    }
-    if (token.present) {
-      map['token'] = Variable<String>(token.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('UsersCompanion(')
-          ..write('userName: $userName, ')
-          ..write('password: $password, ')
-          ..write('token: $token, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $YouthUsersTable extends YouthUsers
     with TableInfo<$YouthUsersTable, YouthUser> {
   @override
@@ -288,15 +23,6 @@ class $YouthUsersTable extends YouthUsers
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
-  );
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<int> userId = GeneratedColumn<int>(
-    'user_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
   );
   static const VerificationMeta _youthTypeMeta = const VerificationMeta(
     'youthType',
@@ -354,7 +80,6 @@ class $YouthUsersTable extends YouthUsers
   @override
   List<GeneratedColumn> get $columns => [
     youthUserId,
-    userId,
     youthType,
     skills,
     status,
@@ -380,12 +105,6 @@ class $YouthUsersTable extends YouthUsers
           data['youth_user_id']!,
           _youthUserIdMeta,
         ),
-      );
-    }
-    if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
       );
     }
     if (data.containsKey('youth_type')) {
@@ -438,10 +157,6 @@ class $YouthUsersTable extends YouthUsers
             DriftSqlType.int,
             data['${effectivePrefix}youth_user_id'],
           )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}user_id'],
-      ),
       youthType:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -478,7 +193,6 @@ class $YouthUsersTable extends YouthUsers
 
 class YouthUser extends DataClass implements Insertable<YouthUser> {
   final int youthUserId;
-  final int? userId;
   final String youthType;
   final String skills;
   final String status;
@@ -486,7 +200,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   final DateTime registerAt;
   const YouthUser({
     required this.youthUserId,
-    this.userId,
     required this.youthType,
     required this.skills,
     required this.status,
@@ -497,9 +210,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['youth_user_id'] = Variable<int>(youthUserId);
-    if (!nullToAbsent || userId != null) {
-      map['user_id'] = Variable<int>(userId);
-    }
     map['youth_type'] = Variable<String>(youthType);
     map['skills'] = Variable<String>(skills);
     map['status'] = Variable<String>(status);
@@ -511,8 +221,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   YouthUsersCompanion toCompanion(bool nullToAbsent) {
     return YouthUsersCompanion(
       youthUserId: Value(youthUserId),
-      userId:
-          userId == null && nullToAbsent ? const Value.absent() : Value(userId),
       youthType: Value(youthType),
       skills: Value(skills),
       status: Value(status),
@@ -528,7 +236,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return YouthUser(
       youthUserId: serializer.fromJson<int>(json['youthUserId']),
-      userId: serializer.fromJson<int?>(json['userId']),
       youthType: serializer.fromJson<String>(json['youthType']),
       skills: serializer.fromJson<String>(json['skills']),
       status: serializer.fromJson<String>(json['status']),
@@ -541,7 +248,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'youthUserId': serializer.toJson<int>(youthUserId),
-      'userId': serializer.toJson<int?>(userId),
       'youthType': serializer.toJson<String>(youthType),
       'skills': serializer.toJson<String>(skills),
       'status': serializer.toJson<String>(status),
@@ -552,7 +258,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
 
   YouthUser copyWith({
     int? youthUserId,
-    Value<int?> userId = const Value.absent(),
     String? youthType,
     String? skills,
     String? status,
@@ -560,7 +265,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     DateTime? registerAt,
   }) => YouthUser(
     youthUserId: youthUserId ?? this.youthUserId,
-    userId: userId.present ? userId.value : this.userId,
     youthType: youthType ?? this.youthType,
     skills: skills ?? this.skills,
     status: status ?? this.status,
@@ -571,7 +275,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     return YouthUser(
       youthUserId:
           data.youthUserId.present ? data.youthUserId.value : this.youthUserId,
-      userId: data.userId.present ? data.userId.value : this.userId,
       youthType: data.youthType.present ? data.youthType.value : this.youthType,
       skills: data.skills.present ? data.skills.value : this.skills,
       status: data.status.present ? data.status.value : this.status,
@@ -585,7 +288,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   String toString() {
     return (StringBuffer('YouthUser(')
           ..write('youthUserId: $youthUserId, ')
-          ..write('userId: $userId, ')
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
           ..write('status: $status, ')
@@ -598,7 +300,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   @override
   int get hashCode => Object.hash(
     youthUserId,
-    userId,
     youthType,
     skills,
     status,
@@ -610,7 +311,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       identical(this, other) ||
       (other is YouthUser &&
           other.youthUserId == this.youthUserId &&
-          other.userId == this.userId &&
           other.youthType == this.youthType &&
           other.skills == this.skills &&
           other.status == this.status &&
@@ -620,7 +320,6 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
 
 class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   final Value<int> youthUserId;
-  final Value<int?> userId;
   final Value<String> youthType;
   final Value<String> skills;
   final Value<String> status;
@@ -628,7 +327,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   final Value<DateTime> registerAt;
   const YouthUsersCompanion({
     this.youthUserId = const Value.absent(),
-    this.userId = const Value.absent(),
     this.youthType = const Value.absent(),
     this.skills = const Value.absent(),
     this.status = const Value.absent(),
@@ -637,7 +335,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   });
   YouthUsersCompanion.insert({
     this.youthUserId = const Value.absent(),
-    this.userId = const Value.absent(),
     required String youthType,
     required String skills,
     required String status,
@@ -648,7 +345,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
        status = Value(status);
   static Insertable<YouthUser> custom({
     Expression<int>? youthUserId,
-    Expression<int>? userId,
     Expression<String>? youthType,
     Expression<String>? skills,
     Expression<String>? status,
@@ -657,7 +353,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   }) {
     return RawValuesInsertable({
       if (youthUserId != null) 'youth_user_id': youthUserId,
-      if (userId != null) 'user_id': userId,
       if (youthType != null) 'youth_type': youthType,
       if (skills != null) 'skills': skills,
       if (status != null) 'status': status,
@@ -668,7 +363,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
 
   YouthUsersCompanion copyWith({
     Value<int>? youthUserId,
-    Value<int?>? userId,
     Value<String>? youthType,
     Value<String>? skills,
     Value<String>? status,
@@ -677,7 +371,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   }) {
     return YouthUsersCompanion(
       youthUserId: youthUserId ?? this.youthUserId,
-      userId: userId ?? this.userId,
       youthType: youthType ?? this.youthType,
       skills: skills ?? this.skills,
       status: status ?? this.status,
@@ -691,9 +384,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     final map = <String, Expression>{};
     if (youthUserId.present) {
       map['youth_user_id'] = Variable<int>(youthUserId.value);
-    }
-    if (userId.present) {
-      map['user_id'] = Variable<int>(userId.value);
     }
     if (youthType.present) {
       map['youth_type'] = Variable<String>(youthType.value);
@@ -717,7 +407,6 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   String toString() {
     return (StringBuffer('YouthUsersCompanion(')
           ..write('youthUserId: $youthUserId, ')
-          ..write('userId: $userId, ')
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
           ..write('status: $status, ')
@@ -853,11 +542,11 @@ class $YouthInfosTable extends YouthInfos
     'contactNo',
   );
   @override
-  late final GeneratedColumn<int> contactNo = GeneratedColumn<int>(
+  late final GeneratedColumn<String> contactNo = GeneratedColumn<String>(
     'contact_no',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _heightMeta = const VerificationMeta('height');
@@ -865,18 +554,18 @@ class $YouthInfosTable extends YouthInfos
   late final GeneratedColumn<double> height = GeneratedColumn<double>(
     'height',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _weightMeta = const VerificationMeta('weight');
   @override
   late final GeneratedColumn<double> weight = GeneratedColumn<double>(
     'weight',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _religionMeta = const VerificationMeta(
     'religion',
@@ -1077,16 +766,12 @@ class $YouthInfosTable extends YouthInfos
         _heightMeta,
         height.isAcceptableOrUnknown(data['height']!, _heightMeta),
       );
-    } else if (isInserting) {
-      context.missing(_heightMeta);
     }
     if (data.containsKey('weight')) {
       context.handle(
         _weightMeta,
         weight.isAcceptableOrUnknown(data['weight']!, _weightMeta),
       );
-    } else if (isInserting) {
-      context.missing(_weightMeta);
     }
     if (data.containsKey('religion')) {
       context.handle(
@@ -1197,19 +882,17 @@ class $YouthInfosTable extends YouthInfos
           )!,
       contactNo:
           attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
+            DriftSqlType.string,
             data['${effectivePrefix}contact_no'],
           )!,
-      height:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.double,
-            data['${effectivePrefix}height'],
-          )!,
-      weight:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.double,
-            data['${effectivePrefix}weight'],
-          )!,
+      height: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}height'],
+      ),
+      weight: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight'],
+      ),
       religion:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -1256,9 +939,9 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
   final String dateOfBirth;
   final String address;
   final String placeOfBirth;
-  final int contactNo;
-  final double height;
-  final double weight;
+  final String contactNo;
+  final double? height;
+  final double? weight;
   final String religion;
   final String occupation;
   final String civilStatus;
@@ -1277,8 +960,8 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     required this.address,
     required this.placeOfBirth,
     required this.contactNo,
-    required this.height,
-    required this.weight,
+    this.height,
+    this.weight,
     required this.religion,
     required this.occupation,
     required this.civilStatus,
@@ -1301,9 +984,13 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     map['date_of_birth'] = Variable<String>(dateOfBirth);
     map['address'] = Variable<String>(address);
     map['place_of_birth'] = Variable<String>(placeOfBirth);
-    map['contact_no'] = Variable<int>(contactNo);
-    map['height'] = Variable<double>(height);
-    map['weight'] = Variable<double>(weight);
+    map['contact_no'] = Variable<String>(contactNo);
+    if (!nullToAbsent || height != null) {
+      map['height'] = Variable<double>(height);
+    }
+    if (!nullToAbsent || weight != null) {
+      map['weight'] = Variable<double>(weight);
+    }
     map['religion'] = Variable<String>(religion);
     map['occupation'] = Variable<String>(occupation);
     map['civil_status'] = Variable<String>(civilStatus);
@@ -1327,8 +1014,10 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       address: Value(address),
       placeOfBirth: Value(placeOfBirth),
       contactNo: Value(contactNo),
-      height: Value(height),
-      weight: Value(weight),
+      height:
+          height == null && nullToAbsent ? const Value.absent() : Value(height),
+      weight:
+          weight == null && nullToAbsent ? const Value.absent() : Value(weight),
       religion: Value(religion),
       occupation: Value(occupation),
       civilStatus: Value(civilStatus),
@@ -1354,9 +1043,9 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       dateOfBirth: serializer.fromJson<String>(json['dateOfBirth']),
       address: serializer.fromJson<String>(json['address']),
       placeOfBirth: serializer.fromJson<String>(json['placeOfBirth']),
-      contactNo: serializer.fromJson<int>(json['contactNo']),
-      height: serializer.fromJson<double>(json['height']),
-      weight: serializer.fromJson<double>(json['weight']),
+      contactNo: serializer.fromJson<String>(json['contactNo']),
+      height: serializer.fromJson<double?>(json['height']),
+      weight: serializer.fromJson<double?>(json['weight']),
       religion: serializer.fromJson<String>(json['religion']),
       occupation: serializer.fromJson<String>(json['occupation']),
       civilStatus: serializer.fromJson<String>(json['civilStatus']),
@@ -1379,9 +1068,9 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
       'dateOfBirth': serializer.toJson<String>(dateOfBirth),
       'address': serializer.toJson<String>(address),
       'placeOfBirth': serializer.toJson<String>(placeOfBirth),
-      'contactNo': serializer.toJson<int>(contactNo),
-      'height': serializer.toJson<double>(height),
-      'weight': serializer.toJson<double>(weight),
+      'contactNo': serializer.toJson<String>(contactNo),
+      'height': serializer.toJson<double?>(height),
+      'weight': serializer.toJson<double?>(weight),
       'religion': serializer.toJson<String>(religion),
       'occupation': serializer.toJson<String>(occupation),
       'civilStatus': serializer.toJson<String>(civilStatus),
@@ -1402,9 +1091,9 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     String? dateOfBirth,
     String? address,
     String? placeOfBirth,
-    int? contactNo,
-    double? height,
-    double? weight,
+    String? contactNo,
+    Value<double?> height = const Value.absent(),
+    Value<double?> weight = const Value.absent(),
     String? religion,
     String? occupation,
     String? civilStatus,
@@ -1423,8 +1112,8 @@ class YouthInfo extends DataClass implements Insertable<YouthInfo> {
     address: address ?? this.address,
     placeOfBirth: placeOfBirth ?? this.placeOfBirth,
     contactNo: contactNo ?? this.contactNo,
-    height: height ?? this.height,
-    weight: weight ?? this.weight,
+    height: height.present ? height.value : this.height,
+    weight: weight.present ? weight.value : this.weight,
     religion: religion ?? this.religion,
     occupation: occupation ?? this.occupation,
     civilStatus: civilStatus ?? this.civilStatus,
@@ -1553,9 +1242,9 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
   final Value<String> dateOfBirth;
   final Value<String> address;
   final Value<String> placeOfBirth;
-  final Value<int> contactNo;
-  final Value<double> height;
-  final Value<double> weight;
+  final Value<String> contactNo;
+  final Value<double?> height;
+  final Value<double?> weight;
   final Value<String> religion;
   final Value<String> occupation;
   final Value<String> civilStatus;
@@ -1594,9 +1283,9 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     required String dateOfBirth,
     required String address,
     required String placeOfBirth,
-    required int contactNo,
-    required double height,
-    required double weight,
+    required String contactNo,
+    this.height = const Value.absent(),
+    this.weight = const Value.absent(),
     required String religion,
     required String occupation,
     required String civilStatus,
@@ -1612,8 +1301,6 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
        address = Value(address),
        placeOfBirth = Value(placeOfBirth),
        contactNo = Value(contactNo),
-       height = Value(height),
-       weight = Value(weight),
        religion = Value(religion),
        occupation = Value(occupation),
        civilStatus = Value(civilStatus),
@@ -1630,7 +1317,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Expression<String>? dateOfBirth,
     Expression<String>? address,
     Expression<String>? placeOfBirth,
-    Expression<int>? contactNo,
+    Expression<String>? contactNo,
     Expression<double>? height,
     Expression<double>? weight,
     Expression<String>? religion,
@@ -1674,9 +1361,9 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
     Value<String>? dateOfBirth,
     Value<String>? address,
     Value<String>? placeOfBirth,
-    Value<int>? contactNo,
-    Value<double>? height,
-    Value<double>? weight,
+    Value<String>? contactNo,
+    Value<double?>? height,
+    Value<double?>? weight,
     Value<String>? religion,
     Value<String>? occupation,
     Value<String>? civilStatus,
@@ -1743,7 +1430,7 @@ class YouthInfosCompanion extends UpdateCompanion<YouthInfo> {
       map['place_of_birth'] = Variable<String>(placeOfBirth.value);
     }
     if (contactNo.present) {
-      map['contact_no'] = Variable<int>(contactNo.value);
+      map['contact_no'] = Variable<String>(contactNo.value);
     }
     if (height.present) {
       map['height'] = Variable<double>(height.value);
@@ -1867,9 +1554,9 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
   late final GeneratedColumn<String> yearGraduate = GeneratedColumn<String>(
     'year_graduate',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -1960,8 +1647,6 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
           _yearGraduateMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_yearGraduateMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -2003,11 +1688,10 @@ class $EducBgsTable extends EducBgs with TableInfo<$EducBgsTable, EducBg> {
             DriftSqlType.string,
             data['${effectivePrefix}period_of_attendance'],
           )!,
-      yearGraduate:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}year_graduate'],
-          )!,
+      yearGraduate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}year_graduate'],
+      ),
       createdAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -2028,7 +1712,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
   final String level;
   final String nameOfSchool;
   final String periodOfAttendance;
-  final String yearGraduate;
+  final String? yearGraduate;
   final DateTime createdAt;
   const EducBg({
     required this.educBgId,
@@ -2036,7 +1720,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     required this.level,
     required this.nameOfSchool,
     required this.periodOfAttendance,
-    required this.yearGraduate,
+    this.yearGraduate,
     required this.createdAt,
   });
   @override
@@ -2047,7 +1731,9 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     map['level'] = Variable<String>(level);
     map['name_of_school'] = Variable<String>(nameOfSchool);
     map['period_of_attendance'] = Variable<String>(periodOfAttendance);
-    map['year_graduate'] = Variable<String>(yearGraduate);
+    if (!nullToAbsent || yearGraduate != null) {
+      map['year_graduate'] = Variable<String>(yearGraduate);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -2059,7 +1745,10 @@ class EducBg extends DataClass implements Insertable<EducBg> {
       level: Value(level),
       nameOfSchool: Value(nameOfSchool),
       periodOfAttendance: Value(periodOfAttendance),
-      yearGraduate: Value(yearGraduate),
+      yearGraduate:
+          yearGraduate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(yearGraduate),
       createdAt: Value(createdAt),
     );
   }
@@ -2077,7 +1766,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
       periodOfAttendance: serializer.fromJson<String>(
         json['periodOfAttendance'],
       ),
-      yearGraduate: serializer.fromJson<String>(json['yearGraduate']),
+      yearGraduate: serializer.fromJson<String?>(json['yearGraduate']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -2090,7 +1779,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
       'level': serializer.toJson<String>(level),
       'nameOfSchool': serializer.toJson<String>(nameOfSchool),
       'periodOfAttendance': serializer.toJson<String>(periodOfAttendance),
-      'yearGraduate': serializer.toJson<String>(yearGraduate),
+      'yearGraduate': serializer.toJson<String?>(yearGraduate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -2101,7 +1790,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     String? level,
     String? nameOfSchool,
     String? periodOfAttendance,
-    String? yearGraduate,
+    Value<String?> yearGraduate = const Value.absent(),
     DateTime? createdAt,
   }) => EducBg(
     educBgId: educBgId ?? this.educBgId,
@@ -2109,7 +1798,7 @@ class EducBg extends DataClass implements Insertable<EducBg> {
     level: level ?? this.level,
     nameOfSchool: nameOfSchool ?? this.nameOfSchool,
     periodOfAttendance: periodOfAttendance ?? this.periodOfAttendance,
-    yearGraduate: yearGraduate ?? this.yearGraduate,
+    yearGraduate: yearGraduate.present ? yearGraduate.value : this.yearGraduate,
     createdAt: createdAt ?? this.createdAt,
   );
   EducBg copyWithCompanion(EducBgsCompanion data) {
@@ -2177,7 +1866,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
   final Value<String> level;
   final Value<String> nameOfSchool;
   final Value<String> periodOfAttendance;
-  final Value<String> yearGraduate;
+  final Value<String?> yearGraduate;
   final Value<DateTime> createdAt;
   const EducBgsCompanion({
     this.educBgId = const Value.absent(),
@@ -2194,13 +1883,12 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
     required String level,
     required String nameOfSchool,
     required String periodOfAttendance,
-    required String yearGraduate,
+    this.yearGraduate = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : youthUserId = Value(youthUserId),
        level = Value(level),
        nameOfSchool = Value(nameOfSchool),
-       periodOfAttendance = Value(periodOfAttendance),
-       yearGraduate = Value(yearGraduate);
+       periodOfAttendance = Value(periodOfAttendance);
   static Insertable<EducBg> custom({
     Expression<int>? educBgId,
     Expression<int>? youthUserId,
@@ -2228,7 +1916,7 @@ class EducBgsCompanion extends UpdateCompanion<EducBg> {
     Value<String>? level,
     Value<String>? nameOfSchool,
     Value<String>? periodOfAttendance,
-    Value<String>? yearGraduate,
+    Value<String?>? yearGraduate,
     Value<DateTime>? createdAt,
   }) {
     return EducBgsCompanion(
@@ -2836,7 +2524,6 @@ class CivicInvolvementsCompanion extends UpdateCompanion<CivicInvolvement> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $UsersTable users = $UsersTable(this);
   late final $YouthUsersTable youthUsers = $YouthUsersTable(this);
   late final $YouthInfosTable youthInfos = $YouthInfosTable(this);
   late final $EducBgsTable educBgs = $EducBgsTable(this);
@@ -2847,7 +2534,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    users,
     youthUsers,
     youthInfos,
     educBgs,
@@ -2879,172 +2565,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
-typedef $$UsersTableCreateCompanionBuilder =
-    UsersCompanion Function({
-      required String userName,
-      required String password,
-      required String token,
-      Value<int> rowid,
-    });
-typedef $$UsersTableUpdateCompanionBuilder =
-    UsersCompanion Function({
-      Value<String> userName,
-      Value<String> password,
-      Value<String> token,
-      Value<int> rowid,
-    });
-
-class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
-  $$UsersTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get userName => $composableBuilder(
-    column: $table.userName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get password => $composableBuilder(
-    column: $table.password,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get token => $composableBuilder(
-    column: $table.token,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$UsersTableOrderingComposer
-    extends Composer<_$AppDatabase, $UsersTable> {
-  $$UsersTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get userName => $composableBuilder(
-    column: $table.userName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get password => $composableBuilder(
-    column: $table.password,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get token => $composableBuilder(
-    column: $table.token,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$UsersTableAnnotationComposer
-    extends Composer<_$AppDatabase, $UsersTable> {
-  $$UsersTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get userName =>
-      $composableBuilder(column: $table.userName, builder: (column) => column);
-
-  GeneratedColumn<String> get password =>
-      $composableBuilder(column: $table.password, builder: (column) => column);
-
-  GeneratedColumn<String> get token =>
-      $composableBuilder(column: $table.token, builder: (column) => column);
-}
-
-class $$UsersTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $UsersTable,
-          User,
-          $$UsersTableFilterComposer,
-          $$UsersTableOrderingComposer,
-          $$UsersTableAnnotationComposer,
-          $$UsersTableCreateCompanionBuilder,
-          $$UsersTableUpdateCompanionBuilder,
-          (User, BaseReferences<_$AppDatabase, $UsersTable, User>),
-          User,
-          PrefetchHooks Function()
-        > {
-  $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer:
-              () => $$UsersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$UsersTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$UsersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> userName = const Value.absent(),
-                Value<String> password = const Value.absent(),
-                Value<String> token = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => UsersCompanion(
-                userName: userName,
-                password: password,
-                token: token,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String userName,
-                required String password,
-                required String token,
-                Value<int> rowid = const Value.absent(),
-              }) => UsersCompanion.insert(
-                userName: userName,
-                password: password,
-                token: token,
-                rowid: rowid,
-              ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          BaseReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$UsersTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $UsersTable,
-      User,
-      $$UsersTableFilterComposer,
-      $$UsersTableOrderingComposer,
-      $$UsersTableAnnotationComposer,
-      $$UsersTableCreateCompanionBuilder,
-      $$UsersTableUpdateCompanionBuilder,
-      (User, BaseReferences<_$AppDatabase, $UsersTable, User>),
-      User,
-      PrefetchHooks Function()
-    >;
 typedef $$YouthUsersTableCreateCompanionBuilder =
     YouthUsersCompanion Function({
       Value<int> youthUserId,
-      Value<int?> userId,
       required String youthType,
       required String skills,
       required String status,
@@ -3054,7 +2577,6 @@ typedef $$YouthUsersTableCreateCompanionBuilder =
 typedef $$YouthUsersTableUpdateCompanionBuilder =
     YouthUsersCompanion Function({
       Value<int> youthUserId,
-      Value<int?> userId,
       Value<String> youthType,
       Value<String> skills,
       Value<String> status,
@@ -3151,11 +2673,6 @@ class $$YouthUsersTableFilterComposer
   });
   ColumnFilters<int> get youthUserId => $composableBuilder(
     column: $table.youthUserId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get userId => $composableBuilder(
-    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3274,11 +2791,6 @@ class $$YouthUsersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get youthType => $composableBuilder(
     column: $table.youthType,
     builder: (column) => ColumnOrderings(column),
@@ -3318,9 +2830,6 @@ class $$YouthUsersTableAnnotationComposer
     column: $table.youthUserId,
     builder: (column) => column,
   );
-
-  GeneratedColumn<int> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get youthType =>
       $composableBuilder(column: $table.youthType, builder: (column) => column);
@@ -3449,7 +2958,6 @@ class $$YouthUsersTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> youthUserId = const Value.absent(),
-                Value<int?> userId = const Value.absent(),
                 Value<String> youthType = const Value.absent(),
                 Value<String> skills = const Value.absent(),
                 Value<String> status = const Value.absent(),
@@ -3457,7 +2965,6 @@ class $$YouthUsersTableTableManager
                 Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion(
                 youthUserId: youthUserId,
-                userId: userId,
                 youthType: youthType,
                 skills: skills,
                 status: status,
@@ -3467,7 +2974,6 @@ class $$YouthUsersTableTableManager
           createCompanionCallback:
               ({
                 Value<int> youthUserId = const Value.absent(),
-                Value<int?> userId = const Value.absent(),
                 required String youthType,
                 required String skills,
                 required String status,
@@ -3475,7 +2981,6 @@ class $$YouthUsersTableTableManager
                 Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion.insert(
                 youthUserId: youthUserId,
-                userId: userId,
                 youthType: youthType,
                 skills: skills,
                 status: status,
@@ -3612,9 +3117,9 @@ typedef $$YouthInfosTableCreateCompanionBuilder =
       required String dateOfBirth,
       required String address,
       required String placeOfBirth,
-      required int contactNo,
-      required double height,
-      required double weight,
+      required String contactNo,
+      Value<double?> height,
+      Value<double?> weight,
       required String religion,
       required String occupation,
       required String civilStatus,
@@ -3634,9 +3139,9 @@ typedef $$YouthInfosTableUpdateCompanionBuilder =
       Value<String> dateOfBirth,
       Value<String> address,
       Value<String> placeOfBirth,
-      Value<int> contactNo,
-      Value<double> height,
-      Value<double> weight,
+      Value<String> contactNo,
+      Value<double?> height,
+      Value<double?> weight,
       Value<String> religion,
       Value<String> occupation,
       Value<String> civilStatus,
@@ -3730,7 +3235,7 @@ class $$YouthInfosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get contactNo => $composableBuilder(
+  ColumnFilters<String> get contactNo => $composableBuilder(
     column: $table.contactNo,
     builder: (column) => ColumnFilters(column),
   );
@@ -3853,7 +3358,7 @@ class $$YouthInfosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get contactNo => $composableBuilder(
+  ColumnOrderings<String> get contactNo => $composableBuilder(
     column: $table.contactNo,
     builder: (column) => ColumnOrderings(column),
   );
@@ -3962,7 +3467,7 @@ class $$YouthInfosTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get contactNo =>
+  GeneratedColumn<String> get contactNo =>
       $composableBuilder(column: $table.contactNo, builder: (column) => column);
 
   GeneratedColumn<double> get height =>
@@ -4055,9 +3560,9 @@ class $$YouthInfosTableTableManager
                 Value<String> dateOfBirth = const Value.absent(),
                 Value<String> address = const Value.absent(),
                 Value<String> placeOfBirth = const Value.absent(),
-                Value<int> contactNo = const Value.absent(),
-                Value<double> height = const Value.absent(),
-                Value<double> weight = const Value.absent(),
+                Value<String> contactNo = const Value.absent(),
+                Value<double?> height = const Value.absent(),
+                Value<double?> weight = const Value.absent(),
                 Value<String> religion = const Value.absent(),
                 Value<String> occupation = const Value.absent(),
                 Value<String> civilStatus = const Value.absent(),
@@ -4097,9 +3602,9 @@ class $$YouthInfosTableTableManager
                 required String dateOfBirth,
                 required String address,
                 required String placeOfBirth,
-                required int contactNo,
-                required double height,
-                required double weight,
+                required String contactNo,
+                Value<double?> height = const Value.absent(),
+                Value<double?> weight = const Value.absent(),
                 required String religion,
                 required String occupation,
                 required String civilStatus,
@@ -4202,7 +3707,7 @@ typedef $$EducBgsTableCreateCompanionBuilder =
       required String level,
       required String nameOfSchool,
       required String periodOfAttendance,
-      required String yearGraduate,
+      Value<String?> yearGraduate,
       Value<DateTime> createdAt,
     });
 typedef $$EducBgsTableUpdateCompanionBuilder =
@@ -4212,7 +3717,7 @@ typedef $$EducBgsTableUpdateCompanionBuilder =
       Value<String> level,
       Value<String> nameOfSchool,
       Value<String> periodOfAttendance,
-      Value<String> yearGraduate,
+      Value<String?> yearGraduate,
       Value<DateTime> createdAt,
     });
 
@@ -4456,7 +3961,7 @@ class $$EducBgsTableTableManager
                 Value<String> level = const Value.absent(),
                 Value<String> nameOfSchool = const Value.absent(),
                 Value<String> periodOfAttendance = const Value.absent(),
-                Value<String> yearGraduate = const Value.absent(),
+                Value<String?> yearGraduate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => EducBgsCompanion(
                 educBgId: educBgId,
@@ -4474,7 +3979,7 @@ class $$EducBgsTableTableManager
                 required String level,
                 required String nameOfSchool,
                 required String periodOfAttendance,
-                required String yearGraduate,
+                Value<String?> yearGraduate = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => EducBgsCompanion.insert(
                 educBgId: educBgId,
@@ -4961,8 +4466,6 @@ typedef $$CivicInvolvementsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$UsersTableTableManager get users =>
-      $$UsersTableTableManager(_db, _db.users);
   $$YouthUsersTableTableManager get youthUsers =>
       $$YouthUsersTableTableManager(_db, _db.youthUsers);
   $$YouthInfosTableTableManager get youthInfos =>

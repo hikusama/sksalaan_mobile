@@ -18,15 +18,8 @@ class FullYouthProfile {
   });
 }
 
-class Users extends Table {
-  TextColumn get userName => text()();
-  TextColumn get password => text()();
-  TextColumn get token => text()();
-}
-
 class YouthUsers extends Table {
   IntColumn get youthUserId => integer().autoIncrement()();
-  IntColumn get userId => integer().nullable()();
   TextColumn get youthType => text()();
   TextColumn get skills => text()();
   TextColumn get status => text()();
@@ -38,9 +31,11 @@ class YouthInfos extends Table {
   IntColumn get youthInfosId => integer().autoIncrement()();
 
   IntColumn get youthUserId =>
-      integer().customConstraint(
-        'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE ',
-      )();
+      integer()
+          .customConstraint(
+            'REFERENCES youth_users(youth_user_id) ON DELETE CASCADE ',
+          )
+          .nullable()();
 
   TextColumn get fname => text()();
   TextColumn get mname => text()();
@@ -52,9 +47,9 @@ class YouthInfos extends Table {
   TextColumn get address => text()();
 
   TextColumn get placeOfBirth => text()();
-  IntColumn get contactNo => integer()();
-  RealColumn get height => real()();
-  RealColumn get weight => real()();
+  TextColumn get contactNo => text()();
+  RealColumn get height => real().nullable()();
+  RealColumn get weight => real().nullable()();
   TextColumn get religion => text()();
   TextColumn get occupation => text()();
   TextColumn get civilStatus => text()();
@@ -73,7 +68,7 @@ class EducBgs extends Table {
   TextColumn get level => text()();
   TextColumn get nameOfSchool => text()();
   TextColumn get periodOfAttendance => text()();
-  TextColumn get yearGraduate => text()();
+  TextColumn get yearGraduate => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -99,9 +94,7 @@ class DatabaseProvider {
   static final AppDatabase instance = AppDatabase();
 }
 
-@DriftDatabase(
-  tables: [Users, YouthUsers, YouthInfos, EducBgs, CivicInvolvements],
-)
+@DriftDatabase(tables: [YouthUsers, YouthInfos, EducBgs, CivicInvolvements])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(openConnection());
 
@@ -206,13 +199,7 @@ class AppDatabase extends _$AppDatabase {
         final civics =
             await (select(civicInvolvements)
               ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-      print("------------|f");
 
-        print(user.createdAt.runtimeType);
-        print(info?.createdAt.runtimeType);
-
-
-      print("------------|f");
         exportData.add({
           'user': {
             'id': user.youthUserId,
@@ -275,10 +262,7 @@ class AppDatabase extends _$AppDatabase {
                   .toList(),
         });
       }
-    } catch (e) {
-      print("------------=");
-      print(e);
-    }
+    } catch (e) {}
     return exportData;
   }
 
@@ -304,6 +288,38 @@ class AppDatabase extends _$AppDatabase {
         );
       }
     });
+  }
+
+  Future<Map<String, dynamic>> getSingleProfile({required int id}) async {
+    final user =
+        await (select(youthUsers)
+          ..where((tbl) => tbl.youthUserId.equals(id))).getSingleOrNull();
+
+    if (user == null) {
+      return {'profile': null};
+    }
+
+    final youthInfo =
+        await (select(youthInfos)..where(
+          (tbl) => tbl.youthUserId.equals(user.youthUserId),
+        )).getSingleOrNull();
+
+    final educs =
+        await (select(educBgs)
+          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+    final civics =
+        await (select(civicInvolvements)
+          ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+    final profile = FullYouthProfile(
+      youthUser: user,
+      youthInfo: youthInfo,
+      educBgs: educs,
+      civicInvolvements: civics,
+    );
+
+    return {'profile': profile};
   }
 
   Future<Map<String, dynamic>> getAllYouthProfiles({
