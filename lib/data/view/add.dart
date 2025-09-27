@@ -326,17 +326,15 @@ class _AddState extends State<Add> {
                                     placeOfBirth: drift.Value(
                                       _pobController.text.trim(),
                                     ),
-                                    contactNo: drift.Value(
-                                      _cnController.text.trim(),
-                                    ),
+                                    contactNo: drift.Value(_cnController.text),
                                     noOfChildren: drift.Value(
                                       int.tryParse(_nocController.text) ?? 0,
                                     ),
                                     height: drift.Value(
-                                      double.tryParse(_hController.text) ?? 0,
+                                      double.tryParse(_hController.text),
                                     ),
                                     weight: drift.Value(
-                                      double.tryParse(_wController.text) ?? 0,
+                                      double.tryParse(_wController.text),
                                     ),
                                     dateOfBirth: drift.Value(
                                       _dobController.text.trim(),
@@ -392,7 +390,7 @@ class _AddState extends State<Add> {
                         }
                       },
                       child: Text(
-                        _steps == contentStep.length ? 'Finish' : 'Next',
+                        _steps == 5 ? 'Finish' : 'Next',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -591,10 +589,7 @@ class _AddState extends State<Add> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      _ageController.text != '' ? _ageController.text : '--',
-                      style: TextStyle(fontSize: 17),
-                    ),
+                    Text(_ageController.text, style: TextStyle(fontSize: 17)),
                     Text(
                       'Age',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -971,9 +966,7 @@ class _AddState extends State<Add> {
                               if (value == null || value.isEmpty) {
                                 return null;
                               }
-                              if (value is! int) {
-                                return "invalid value.";
-                              }
+
                               if (int.parse(value) > 200) {
                                 return 'max: 200cm';
                               } else if (int.parse(value) < 140) {
@@ -1004,9 +997,7 @@ class _AddState extends State<Add> {
                               if (value == null || value.isEmpty) {
                                 return null;
                               }
-                              if (value is! int) {
-                                return "invalid value.";
-                              }
+
                               if (int.parse(value) > 200) {
                                 return 'min: 20kg';
                               }
@@ -1080,7 +1071,7 @@ class _AddState extends State<Add> {
             width: 200,
             child: DropdownButtonFormField<String>(
               value: schoolLevelVal,
-              hint: Text(lastyr ? 'Nothing follows!!' : 'School level'),
+              hint: Text(lastyr || educbg.length == 3 ? 'Nothing follows!!' : 'School level'),
               decoration: InputDecoration(
                 labelStyle: TextStyle(fontSize: 12),
                 labelText: 'Select School level',
@@ -1093,7 +1084,7 @@ class _AddState extends State<Add> {
               ),
               style: TextStyle(fontSize: 12, color: Colors.black),
               items:
-                  lastyr
+                  lastyr || educbg.length == 3
                       ? []
                       : [
                             level[educbg.length < level.length
@@ -1248,9 +1239,6 @@ class _AddState extends State<Add> {
                     if (value == null || value.isEmpty) {
                       return null;
                     }
-                    if (value is! int) {
-                      return "Invalid format";
-                    }
 
                     final parsed = int.tryParse(value);
                     if (parsed != null) {
@@ -1291,7 +1279,9 @@ class _AddState extends State<Add> {
                               ? educbg.length
                               : level.length - 1;
                       setState(() {
-                        lastyr = true;
+                        if (_ygschoolController.text.isEmpty) {
+                          lastyr = true;
+                        }
                         educbg[level[idx]] = {
                           'level': schoolLevelVal,
                           'nameOfSchool': _nosController.text,
@@ -1384,7 +1374,7 @@ class _AddState extends State<Add> {
                                                   children: [
                                                     Text(
                                                       DateFormat(
-                                                        'MMM d, yyy',
+                                                        'MMM d, yyyy',
                                                       ).format(
                                                         DateTime.parse(
                                                           data['periodOfAttendance'],
@@ -1817,7 +1807,7 @@ class _AddState extends State<Add> {
                                                   children: [
                                                     Text(
                                                       DateFormat(
-                                                        'MMM d, yyy',
+                                                        'MMM d, yyyy',
                                                       ).format(
                                                         DateTime.parse(
                                                           data['start'],
@@ -1844,7 +1834,7 @@ class _AddState extends State<Add> {
                                                   children: [
                                                     Text(
                                                       DateFormat(
-                                                        'MMM d, yyy',
+                                                        'MMM d, yyyy',
                                                       ).format(
                                                         DateTime.parse(
                                                           data['end'],
@@ -1895,20 +1885,17 @@ class _AddState extends State<Add> {
                                       Positioned(
                                         top: 0,
                                         right: 0,
-                                        child:
-                                            civic.length != index + 1
-                                                ? SizedBox.shrink()
-                                                : IconButton(
-                                                  icon: Icon(
-                                                    Icons.delete,
-                                                    color: Colors.red,
-                                                  ),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      civic.remove(key);
-                                                    });
-                                                  },
-                                                ),
+                                        child: IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              civic.remove(key);
+                                            });
+                                          },
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -1995,29 +1982,15 @@ class _AddState extends State<Add> {
                         mainAxisSize: MainAxisSize.min,
 
                         children: [
-                          Text(
-                            _fnameController.text.isEmpty
-                                ? '--'
-                                : _fnameController.text,
-                          ),
-                          SizedBox(width: 15),
-                          Text(
-                            _mnameController.text.isEmpty
-                                ? '--'
-                                : _mnameController.text,
-                          ),
-                          SizedBox(width: 15),
-                          Text(
-                            _lnameController.text.isEmpty
-                                ? '--'
-                                : _lnameController.text,
-                          ),
+                          Text("${_lnameController.text.trim()}, "),
+                          Text(_fnameController.text.trim()),
+                          Text(" - ${_mnameController.text.trim()}."),
                         ],
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "Name",
+                      "Name (L,F-M)",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
@@ -2049,8 +2022,8 @@ class _AddState extends State<Add> {
                                 children: [
                                   Text(
                                     _dobController.text.isEmpty
-                                        ? '--'
-                                        : DateFormat('MMMM d, yyy').format(
+                                        ? ''
+                                        : DateFormat('MMMM d, yyyy').format(
                                           DateTime.parse(_dobController.text),
                                         ),
                                   ),
@@ -2089,13 +2062,7 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _ageController.text.isEmpty
-                                        ? '--'
-                                        : _ageController.text,
-                                  ),
-                                ],
+                                children: [Text(_ageController.text)],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2128,11 +2095,7 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    sexVal == null ? '--' : sexVal.toString(),
-                                  ),
-                                ],
+                                children: [Text(sexVal.toString())],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2167,7 +2130,9 @@ class _AddState extends State<Add> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    genVal == null ? '--' : genVal.toString(),
+                                    genVal == null
+                                        ? 'unset'
+                                        : genVal.toString(),
                                   ),
                                 ],
                               ),
@@ -2196,7 +2161,7 @@ class _AddState extends State<Add> {
                         ),
                       ),
                       padding: EdgeInsets.only(bottom: 4),
-                      child: Text(addrVal == null ? '--' : addrVal.toString()),
+                      child: Text(addrVal.toString()),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -2268,13 +2233,7 @@ class _AddState extends State<Add> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
 
-                        children: [
-                          Text(
-                            youthTypeVal == null
-                                ? '--'
-                                : youthTypeVal.toString(),
-                          ),
-                        ],
+                        children: [Text(youthTypeVal.toString())],
                       ),
                     ),
                     SizedBox(height: 4),
@@ -2308,13 +2267,7 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _pobController.text.isEmpty
-                                        ? '--'
-                                        : _pobController.text,
-                                  ),
-                                ],
+                                children: [Text(_pobController.text)],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2352,7 +2305,7 @@ class _AddState extends State<Add> {
                                 children: [
                                   Text(
                                     _occController.text.isEmpty
-                                        ? '--'
+                                        ? 'unset'
                                         : _occController.text,
                                   ),
                                 ],
@@ -2396,7 +2349,7 @@ class _AddState extends State<Add> {
                                 children: [
                                   Text(
                                     _hController.text.isEmpty
-                                        ? '--'
+                                        ? 'unset'
                                         : '${_hController.text}cm',
                                   ),
                                 ],
@@ -2437,7 +2390,7 @@ class _AddState extends State<Add> {
                                 children: [
                                   Text(
                                     _wController.text.isEmpty
-                                        ? '--'
+                                        ? 'unset'
                                         : '${_wController.text}kg',
                                   ),
                                 ],
@@ -2476,7 +2429,7 @@ class _AddState extends State<Add> {
                                 children: [
                                   Text(
                                     _nocController.text.isEmpty
-                                        ? '--'
+                                        ? '0'
                                         : _nocController.text,
                                   ),
                                 ],
@@ -2512,13 +2465,7 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    civilStatsVal == null
-                                        ? '--'
-                                        : civilStatsVal.toString(),
-                                  ),
-                                ],
+                                children: [Text(civilStatsVal.toString())],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2556,13 +2503,7 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    religionVal == null
-                                        ? '--'
-                                        : religionVal.toString(),
-                                  ),
-                                ],
+                                children: [Text(religionVal.toString())],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2597,13 +2538,7 @@ class _AddState extends State<Add> {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _cnController.text.isEmpty
-                                        ? '--'
-                                        : '0${_cnController.text}',
-                                  ),
-                                ],
+                                children: [Text(_cnController.text)],
                               ),
                             ),
                             SizedBox(height: 4),
@@ -2631,11 +2566,7 @@ class _AddState extends State<Add> {
                       ),
                       padding: EdgeInsets.only(bottom: 4),
                       child: Text(
-                        skills.isEmpty
-                            ? '--'
-                            : skills.entries
-                                .map((entry) => entry.value)
-                                .join(', '),
+                        skills.entries.map((entry) => entry.value).join(', '),
                       ),
                     ),
                     SizedBox(height: 4),
@@ -2693,9 +2624,8 @@ class _AddState extends State<Add> {
                 ),
                 Container(
                   padding: EdgeInsets.fromLTRB(20, 40, 20, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                  child: Wrap(
+                    runSpacing: 45,
                     children:
                         educbg.isEmpty
                             ? [
@@ -2781,7 +2711,7 @@ class _AddState extends State<Add> {
                                                 children: [
                                                   Text(
                                                     DateFormat(
-                                                      'MMM d, yyy',
+                                                      'MMM d, yyyy',
                                                     ).format(
                                                       DateTime.parse(
                                                         entry
@@ -2955,9 +2885,8 @@ class _AddState extends State<Add> {
 
                 Container(
                   padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                  child: Wrap(
+                    runSpacing: 45,
                     children:
                         civic.isEmpty
                             ? [
@@ -3044,7 +2973,7 @@ class _AddState extends State<Add> {
                                                 children: [
                                                   Text(
                                                     DateFormat(
-                                                      'MMM d, yyy',
+                                                      'MMM d, yyyy',
                                                     ).format(
                                                       DateTime.parse(
                                                         entry.value['start'],
@@ -3095,7 +3024,8 @@ class _AddState extends State<Add> {
                                                 bottom: 4,
                                               ),
                                               child: Column(
-                                                crossAxisAlignment:CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Text(
@@ -3144,7 +3074,7 @@ class _AddState extends State<Add> {
                                                 children: [
                                                   Text(
                                                     DateFormat(
-                                                      'MMM d, yyy',
+                                                      'MMM d, yyyy',
                                                     ).format(
                                                       DateTime.parse(
                                                         entry.value['end'],
