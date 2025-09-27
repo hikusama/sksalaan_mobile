@@ -40,7 +40,6 @@ class RecordsScreenState extends State<RecordsScreen> {
       searchKeyword: arg,
     );
 
-    print(res['youth']);
     setState(() {
       _youthProfiles = List<FullYouthProfile>.from(res['youth']);
       _offset += _limit;
