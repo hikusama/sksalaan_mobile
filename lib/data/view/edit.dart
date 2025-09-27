@@ -37,7 +37,6 @@ class _EditState extends State<Edit> {
   @override
   void initState() {
     super.initState();
-    fill();
   }
 
   int _steps = 1;
@@ -81,6 +80,7 @@ class _EditState extends State<Edit> {
 
   bool isResponse = false;
   bool success = false;
+  bool lastyr = false;
   // Map<String, String> firstForm() => {
   //   'fname': _fnameController.text,
   //   'mname': _mnameController.text,
@@ -111,14 +111,7 @@ class _EditState extends State<Edit> {
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = [
-    'unselect',
-    'Transgender',
-    'Agender',
-    'Bigender',
-    'Non-binary',
-    'Others',
-  ];
+  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Others'];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -155,7 +148,6 @@ class _EditState extends State<Edit> {
     _wController.dispose();
     _occController.dispose();
     _nosController.dispose();
-
     _poaController.dispose();
     _ygschoolController.dispose();
 
@@ -167,21 +159,6 @@ class _EditState extends State<Edit> {
     confettiController.dispose();
 
     super.dispose();
-  }
-
-  void fill() {
-    final profiles = widget.profiles;
-
-    setState(() {
-      _fnameController.text = profiles.youthInfo!.fname;
-      _mnameController.text = profiles.youthInfo!.mname;
-      _lnameController.text = profiles.youthInfo!.lname;
-      _ageController.text = profiles.youthInfo!.age.toString();
-      _dobController.text = profiles.youthInfo!.dateOfBirth;
-      _cnController.text = profiles.youthInfo!.contactNo.toString();
-      _pobController.text = profiles.youthInfo!.placeOfBirth;
-      _nocController.text = profiles.youthInfo!.noOfChildren.toString();
-    });
   }
 
   @override
@@ -216,9 +193,9 @@ class _EditState extends State<Edit> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(size: 25, Icons.add_rounded),
+              Icon(size: 25, Icons.edit),
               Text(
-                'Inserting Youth',
+                'Editing Youth',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 17,
@@ -244,7 +221,7 @@ class _EditState extends State<Edit> {
                 isResponse
                     ? contentStep[_steps.clamp(1, contentStep.length) - 1]
                     : Scrollbar(
-                      thumbVisibility: true, // Optional
+                      thumbVisibility: true,
                       child: SingleChildScrollView(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -257,7 +234,8 @@ class _EditState extends State<Edit> {
           ),
           isResponse
               ? SizedBox.shrink()
-              : Padding(
+              : Container(
+                margin: EdgeInsets.only(bottom: 45),
                 padding: const EdgeInsets.fromLTRB(25, 2, 25, 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -355,7 +333,7 @@ class _EditState extends State<Edit> {
                                       _pobController.text.trim(),
                                     ),
                                     contactNo: drift.Value(
-                                      int.tryParse(_cnController.text) ?? 0,
+                                      _cnController.text.trim(),
                                     ),
                                     noOfChildren: drift.Value(
                                       int.tryParse(_nocController.text) ?? 0,
@@ -380,6 +358,9 @@ class _EditState extends State<Edit> {
                                       religionVal.toString().trim(),
                                     ),
                                     sex: drift.Value(sexVal.toString().trim()),
+                                    address: drift.Value(
+                                      addrVal.toString().trim(),
+                                    ),
                                   ),
                                 );
                                 if (educbg.isNotEmpty) {
@@ -621,7 +602,7 @@ class _EditState extends State<Edit> {
                       style: TextStyle(fontSize: 17),
                     ),
                     Text(
-                      'Generated age',
+                      'Age',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
@@ -777,7 +758,7 @@ class _EditState extends State<Edit> {
             decoration: InputDecoration(
               labelText: 'Contact no.',
               labelStyle: TextStyle(fontSize: 12),
-              hintText: '9554433221',
+              hintText: '09554433221',
               border: OutlineInputBorder(),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
@@ -791,8 +772,12 @@ class _EditState extends State<Edit> {
               if (value == null || value.isEmpty) {
                 return 'Please enter the contact no.';
               }
-              if (value.length != 10) {
-                return 'Use correct formmat 10-Digits.';
+              if (value[0] != "0" && value[1] != "9") {
+                return 'Invalid format contact no.';
+              }
+
+              if (value.length != 11) {
+                return 'Use correct formmat 11-Digits.';
               }
               return null;
             },
@@ -978,7 +963,7 @@ class _EditState extends State<Edit> {
                             decoration: InputDecoration(
                               labelText: 'Height (cm)',
                               labelStyle: TextStyle(fontSize: 12),
-                              hintText: 'Height',
+                              hintText: '(optional)',
                               border: OutlineInputBorder(),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
@@ -990,10 +975,15 @@ class _EditState extends State<Edit> {
                             controller: _hController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Required';
+                                return null;
                               }
-                              if (int.parse(value) > 160) {
-                                return 'max: 160cm';
+                              if (value is! int) {
+                                return "invalid value.";
+                              }
+                              if (int.parse(value) > 200) {
+                                return 'max: 200cm';
+                              } else if (int.parse(value) < 140) {
+                                return 'min: 140cm';
                               }
                               return null;
                             },
@@ -1006,7 +996,7 @@ class _EditState extends State<Edit> {
                             decoration: InputDecoration(
                               labelText: 'Weight (kg)',
                               labelStyle: TextStyle(fontSize: 12),
-                              hintText: 'Weight',
+                              hintText: '(optional)',
                               border: OutlineInputBorder(),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
@@ -1018,11 +1008,15 @@ class _EditState extends State<Edit> {
                             controller: _wController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Required';
+                                return null;
+                              }
+                              if (value is! int) {
+                                return "invalid value.";
                               }
                               if (int.parse(value) > 200) {
-                                return 'max: 200kg';
+                                return 'min: 20kg';
                               }
+
                               return null;
                             },
                           ),
@@ -1092,7 +1086,7 @@ class _EditState extends State<Edit> {
             width: 200,
             child: DropdownButtonFormField<String>(
               value: schoolLevelVal,
-              hint: Text('School level'),
+              hint: Text(lastyr ? 'Nothing follows!!' : 'School level'),
               decoration: InputDecoration(
                 labelStyle: TextStyle(fontSize: 12),
                 labelText: 'Select School level',
@@ -1105,18 +1099,20 @@ class _EditState extends State<Edit> {
               ),
               style: TextStyle(fontSize: 12, color: Colors.black),
               items:
-                  [
-                        level[educbg.length < level.length
-                            ? educbg.length
-                            : level.length - 1],
-                      ]
-                      .map(
-                        (String value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        ),
-                      )
-                      .toList(),
+                  lastyr
+                      ? []
+                      : [
+                            level[educbg.length < level.length
+                                ? educbg.length
+                                : level.length - 1],
+                          ]
+                          .map(
+                            (String value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
               onChanged: (value) {
                 if (value != null) {
                   if (value == '') {
@@ -1255,14 +1251,14 @@ class _EditState extends State<Edit> {
                   ),
                   style: TextStyle(fontSize: 12, color: Colors.black),
                   validator: (value) {
-                    if ((value == null || value.isEmpty) &&
-                        (schoolLevelVal != null ||
-                            qCheck(_nosController) ||
-                            qCheck(_poaController))) {
-                      return 'Required';
+                    if (value == null || value.isEmpty) {
+                      return null;
+                    }
+                    if (value is! int) {
+                      return "Invalid format";
                     }
 
-                    final parsed = int.tryParse(value ?? '');
+                    final parsed = int.tryParse(value);
                     if (parsed != null) {
                       final currentYear = DateTime.now().year;
                       final minYear = currentYear - 33;
@@ -1295,13 +1291,13 @@ class _EditState extends State<Edit> {
                     if (_formKeyForCurrentStep().currentState!.validate() &&
                         (schoolLevelVal != null &&
                             qCheck(_nosController) &&
-                            qCheck(_poaController) &&
-                            qCheck(_ygschoolController))) {
+                            qCheck(_poaController))) {
                       final idx =
                           educbg.length < level.length
                               ? educbg.length
                               : level.length - 1;
                       setState(() {
+                        lastyr = true;
                         educbg[level[idx]] = {
                           'level': schoolLevelVal,
                           'nameOfSchool': _nosController.text,
@@ -1420,7 +1416,8 @@ class _EditState extends State<Edit> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data['yearGraduate'],
+                                                      data['yearGraduate'] ??
+                                                          '',
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1455,6 +1452,7 @@ class _EditState extends State<Edit> {
                                                   ),
                                                   onPressed: () {
                                                     setState(() {
+                                                      lastyr = false;
                                                       educbg.remove(key);
                                                     });
                                                   },
@@ -3400,7 +3398,9 @@ class _EditState extends State<Edit> {
               )
               .toList(),
       onChanged: onChanged,
-      validator: (value) => value == null ? 'Please select $label' : null,
+      validator:
+          (value) =>
+              (value == null || value.isEmpty) ? 'Please select $label' : null,
     );
   }
 
