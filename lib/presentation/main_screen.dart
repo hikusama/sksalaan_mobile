@@ -100,7 +100,7 @@ class _MainScreenState extends State<MainScreen> {
                                 border: Border.all(
                                   color:
                                       _selectedIndex == 4
-                                          ? Color.fromARGB(142, 0, 0, 0)
+                                          ? Color.fromARGB(255, 2, 144, 140)
                                           : Colors.transparent,
                                   width: _selectedIndex == 4 ? 1 : 0,
                                 ),
@@ -110,12 +110,14 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 color:
                                     _selectedIndex == 4
-                                        ? Color.fromARGB(188, 0, 72, 136)
+                                        ? _selectedIndex == 4
+                                            ? Color.fromARGB(183, 2, 144, 139)
+                                            : Color.fromARGB(255, 30, 65, 80)
                                         : Colors.transparent,
                               ),
                               child: _buildNavItem(
                                 Icons.fact_check,
-                                "Validate",
+                                "Validation",
                                 35,
                               ),
                             ),
@@ -213,8 +215,12 @@ class _MainScreenState extends State<MainScreen> {
               size: 18,
               color:
                   isActive
-                      ? const Color.fromRGBO(20, 126, 169, 1)
-                      : const Color.fromARGB(144, 200, 200, 200),
+                      ? (_selectedIndex == 4 && label == "Validation"
+                          ? Color.fromARGB(128, 0, 0, 0)
+                          : const Color.fromRGBO(20, 126, 169, 1))
+                      : (_selectedIndex == 4 && label == "Validation"
+                          ? Color.fromARGB(255, 215, 215, 215)
+                          : Color.fromARGB(144, 200, 200, 200)),
             ),
             Text(
               label,
@@ -223,8 +229,12 @@ class _MainScreenState extends State<MainScreen> {
                 fontWeight: FontWeight.bold,
                 color:
                     isActive
-                        ? const Color.fromRGBO(20, 126, 169, 1)
-                        : const Color.fromARGB(144, 200, 200, 200),
+                        ? (_selectedIndex == 4 && label == "Validation"
+                            ? Color.fromARGB(128, 0, 0, 0)
+                            : const Color.fromRGBO(20, 126, 169, 1))
+                        : (_selectedIndex == 4 && label == "Validation"
+                            ? Color.fromARGB(255, 215, 215, 215)
+                            : Color.fromARGB(144, 200, 200, 200)),
               ),
             ),
           ],
