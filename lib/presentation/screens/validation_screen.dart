@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:skyouthprofiling/data/view/edit.dart';
+import 'package:skyouthprofiling/data/view/more.dart';
 
 class ValidationScreen extends StatefulWidget {
   const ValidationScreen({super.key});
@@ -40,7 +41,6 @@ class ValidationScreenState extends State<ValidationScreen> {
       searchKeyword: arg,
     );
 
-    print(res['youth']);
     setState(() {
       _youthProfiles = List<FullYouthProfile>.from(res['youth']);
       _offset += _limit;
@@ -240,7 +240,7 @@ class ValidationScreenState extends State<ValidationScreen> {
       height: 230,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 30, 65, 80),
+        color: const Color.fromARGB(255, 2, 144, 140),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
@@ -251,7 +251,7 @@ class ValidationScreenState extends State<ValidationScreen> {
         children: [
           SizedBox(height: 100, child: Image.asset('assets/images/logo.png')),
           Text(
-            'SK Youth records',
+            'Validation',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -303,25 +303,15 @@ class ValidationScreenState extends State<ValidationScreen> {
     );
   }
 
-  Widget _buildViewModal() {
-    return Container(
-      padding: EdgeInsets.all(15),
-      height: 300,
-      width: double.infinity,
-      child: Text('hello'),
-    );
-  }
-
   Widget _designRecord(
     FullYouthProfile profile,
     BuildContext context,
     int index,
     int proflen,
   ) {
-    final name =
-        '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''}';
+    final name = '${profile.youthInfo.lname}, ${profile.youthInfo.fname}';
     final fullname =
-        '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''} - ${profile.youthInfo?.mname ?? ''}';
+        '${profile.youthInfo.lname}, ${profile.youthInfo.fname} - ${profile.youthInfo.mname}';
     final dateString = profile.youthUser.registerAt.toString().split(' ').first;
     String date = DateFormat('MMM d, yy').format(DateTime.parse(dateString));
 
@@ -444,14 +434,14 @@ class ValidationScreenState extends State<ValidationScreen> {
                       onSelected: (value) {
                         switch (value) {
                           case 'see more':
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return _buildViewModal();
-                              },
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => More(profiles: profile),
+                              ),
                             );
                             break;
-                          case 'edit':
+                          case 'validate':
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -697,7 +687,7 @@ class ValidationScreenState extends State<ValidationScreen> {
                                                     child: Text(
                                                       clicked < 3
                                                           ? 'Click'
-                                                          : 'Delete',
+                                                          : 'Confirm Deletion',
                                                     ),
                                                   ),
                                                   const SizedBox(height: 25),
@@ -716,18 +706,21 @@ class ValidationScreenState extends State<ValidationScreen> {
                           (context) => [
                             PopupMenuItem(
                               value: 'see more',
-                              child: Text('All info.'),
+                              child: Text('Full info.',style: TextStyle(fontSize: 12),),
                             ),
-                            PopupMenuItem(value: 'edit', child: Text('Edit')),
+                            PopupMenuItem(value: 'validate', 
+                              child: Text('Validate.',style: TextStyle(fontSize: 12),),
+                            ),
                             PopupMenuItem(
                               value: 'delete',
-                              child: Text('Delete'),
+                              child: Text('Delete.',style: TextStyle(fontSize: 12),),
                             ),
                           ],
                     ),
                   ],
                 ),
               ),
+              
             ],
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:skyouthprofiling/data/view/edit.dart';
+import 'package:skyouthprofiling/data/view/more.dart';
 
 class RecordsScreen extends StatefulWidget {
   const RecordsScreen({super.key});
@@ -30,14 +31,15 @@ class RecordsScreenState extends State<RecordsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInitialData('');
+    _loadInitialData(arg: '');
   }
 
-  Future<void> _loadInitialData(String arg) async {
+  Future<void> _loadInitialData({String arg = "",String sort = 'registeredAt'}) async {
     final res = await db.getAllYouthProfiles(
       offset: _offset,
       limit: _limit,
       searchKeyword: arg,
+      sortBy: sort
     );
 
     setState(() {
@@ -96,7 +98,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                         onRefresh: () async {
                           _offset = 0;
                           _isInitialLoading = true;
-                          await _loadInitialData('');
+                          await _loadInitialData(arg:'');
                         },
                         child: Scrollbar(
                           thumbVisibility:
@@ -154,54 +156,20 @@ class RecordsScreenState extends State<RecordsScreen> {
                   Icons.tune,
                   color: const Color.fromARGB(255, 0, 0, 0),
                 ),
-                onSelected: (value) {},
+                onSelected: (value) async {
+                  await _loadInitialData(
+                    sort:value,
+                    arg: ''
+                  );
+                },
                 itemBuilder:
                     (context) => [
                       PopupMenuItem(
-                        value: 'ASC',
-                        child: Text(
-                          'ASC',
-                          style: TextStyle(
-                            color:
-                                sort == 'ASC'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'DESC',
-                        child: Text(
-                          'DESC',
-                          style: TextStyle(
-                            color:
-                                sort == 'DESC'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: SizedBox(height: 15),
-                      ),
-                      PopupMenuItem(
-                        value: 'age',
-                        child: Text(
-                          'Age',
-                          style: TextStyle(
-                            color:
-                                sort == 'age'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
                         value: 'fname',
                         child: Text(
-                          'Firstname',
+                          'First name',
                           style: TextStyle(
+                            fontSize: 12,
                             color:
                                 sort == 'fname'
                                     ? Color.fromARGB(255, 30, 65, 80)
@@ -209,11 +177,13 @@ class RecordsScreenState extends State<RecordsScreen> {
                           ),
                         ),
                       ),
+
                       PopupMenuItem(
-                        value: 'lname',
+                        value: 'mname',
                         child: Text(
-                          'Lastname',
+                          'Middle name',
                           style: TextStyle(
+                            fontSize: 12,
                             color:
                                 sort == 'lname'
                                     ? Color.fromARGB(255, 30, 65, 80)
@@ -222,8 +192,30 @@ class RecordsScreenState extends State<RecordsScreen> {
                         ),
                       ),
                       PopupMenuItem(
-                        value: 'regiteredAt',
-                        child: Text('Registered'),
+                        value: 'lname',
+                        child: Text(
+                          'Last name',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                sort == 'lname'
+                                    ? Color.fromARGB(255, 30, 65, 80)
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'age',
+                        child: Text(
+                          'Age',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                sort == 'age'
+                                    ? Color.fromARGB(255, 30, 65, 80)
+                                    : Colors.black,
+                          ),
+                        ),
                       ),
                     ],
               ),
@@ -279,7 +271,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                   onChanged: (value) {
                     _offset = 0;
                     _isInitialLoading = true;
-                    _loadInitialData(value.trim());
+                    _loadInitialData(arg:value.trim());
                   },
                 ),
                 Positioned(
@@ -302,25 +294,15 @@ class RecordsScreenState extends State<RecordsScreen> {
     );
   }
 
-  Widget _buildViewModal() {
-    return Container(
-      padding: EdgeInsets.all(15),
-      height: 300,
-      width: double.infinity,
-      child: Text('hello'),
-    );
-  }
-
   Widget _designRecord(
     FullYouthProfile profile,
     BuildContext context,
     int index,
     int proflen,
   ) {
-    final name =
-        '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''}';
+    final name = '${profile.youthInfo.lname}, ${profile.youthInfo.fname}';
     final fullname =
-        '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''} - ${profile.youthInfo?.mname ?? ''}';
+        '${profile.youthInfo.lname}, ${profile.youthInfo.fname} - ${profile.youthInfo.mname}';
     final dateString = profile.youthUser.registerAt.toString().split(' ').first;
     String date = DateFormat('MMM d, yy').format(DateTime.parse(dateString));
 
@@ -443,11 +425,11 @@ class RecordsScreenState extends State<RecordsScreen> {
                       onSelected: (value) {
                         switch (value) {
                           case 'see more':
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return _buildViewModal();
-                              },
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => More(profiles: profile),
+                              ),
                             );
                             break;
                           case 'edit':
@@ -715,12 +697,24 @@ class RecordsScreenState extends State<RecordsScreen> {
                           (context) => [
                             PopupMenuItem(
                               value: 'see more',
-                              child: Text('All info.'),
+                              child: Text(
+                                'Full info.',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
-                            PopupMenuItem(value: 'edit', child: Text('Edit')),
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Text(
+                                'Edit.',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ),
                             PopupMenuItem(
                               value: 'delete',
-                              child: Text('Delete'),
+                              child: Text(
+                                'Delete.',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                           ],
                     ),

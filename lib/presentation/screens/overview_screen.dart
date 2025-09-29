@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:skyouthprofiling/data/view/more.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key});
@@ -332,8 +333,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
     int index,
     int proflen,
   ) {
-    final name =
-        '${profile.youthInfo?.lname ?? ''}, ${profile.youthInfo?.fname ?? ''}';
+    final name = '${profile.youthInfo.lname}, ${profile.youthInfo.fname}';
     final dateString = profile.youthUser.registerAt.toString().split(' ').first;
     String date = DateFormat('MMM d, yy').format(DateTime.parse(dateString));
 
@@ -456,21 +456,20 @@ class _OverviewScreenState extends State<OverviewScreen> {
                       onSelected: (value) {
                         switch (value) {
                           case 'see more':
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return _buildViewModal();
-                              },
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => More(profiles: profile),
+                              ),
                             );
                             break;
-
                         }
                       },
                       itemBuilder:
                           (context) => [
                             PopupMenuItem(
                               value: 'see more',
-                              child: Text('All info.'),
+                              child: Text('Full info.',style: TextStyle(fontSize: 12),),
                             ),
                           ],
                     ),
@@ -571,13 +570,5 @@ class _OverviewScreenState extends State<OverviewScreen> {
       ],
     );
   }
-
-  Widget _buildViewModal() {
-    return Container(
-      padding: EdgeInsets.all(15),
-      height: 300,
-      width: double.infinity,
-      child: Text('hello'),
-    );
-  }
+ 
 }
