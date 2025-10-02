@@ -491,18 +491,7 @@ class _MoreState extends State<More> {
                   ),
                   style: TextStyle(fontSize: 12, color: Colors.black),
                   items: [],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        genVal = value;
-                      });
-                    }
-                    if (value == 'unselect') {
-                      setState(() {
-                        genVal = null;
-                      });
-                    }
-                  },
+                  onChanged: (value) {},
                 ),
               ),
             ],
@@ -879,32 +868,8 @@ class _MoreState extends State<More> {
                 ),
               ),
               style: TextStyle(fontSize: 12, color: Colors.black),
-              items:
-                  lastyr || educbg.length == 3
-                      ? []
-                      : [
-                            level[educbg.length < level.length
-                                ? educbg.length
-                                : level.length - 1],
-                          ]
-                          .map(
-                            (String value) => DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            ),
-                          )
-                          .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  if (value == '') {
-                    schoolLevelVal = null;
-                  } else {
-                    setState(() {
-                      schoolLevelVal = value;
-                    });
-                  }
-                }
-              },
+              items: [],
+              onChanged: (value) {},
               validator: (value) {
                 return null;
               },
