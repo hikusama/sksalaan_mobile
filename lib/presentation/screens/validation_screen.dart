@@ -39,6 +39,7 @@ class ValidationScreenState extends State<ValidationScreen> {
       offset: _offset,
       limit: _limit,
       searchKeyword: arg,
+      validated: 'Val'
     );
 
     setState(() {
@@ -62,6 +63,7 @@ class ValidationScreenState extends State<ValidationScreen> {
       offset: _offset,
       limit: _limit,
       searchKeyword: '',
+      validated: 'Val'
     );
     final List<FullYouthProfile> moreProfiles = List<FullYouthProfile>.from(
       res['youth'],
@@ -142,8 +144,8 @@ class ValidationScreenState extends State<ValidationScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Records',
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+            'Validation records',
+            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 7),
 
@@ -318,13 +320,13 @@ class ValidationScreenState extends State<ValidationScreen> {
     final status = profile.youthUser.status;
     Color statColor = Colors.white;
     switch (status) {
-      case 'Standby':
+      case 'New':
         statColor = const Color.fromARGB(255, 255, 217, 0);
         break;
-      case 'Failed':
+      case 'Unvalidated':
         statColor = const Color.fromARGB(255, 255, 0, 0);
         break;
-      case 'Submitted':
+      case 'Validated':
         statColor = Colors.green;
         break;
     }
