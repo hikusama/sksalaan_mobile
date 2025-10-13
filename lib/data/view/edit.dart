@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:confetti/confetti.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/presentation/main_screen.dart';
 
@@ -45,11 +46,20 @@ class _EditState extends State<Edit> {
     YouthInfo yi = profiles.youthInfo;
     List<EducBg> edu = profiles.educBgs;
     List<CivicInvolvement> cv = profiles.civicInvolvements;
+    final date = DateTime.parse(yi.dateOfBirth);
+    final now = DateTime.now();
+    final age =
+        now.year -
+        date.year -
+        ((now.month < date.month ||
+                (now.month == date.month && now.day < date.day))
+            ? 1
+            : 0);
     _fnameController.text = yi.fname;
     _mnameController.text = yi.mname;
     _lnameController.text = yi.lname;
     _dobController.text = yi.dateOfBirth;
-    _ageController.text = yi.age.toString();
+    _ageController.text = age.toString();
     sexVal = yi.sex;
     genVal = yi.gender;
     civilStatsVal = yi.civilStatus;
@@ -105,6 +115,7 @@ class _EditState extends State<Edit> {
   String? sexVal;
   String? genVal;
   String? addrVal;
+  bool fullNameExist = false;
 
   final _cnController = TextEditingController();
   final _pobController = TextEditingController();
@@ -246,9 +257,9 @@ class _EditState extends State<Edit> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(size: 25, Icons.add_rounded),
+              Icon(size: 25, Icons.edit),
               Text(
-                'Inserting Youth',
+                'Edit Youth',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 17,
@@ -317,129 +328,138 @@ class _EditState extends State<Edit> {
                         backgroundColor: Color.fromRGBO(20, 169, 107, 1),
                       ),
                       onPressed: () async {
+                        int youthUserID = widget.profiles.youthUser.youthUserId;
+                        if (_steps == 1 &&
+                            (_fnameController.text.isNotEmpty &&
+                                _mnameController.text.isNotEmpty &&
+                                _lnameController.text.isNotEmpty)) {
+                          final db = AppDatabase();
+
+                          final exists = await db.youthExistsIgnoreCaseExcept(
+                            youthUserID,
+                            _fnameController.text,
+                            _mnameController.text,
+                            _lnameController.text,
+                          );
+
+                          if (exists) {
+                            setState(() {
+                              fullNameExist = true;
+                            });
+                          } else {
+                            setState(() {
+                              fullNameExist = false;
+                            });
+                          }
+                        }
                         if (_steps >= 3 ||
                             _formKeyForCurrentStep().currentState!.validate()) {
-                              
                           if (_steps == 5) {
-                            // final db = AppDatabase();
-                            // int youthUserID = 0;
+                            final db = AppDatabase();
+
                             // bool good = false;
-                            // try {
-                            //   youthUserID = await db.insertYouthUser(
-                            //     YouthUsersCompanion(
-                            //       skills: drift.Value(
-                            //         skills.entries
-                            //             .map((entry) => entry.value)
-                            //             .toList()
-                            //             .join(', '),
-                            //       ),
-                            //       status: drift.Value('Standby'),
-                            //       youthType: drift.Value(
-                            //         youthTypeVal ?? 'Unknown',
-                            //       ),
-                            //     ),
-                            //   );
-                            //   good = true;
-                            // } catch (e) {
-                            //   good = false;
-                            // }
+                            final good = await db.updateFullYouthData(
+                              youthUserId: youthUserID,
+                              user: YouthUsersCompanion(
+                                youthType: drift.Value(
+                                  youthTypeVal ?? 'Unknown',
+                                ),
+                                skills: drift.Value(
+                                  skills.entries
+                                      .map((e) => e.value)
+                                      .toList()
+                                      .join(', '),
+                                ),
+                                status: const drift.Value('New'),
+                              ),
+                              info: YouthInfosCompanion(
+                                fname: drift.Value(
+                                  _fnameController.text.trim().isNotEmpty
+                                      ? _fnameController.text[0].toUpperCase() +
+                                          _fnameController.text
+                                              .substring(1)
+                                              .trim()
+                                      : '',
+                                ),
+                                mname: drift.Value(
+                                  _mnameController.text.trim().isNotEmpty
+                                      ? _mnameController.text[0].toUpperCase() +
+                                          _mnameController.text
+                                              .substring(1)
+                                              .trim()
+                                      : '',
+                                ),
+                                lname: drift.Value(
+                                  _lnameController.text.trim().isNotEmpty
+                                      ? _lnameController.text[0].toUpperCase() +
+                                          _lnameController.text
+                                              .substring(1)
+                                              .trim()
+                                      : '',
+                                ),
+                                occupation: drift.Value(
+                                  _occController.text.trim(),
+                                ),
+                                placeOfBirth: drift.Value(
+                                  _pobController.text.trim(),
+                                ),
+                                contactNo: drift.Value(
+                                  _cnController.text.trim(),
+                                ),
+                                noOfChildren: drift.Value(
+                                  int.tryParse(_nocController.text) ?? 0,
+                                ),
+                                height: drift.Value(
+                                  double.tryParse(_hController.text),
+                                ),
+                                weight: drift.Value(
+                                  double.tryParse(_wController.text),
+                                ),
+                                dateOfBirth: drift.Value(
+                                  _dobController.text.trim(),
+                                ),
+                                civilStatus: drift.Value(
+                                  civilStatsVal.toString().trim(),
+                                ),
+                                gender: drift.Value(genVal),
+                                religion: drift.Value(
+                                  religionVal.toString().trim(),
+                                ),
+                                sex: drift.Value(sexVal.toString().trim()),
+                                address: drift.Value(addrVal.toString().trim()),
+                              ),
+                              educList:
+                                  educbg.values.map((e) {
+                                    return EducBgsCompanion.insert(
+                                      youthUserId: youthUserID,
+                                      level: e['level'],
+                                      nameOfSchool: e['nameOfSchool'],
+                                      periodOfAttendance:
+                                          e['periodOfAttendance'],
+                                      yearGraduate: drift.Value(
+                                        e['yearGraduate'],
+                                      ),
+                                    );
+                                  }).toList(),
 
-                            // if (good) {
-                            //   try {
-                            //     await db.insertYouthInfo(
-                            //       YouthInfosCompanion(
-                            //         youthUserId: drift.Value(youthUserID),
-                            //         fname: drift.Value(
-                            //           _fnameController.text
-                            //                   .toUpperCase()
-                            //                   .characters
-                            //                   .first +
-                            //               _fnameController.text
-                            //                   .toString()
-                            //                   .substring(1)
-                            //                   .trim(),
-                            //         ),
-                            //         mname: drift.Value(
-                            //           _mnameController.text
-                            //                   .toUpperCase()
-                            //                   .characters
-                            //                   .first +
-                            //               _mnameController.text
-                            //                   .toString()
-                            //                   .substring(1)
-                            //                   .trim(),
-                            //         ),
-                            //         lname: drift.Value(
-                            //           _lnameController.text
-                            //                   .toUpperCase()
-                            //                   .characters
-                            //                   .first +
-                            //               _lnameController.text
-                            //                   .toString()
-                            //                   .substring(1)
-                            //                   .trim(),
-                            //         ),
+                              civicList:
+                                  civic.values.map((c) {
+                                    return CivicInvolvementsCompanion.insert(
+                                      youthUserId: youthUserID,
+                                      nameOfOrganization:
+                                          c['nameOfOrganization'],
+                                      addressOfOrganization:
+                                          c['addressOfOrganization'],
+                                      start: c['start'],
+                                      end: c['end'],
+                                      yearGraduated: c['yearGraduated'],
+                                    );
+                                  }).toList(),
+                            );
 
-                            //         occupation: drift.Value(
-                            //           _occController.text.trim(),
-                            //         ),
-                            //         placeOfBirth: drift.Value(
-                            //           _pobController.text.trim(),
-                            //         ),
-                            //         contactNo: drift.Value(_cnController.text),
-                            //         noOfChildren: drift.Value(
-                            //           int.tryParse(_nocController.text) ?? 0,
-                            //         ),
-                            //         height: drift.Value(
-                            //           double.tryParse(_hController.text),
-                            //         ),
-                            //         weight: drift.Value(
-                            //           double.tryParse(_wController.text),
-                            //         ),
-                            //         dateOfBirth: drift.Value(
-                            //           _dobController.text.trim(),
-                            //         ),
-                            //         age: drift.Value(
-                            //           int.tryParse(_ageController.text) ?? 0,
-                            //         ),
-                            //         civilStatus: drift.Value(
-                            //           civilStatsVal.toString().trim(),
-                            //         ),
-                            //         gender: drift.Value(genVal),
-                            //         religion: drift.Value(
-                            //           religionVal.toString().trim(),
-                            //         ),
-                            //         sex: drift.Value(sexVal.toString().trim()),
-                            //         address: drift.Value(
-                            //           addrVal.toString().trim(),
-                            //         ),
-                            //       ),
-                            //     );
-                            //     if (educbg.isNotEmpty) {
-                            //       await db.insertAllEducBgs(
-                            //         youthUserID,
-                            //         educbg,
-                            //         db,
-                            //       );
-                            //     }
-                            //     if (civic.isNotEmpty) {
-                            //       await db.insertAllCivic(
-                            //         youthUserID,
-                            //         civic,
-                            //         db,
-                            //       );
-                            //     }
-                            //     success = true;
-                            //   } catch (e) {
-                            //     await db.deleteYouthUser(youthUserID);
-                            //     success = false;
-                            //   }
-                            // } else {
-                            //   success = false;
-                            // }
                             setState(() {
                               isResponse = true;
-                              success = true;
+                              success = good;
                             });
                             if (success) {
                               confettiController.play();
@@ -490,6 +510,9 @@ class _EditState extends State<Edit> {
               }
               if (value.length > 20) {
                 return 'Use only 20 characters';
+              }
+              if (fullNameExist) {
+                return 'Youth already exist.';
               }
               return null;
             },
@@ -1132,7 +1155,11 @@ class _EditState extends State<Edit> {
             width: 200,
             child: DropdownButtonFormField<String>(
               value: schoolLevelVal,
-              hint: Text(lastyr || educbg.length == 3 ? 'Nothing follows!!' : 'School level'),
+              hint: Text(
+                lastyr || educbg.length == 3
+                    ? 'Nothing follows!!'
+                    : 'School level',
+              ),
               decoration: InputDecoration(
                 labelStyle: TextStyle(fontSize: 12),
                 labelText: 'Select School level',
@@ -3320,32 +3347,47 @@ class _EditState extends State<Edit> {
     List<String> array,
     ValueChanged<String?> onChanged,
   ) {
-    return DropdownButtonFormField<String>(
-      value: currentVal,
-      hint: Text(hintText),
-      decoration: InputDecoration(
-        labelStyle: TextStyle(fontSize: 12),
-        labelText: label,
-        border: OutlineInputBorder(),
-        isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-      ),
-      style: TextStyle(fontSize: 12, color: Colors.black),
+    // Prevent invalid or missing values
+    final safeValue = array.contains(currentVal) ? currentVal : null;
 
+    return DropdownButtonFormField<String>(
+      value: safeValue,
+      hint: Text(hintText, style: const TextStyle(fontSize: 12)),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontSize: 12),
+        border: const OutlineInputBorder(),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 10,
+        ),
+      ),
+      style: const TextStyle(fontSize: 12, color: Colors.black),
+
+      // Convert list to Set to remove duplicates
       items:
           array
+              .toSet()
               .map(
-                (String value) =>
-                    DropdownMenuItem<String>(value: value, child: Text(value)),
+                (String value) => DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value, style: const TextStyle(fontSize: 12)),
+                ),
               )
               .toList(),
+
       onChanged: onChanged,
-      validator:
-          (value) =>
-              (value == null || value.isEmpty) ? 'Please select $label' : null,
+
+      // Validation for forms
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select $label';
+        }
+        return null;
+      },
     );
   }
-
   // tabs
 
   List<Widget> stepTab() => [
