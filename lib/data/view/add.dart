@@ -46,6 +46,7 @@ class _AddState extends State<Add> {
   String? sexVal;
   String? genVal;
   String? addrVal;
+  bool fullNameExist = false;
 
   final _cnController = TextEditingController();
   final _pobController = TextEditingController();
@@ -258,6 +259,28 @@ class _AddState extends State<Add> {
                         backgroundColor: Color.fromRGBO(20, 126, 169, 1),
                       ),
                       onPressed: () async {
+                        if (_steps == 1 &&
+                            (_fnameController.text.isNotEmpty &&
+                                _mnameController.text.isNotEmpty &&
+                                _lnameController.text.isNotEmpty)) {
+                          final db = AppDatabase();
+
+                          final exists = await db.youthExistsIgnoreCase(
+                            _fnameController.text,
+                            _mnameController.text,
+                            _lnameController.text,
+                          );
+
+                          if (exists) {
+                            setState(() {
+                              fullNameExist = true;
+                            });
+                          } else {
+                            setState(() {
+                              fullNameExist = false;
+                            });
+                          }
+                        }
                         if (_steps >= 3 ||
                             _formKeyForCurrentStep().currentState!.validate()) {
                           if (_steps == 5) {
@@ -273,7 +296,7 @@ class _AddState extends State<Add> {
                                         .toList()
                                         .join(', '),
                                   ),
-                                  status: drift.Value('Standby'),
+                                  status: drift.Value('New'),
                                   youthType: drift.Value(
                                     youthTypeVal ?? 'Unknown',
                                   ),
@@ -339,9 +362,9 @@ class _AddState extends State<Add> {
                                     dateOfBirth: drift.Value(
                                       _dobController.text.trim(),
                                     ),
-                                    age: drift.Value(
-                                      int.tryParse(_ageController.text) ?? 0,
-                                    ),
+                                    // age: drift.Value(
+                                    //   int.tryParse(_ageController.text) ?? 0,
+                                    // ),
                                     civilStatus: drift.Value(
                                       civilStatsVal.toString().trim(),
                                     ),
@@ -429,6 +452,9 @@ class _AddState extends State<Add> {
               }
               if (value.length > 20) {
                 return 'Use only 20 characters';
+              }
+              if (fullNameExist) {
+                return 'Youth already exist.';
               }
               return null;
             },
@@ -1071,7 +1097,11 @@ class _AddState extends State<Add> {
             width: 200,
             child: DropdownButtonFormField<String>(
               value: schoolLevelVal,
-              hint: Text(lastyr || educbg.length == 3 ? 'Nothing follows!!' : 'School level'),
+              hint: Text(
+                lastyr || educbg.length == 3
+                    ? 'Nothing follows!!'
+                    : 'School level',
+              ),
               decoration: InputDecoration(
                 labelStyle: TextStyle(fontSize: 12),
                 labelText: 'Select School level',
@@ -3259,32 +3289,47 @@ class _AddState extends State<Add> {
     List<String> array,
     ValueChanged<String?> onChanged,
   ) {
-    return DropdownButtonFormField<String>(
-      value: currentVal,
-      hint: Text(hintText),
-      decoration: InputDecoration(
-        labelStyle: TextStyle(fontSize: 12),
-        labelText: label,
-        border: OutlineInputBorder(),
-        isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-      ),
-      style: TextStyle(fontSize: 12, color: Colors.black),
+    // Prevent invalid or missing values
+    final safeValue = array.contains(currentVal) ? currentVal : null;
 
+    return DropdownButtonFormField<String>(
+      value: safeValue,
+      hint: Text(hintText, style: const TextStyle(fontSize: 12)),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontSize: 12),
+        border: const OutlineInputBorder(),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 10,
+        ),
+      ),
+      style: const TextStyle(fontSize: 12, color: Colors.black),
+
+      // Convert list to Set to remove duplicates
       items:
           array
+              .toSet()
               .map(
-                (String value) =>
-                    DropdownMenuItem<String>(value: value, child: Text(value)),
+                (String value) => DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value, style: const TextStyle(fontSize: 12)),
+                ),
               )
               .toList(),
+
       onChanged: onChanged,
-      validator:
-          (value) =>
-              (value == null || value.isEmpty) ? 'Please select $label' : null,
+
+      // Validation for forms
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select $label';
+        }
+        return null;
+      },
     );
   }
-
   // tabs
 
   List<Widget> stepTab() => [
