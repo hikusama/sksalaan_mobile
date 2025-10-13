@@ -45,11 +45,21 @@ class _MoreState extends State<More> {
     YouthInfo yi = profiles.youthInfo;
     List<EducBg> edu = profiles.educBgs;
     List<CivicInvolvement> cv = profiles.civicInvolvements;
+    final date = DateTime.parse(yi.dateOfBirth);
+    final now = DateTime.now();
+    final age =
+        now.year -
+        date.year -
+        ((now.month < date.month ||
+                (now.month == date.month && now.day < date.day))
+            ? 1
+            : 0);
+
     _fnameController.text = yi.fname;
     _mnameController.text = yi.mname;
     _lnameController.text = yi.lname;
     _dobController.text = yi.dateOfBirth;
-    _ageController.text = yi.age.toString();
+    _ageController.text = age.toString();
     sexVal = yi.sex;
     genVal = yi.gender;
     civilStatsVal = yi.civilStatus;
