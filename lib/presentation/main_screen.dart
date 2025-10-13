@@ -17,14 +17,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   int? _hoveredIndex;
-  final List<Widget> _screens = [
-    const OverviewScreen(),
-    const RecordsScreen(),
-    const HubScreen(),
-    const SettingsScreen(),
-    const ValidationScreen(),
-  ];
-
+  late final List<Widget> _screens;
+  
+ 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -54,6 +49,23 @@ class _MainScreenState extends State<MainScreen> {
     return shouldLeave ?? false;
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      const OverviewScreen(),
+      const RecordsScreen(),
+      HubScreen(chtp: _chtap),
+      const SettingsScreen(),
+      const ValidationScreen(),
+    ];
+  }
+  
+  void _chtap() {
+    setState(() {
+      _selectedIndex = 3;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return PopScope(
