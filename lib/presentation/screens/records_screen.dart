@@ -34,12 +34,17 @@ class RecordsScreenState extends State<RecordsScreen> {
     _loadInitialData(arg: '');
   }
 
-  Future<void> _loadInitialData({String arg = "",String sort = 'registeredAt'}) async {
+  Future<void> _loadInitialData({
+    String arg = "",
+    String sort = 'registeredAt',
+    String val = 'New',
+  }) async {
     final res = await db.getAllYouthProfiles(
       offset: _offset,
       limit: _limit,
       searchKeyword: arg,
-      sortBy: sort
+      sortBy: sort,
+      validated: val,
     );
 
     setState(() {
@@ -63,6 +68,7 @@ class RecordsScreenState extends State<RecordsScreen> {
       offset: _offset,
       limit: _limit,
       searchKeyword: '',
+      validated: 'New',
     );
     final List<FullYouthProfile> moreProfiles = List<FullYouthProfile>.from(
       res['youth'],
@@ -98,7 +104,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                         onRefresh: () async {
                           _offset = 0;
                           _isInitialLoading = true;
-                          await _loadInitialData(arg:'');
+                          await _loadInitialData(arg: '');
                         },
                         child: Scrollbar(
                           thumbVisibility:
@@ -143,7 +149,7 @@ class RecordsScreenState extends State<RecordsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Records',
+            'New records',
             style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 7),
@@ -157,10 +163,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                   color: const Color.fromARGB(255, 0, 0, 0),
                 ),
                 onSelected: (value) async {
-                  await _loadInitialData(
-                    sort:value,
-                    arg: ''
-                  );
+                  await _loadInitialData(sort: value, arg: '');
                 },
                 itemBuilder:
                     (context) => [
@@ -271,7 +274,7 @@ class RecordsScreenState extends State<RecordsScreen> {
                   onChanged: (value) {
                     _offset = 0;
                     _isInitialLoading = true;
-                    _loadInitialData(arg:value.trim());
+                    _loadInitialData(arg: value.trim());
                   },
                 ),
                 Positioned(
@@ -309,13 +312,13 @@ class RecordsScreenState extends State<RecordsScreen> {
     final status = profile.youthUser.status;
     Color statColor = Colors.white;
     switch (status) {
-      case 'Standby':
+      case 'New':
         statColor = const Color.fromARGB(255, 255, 217, 0);
         break;
-      case 'Failed':
+      case 'Unvalidated':
         statColor = const Color.fromARGB(255, 255, 0, 0);
         break;
-      case 'Submitted':
+      case 'Validated':
         statColor = Colors.green;
         break;
     }
