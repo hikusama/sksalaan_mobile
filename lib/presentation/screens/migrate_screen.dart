@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:skyouthprofiling/data/view/logged_in.dart';
+import 'package:skyouthprofiling/data/view/logged_in.txt';
 import 'package:skyouthprofiling/service/dio_client.dart';
 
 class MigrateScreen extends StatefulWidget {
