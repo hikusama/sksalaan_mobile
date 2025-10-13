@@ -24,10 +24,10 @@ class $YouthUsersTable extends YouthUsers
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _orgIDMeta = const VerificationMeta('orgID');
+  static const VerificationMeta _orgIdMeta = const VerificationMeta('orgId');
   @override
-  late final GeneratedColumn<int> orgID = GeneratedColumn<int>(
-    'org_i_d',
+  late final GeneratedColumn<int> orgId = GeneratedColumn<int>(
+    'org_id',
     aliasedName,
     true,
     type: DriftSqlType.int,
@@ -89,7 +89,7 @@ class $YouthUsersTable extends YouthUsers
   @override
   List<GeneratedColumn> get $columns => [
     youthUserId,
-    orgID,
+    orgId,
     youthType,
     skills,
     status,
@@ -117,10 +117,10 @@ class $YouthUsersTable extends YouthUsers
         ),
       );
     }
-    if (data.containsKey('org_i_d')) {
+    if (data.containsKey('org_id')) {
       context.handle(
-        _orgIDMeta,
-        orgID.isAcceptableOrUnknown(data['org_i_d']!, _orgIDMeta),
+        _orgIdMeta,
+        orgId.isAcceptableOrUnknown(data['org_id']!, _orgIdMeta),
       );
     }
     if (data.containsKey('youth_type')) {
@@ -173,9 +173,9 @@ class $YouthUsersTable extends YouthUsers
             DriftSqlType.int,
             data['${effectivePrefix}youth_user_id'],
           )!,
-      orgID: attachedDatabase.typeMapping.read(
+      orgId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}org_i_d'],
+        data['${effectivePrefix}org_id'],
       ),
       youthType:
           attachedDatabase.typeMapping.read(
@@ -213,7 +213,7 @@ class $YouthUsersTable extends YouthUsers
 
 class YouthUser extends DataClass implements Insertable<YouthUser> {
   final int youthUserId;
-  final int? orgID;
+  final int? orgId;
   final String youthType;
   final String skills;
   final String status;
@@ -221,7 +221,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   final DateTime registerAt;
   const YouthUser({
     required this.youthUserId,
-    this.orgID,
+    this.orgId,
     required this.youthType,
     required this.skills,
     required this.status,
@@ -232,8 +232,8 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['youth_user_id'] = Variable<int>(youthUserId);
-    if (!nullToAbsent || orgID != null) {
-      map['org_i_d'] = Variable<int>(orgID);
+    if (!nullToAbsent || orgId != null) {
+      map['org_id'] = Variable<int>(orgId);
     }
     map['youth_type'] = Variable<String>(youthType);
     map['skills'] = Variable<String>(skills);
@@ -246,8 +246,8 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   YouthUsersCompanion toCompanion(bool nullToAbsent) {
     return YouthUsersCompanion(
       youthUserId: Value(youthUserId),
-      orgID:
-          orgID == null && nullToAbsent ? const Value.absent() : Value(orgID),
+      orgId:
+          orgId == null && nullToAbsent ? const Value.absent() : Value(orgId),
       youthType: Value(youthType),
       skills: Value(skills),
       status: Value(status),
@@ -263,7 +263,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return YouthUser(
       youthUserId: serializer.fromJson<int>(json['youthUserId']),
-      orgID: serializer.fromJson<int?>(json['orgID']),
+      orgId: serializer.fromJson<int?>(json['orgId']),
       youthType: serializer.fromJson<String>(json['youthType']),
       skills: serializer.fromJson<String>(json['skills']),
       status: serializer.fromJson<String>(json['status']),
@@ -276,7 +276,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'youthUserId': serializer.toJson<int>(youthUserId),
-      'orgID': serializer.toJson<int?>(orgID),
+      'orgId': serializer.toJson<int?>(orgId),
       'youthType': serializer.toJson<String>(youthType),
       'skills': serializer.toJson<String>(skills),
       'status': serializer.toJson<String>(status),
@@ -287,7 +287,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
 
   YouthUser copyWith({
     int? youthUserId,
-    Value<int?> orgID = const Value.absent(),
+    Value<int?> orgId = const Value.absent(),
     String? youthType,
     String? skills,
     String? status,
@@ -295,7 +295,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     DateTime? registerAt,
   }) => YouthUser(
     youthUserId: youthUserId ?? this.youthUserId,
-    orgID: orgID.present ? orgID.value : this.orgID,
+    orgId: orgId.present ? orgId.value : this.orgId,
     youthType: youthType ?? this.youthType,
     skills: skills ?? this.skills,
     status: status ?? this.status,
@@ -306,7 +306,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
     return YouthUser(
       youthUserId:
           data.youthUserId.present ? data.youthUserId.value : this.youthUserId,
-      orgID: data.orgID.present ? data.orgID.value : this.orgID,
+      orgId: data.orgId.present ? data.orgId.value : this.orgId,
       youthType: data.youthType.present ? data.youthType.value : this.youthType,
       skills: data.skills.present ? data.skills.value : this.skills,
       status: data.status.present ? data.status.value : this.status,
@@ -320,7 +320,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   String toString() {
     return (StringBuffer('YouthUser(')
           ..write('youthUserId: $youthUserId, ')
-          ..write('orgID: $orgID, ')
+          ..write('orgId: $orgId, ')
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
           ..write('status: $status, ')
@@ -333,7 +333,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
   @override
   int get hashCode => Object.hash(
     youthUserId,
-    orgID,
+    orgId,
     youthType,
     skills,
     status,
@@ -345,7 +345,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
       identical(this, other) ||
       (other is YouthUser &&
           other.youthUserId == this.youthUserId &&
-          other.orgID == this.orgID &&
+          other.orgId == this.orgId &&
           other.youthType == this.youthType &&
           other.skills == this.skills &&
           other.status == this.status &&
@@ -355,7 +355,7 @@ class YouthUser extends DataClass implements Insertable<YouthUser> {
 
 class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   final Value<int> youthUserId;
-  final Value<int?> orgID;
+  final Value<int?> orgId;
   final Value<String> youthType;
   final Value<String> skills;
   final Value<String> status;
@@ -363,7 +363,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   final Value<DateTime> registerAt;
   const YouthUsersCompanion({
     this.youthUserId = const Value.absent(),
-    this.orgID = const Value.absent(),
+    this.orgId = const Value.absent(),
     this.youthType = const Value.absent(),
     this.skills = const Value.absent(),
     this.status = const Value.absent(),
@@ -372,7 +372,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   });
   YouthUsersCompanion.insert({
     this.youthUserId = const Value.absent(),
-    this.orgID = const Value.absent(),
+    this.orgId = const Value.absent(),
     required String youthType,
     required String skills,
     required String status,
@@ -383,7 +383,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
        status = Value(status);
   static Insertable<YouthUser> custom({
     Expression<int>? youthUserId,
-    Expression<int>? orgID,
+    Expression<int>? orgId,
     Expression<String>? youthType,
     Expression<String>? skills,
     Expression<String>? status,
@@ -392,7 +392,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   }) {
     return RawValuesInsertable({
       if (youthUserId != null) 'youth_user_id': youthUserId,
-      if (orgID != null) 'org_i_d': orgID,
+      if (orgId != null) 'org_id': orgId,
       if (youthType != null) 'youth_type': youthType,
       if (skills != null) 'skills': skills,
       if (status != null) 'status': status,
@@ -403,7 +403,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
 
   YouthUsersCompanion copyWith({
     Value<int>? youthUserId,
-    Value<int?>? orgID,
+    Value<int?>? orgId,
     Value<String>? youthType,
     Value<String>? skills,
     Value<String>? status,
@@ -412,7 +412,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   }) {
     return YouthUsersCompanion(
       youthUserId: youthUserId ?? this.youthUserId,
-      orgID: orgID ?? this.orgID,
+      orgId: orgId ?? this.orgId,
       youthType: youthType ?? this.youthType,
       skills: skills ?? this.skills,
       status: status ?? this.status,
@@ -427,8 +427,8 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
     if (youthUserId.present) {
       map['youth_user_id'] = Variable<int>(youthUserId.value);
     }
-    if (orgID.present) {
-      map['org_i_d'] = Variable<int>(orgID.value);
+    if (orgId.present) {
+      map['org_id'] = Variable<int>(orgId.value);
     }
     if (youthType.present) {
       map['youth_type'] = Variable<String>(youthType.value);
@@ -452,7 +452,7 @@ class YouthUsersCompanion extends UpdateCompanion<YouthUser> {
   String toString() {
     return (StringBuffer('YouthUsersCompanion(')
           ..write('youthUserId: $youthUserId, ')
-          ..write('orgID: $orgID, ')
+          ..write('orgId: $orgId, ')
           ..write('youthType: $youthType, ')
           ..write('skills: $skills, ')
           ..write('status: $status, ')
@@ -2567,7 +2567,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$YouthUsersTableCreateCompanionBuilder =
     YouthUsersCompanion Function({
       Value<int> youthUserId,
-      Value<int?> orgID,
+      Value<int?> orgId,
       required String youthType,
       required String skills,
       required String status,
@@ -2577,7 +2577,7 @@ typedef $$YouthUsersTableCreateCompanionBuilder =
 typedef $$YouthUsersTableUpdateCompanionBuilder =
     YouthUsersCompanion Function({
       Value<int> youthUserId,
-      Value<int?> orgID,
+      Value<int?> orgId,
       Value<String> youthType,
       Value<String> skills,
       Value<String> status,
@@ -2677,8 +2677,8 @@ class $$YouthUsersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get orgID => $composableBuilder(
-    column: $table.orgID,
+  ColumnFilters<int> get orgId => $composableBuilder(
+    column: $table.orgId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2797,8 +2797,8 @@ class $$YouthUsersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get orgID => $composableBuilder(
-    column: $table.orgID,
+  ColumnOrderings<int> get orgId => $composableBuilder(
+    column: $table.orgId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2842,8 +2842,8 @@ class $$YouthUsersTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get orgID =>
-      $composableBuilder(column: $table.orgID, builder: (column) => column);
+  GeneratedColumn<int> get orgId =>
+      $composableBuilder(column: $table.orgId, builder: (column) => column);
 
   GeneratedColumn<String> get youthType =>
       $composableBuilder(column: $table.youthType, builder: (column) => column);
@@ -2972,7 +2972,7 @@ class $$YouthUsersTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> youthUserId = const Value.absent(),
-                Value<int?> orgID = const Value.absent(),
+                Value<int?> orgId = const Value.absent(),
                 Value<String> youthType = const Value.absent(),
                 Value<String> skills = const Value.absent(),
                 Value<String> status = const Value.absent(),
@@ -2980,7 +2980,7 @@ class $$YouthUsersTableTableManager
                 Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion(
                 youthUserId: youthUserId,
-                orgID: orgID,
+                orgId: orgId,
                 youthType: youthType,
                 skills: skills,
                 status: status,
@@ -2990,7 +2990,7 @@ class $$YouthUsersTableTableManager
           createCompanionCallback:
               ({
                 Value<int> youthUserId = const Value.absent(),
-                Value<int?> orgID = const Value.absent(),
+                Value<int?> orgId = const Value.absent(),
                 required String youthType,
                 required String skills,
                 required String status,
@@ -2998,7 +2998,7 @@ class $$YouthUsersTableTableManager
                 Value<DateTime> registerAt = const Value.absent(),
               }) => YouthUsersCompanion.insert(
                 youthUserId: youthUserId,
-                orgID: orgID,
+                orgId: orgId,
                 youthType: youthType,
                 skills: skills,
                 status: status,
