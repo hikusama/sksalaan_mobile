@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skyouthprofiling/data/app_database.dart';
-import 'package:skyouthprofiling/data/view/edit.dart';
+import 'package:skyouthprofiling/data/view/validate.dart';
 import 'package:skyouthprofiling/data/view/more.dart';
 
 class ValidationScreen extends StatefulWidget {
@@ -39,7 +39,7 @@ class ValidationScreenState extends State<ValidationScreen> {
       offset: _offset,
       limit: _limit,
       searchKeyword: arg,
-      validated: 'Val'
+      validated: 'Validated',
     );
 
     setState(() {
@@ -63,7 +63,7 @@ class ValidationScreenState extends State<ValidationScreen> {
       offset: _offset,
       limit: _limit,
       searchKeyword: '',
-      validated: 'Val'
+      validated: 'Validated',
     );
     final List<FullYouthProfile> moreProfiles = List<FullYouthProfile>.from(
       res['youth'],
@@ -394,7 +394,7 @@ class ValidationScreenState extends State<ValidationScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 55,
+                      width: 69,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -447,7 +447,7 @@ class ValidationScreenState extends State<ValidationScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Edit(profiles: profile),
+                                builder: (context) => Validate(profiles: profile),
                               ),
                             );
                             break;
@@ -708,21 +708,30 @@ class ValidationScreenState extends State<ValidationScreen> {
                           (context) => [
                             PopupMenuItem(
                               value: 'see more',
-                              child: Text('Full info.',style: TextStyle(fontSize: 12),),
+                              child: Text(
+                                'Full info.',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
-                            PopupMenuItem(value: 'validate', 
-                              child: Text('Validate.',style: TextStyle(fontSize: 12),),
+                            PopupMenuItem(
+                              value: 'validate',
+                              child: Text(
+                                'Validate.',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                             PopupMenuItem(
                               value: 'delete',
-                              child: Text('Delete.',style: TextStyle(fontSize: 12),),
+                              child: Text(
+                                'Delete.',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                           ],
                     ),
                   ],
                 ),
               ),
-              
             ],
           ),
         ),
