@@ -49,9 +49,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
     final stat = await db.getStatus();
     setState(() {
       isLoading = false;
-      sm = stat['Submitted'];
-      fl = stat['Failed'];
-      sb = stat['Standby'];
+      sm = stat['Validated'];
+      fl = stat['Unvalidated'];
+      sb = stat['New'];
     });
   }
 
@@ -174,7 +174,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
           Container(
             padding: EdgeInsets.only(left: 15),
             child: Text(
-              "Youth Migration Status",
+              "Youth Status",
               style: TextStyle(
                 color: const Color.fromARGB(191, 255, 255, 255),
                 fontWeight: FontWeight.bold,
@@ -187,7 +187,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
           Container(
             margin: EdgeInsets.only(left: 15),
             height: 3,
-            width: 150,
+            width: 120,
             decoration: BoxDecoration(
               color: const Color.fromARGB(157, 255, 255, 255),
               borderRadius: BorderRadius.circular(20),
@@ -293,9 +293,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildLegend(Colors.green, "Submitted"),
-                      _buildLegend(Colors.red, "Failed"),
-                      _buildLegend(Colors.orangeAccent, "Standby"),
+                      _buildLegend(Colors.green, "Validated"),
+                      _buildLegend(Colors.red, "Unvalidated"),
+                      _buildLegend(Colors.orangeAccent, "New"),
                       SizedBox(height: 25),
                     ],
                   ),
@@ -340,13 +340,13 @@ class _OverviewScreenState extends State<OverviewScreen> {
     final status = profile.youthUser.status;
     Color statColor = Colors.white;
     switch (status) {
-      case 'Standby':
+      case 'New':
         statColor = const Color.fromARGB(255, 255, 217, 0);
         break;
-      case 'Failed':
+      case 'Unvalidated':
         statColor = const Color.fromARGB(255, 255, 0, 0);
         break;
-      case 'Submitted':
+      case 'Validated':
         statColor = Colors.green;
         break;
     }
@@ -414,7 +414,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 55,
+                      width: 69,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -432,7 +432,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                     ),
                     SizedBox(width: 8),
                     SizedBox(
-                      width: 63,
+                      width: 65,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
