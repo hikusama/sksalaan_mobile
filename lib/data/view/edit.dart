@@ -42,6 +42,7 @@ class _EditState extends State<Edit> {
 
   void _loadYouth(FullYouthProfile profiles) {
     //
+
     YouthUser yu = profiles.youthUser;
     YouthInfo yi = profiles.youthInfo;
     List<EducBg> edu = profiles.educBgs;
@@ -106,7 +107,7 @@ class _EditState extends State<Edit> {
   List<String> labelStep = ["Basic", "Personal", "Educ", "Civic", "Finish"];
 
   // First form
-
+  Map<String, bool> rec = {'ebg': false, 'cv': false};
   final _fnameController = TextEditingController();
   final _mnameController = TextEditingController();
   final _lnameController = TextEditingController();
@@ -164,7 +165,7 @@ class _EditState extends State<Edit> {
     'Buddhism',
     'Hinduism',
     'Atheism',
-    'Others',
+    'Other',
   ];
   final List<String> civilStats = [
     'Single',
@@ -175,7 +176,7 @@ class _EditState extends State<Edit> {
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Others'];
+  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Other'];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -455,7 +456,10 @@ class _EditState extends State<Edit> {
                                       yearGraduated: c['yearGraduated'],
                                     );
                                   }).toList(),
+                                  rec:rec
                             );
+                            debugPrint('educ: $educbg');
+                            debugPrint('\n\ncivic: $civic');
 
                             setState(() {
                               isResponse = true;
@@ -1380,6 +1384,8 @@ class _EditState extends State<Edit> {
                         _nosController.clear();
                         _poaController.clear();
                         _ygschoolController.clear();
+                        rec['ebg'] = true;
+
                       });
                     } else {}
                   },
@@ -1525,6 +1531,7 @@ class _EditState extends State<Edit> {
                                                   onPressed: () {
                                                     setState(() {
                                                       lastyr = false;
+                                                      rec['ebg'] = true;
                                                       educbg.remove(key);
                                                     });
                                                   },
@@ -1801,6 +1808,7 @@ class _EditState extends State<Edit> {
                             qCheck(_ygorgController) &&
                             qCheck(_endedController))) {
                       setState(() {
+                        rec['cv'] = true;
                         civic[_orgController.text] = {
                           'nameOfOrganization': _orgController.text,
                           'addressOfOrganization': _orgaddrController.text,
@@ -1980,6 +1988,7 @@ class _EditState extends State<Edit> {
                                           ),
                                           onPressed: () {
                                             setState(() {
+                                              rec['cv'] = true;
                                               civic.remove(key);
                                             });
                                           },
@@ -3280,7 +3289,7 @@ class _EditState extends State<Edit> {
                       SizedBox(width: 4),
                       success
                           ? Text(
-                            'Success....',
+                            'Successfully Modified....',
                             style: TextStyle(color: Colors.black, fontSize: 18),
                           )
                           : Text(

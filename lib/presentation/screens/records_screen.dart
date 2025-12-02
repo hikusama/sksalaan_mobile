@@ -26,25 +26,22 @@ class RecordsScreenState extends State<RecordsScreen> {
   bool isDeleteSuccess = false;
   final int _limit = 5;
   bool _isInitialLoading = true;
-  String sort = 'regiteredAt';
-
+  String sort = 'registerAt';
+  bool ascending = true;
   @override
   void initState() {
     super.initState();
     _loadInitialData(arg: '');
   }
 
-  Future<void> _loadInitialData({
-    String arg = "",
-    String sort = 'registeredAt',
-    String val = 'New',
-  }) async {
+  Future<void> _loadInitialData({String arg = "", String val = 'New'}) async {
     final res = await db.getAllYouthProfiles(
       offset: _offset,
       limit: _limit,
       searchKeyword: arg,
       sortBy: sort,
       validated: val,
+      ascending: ascending,
     );
 
     setState(() {
@@ -69,6 +66,8 @@ class RecordsScreenState extends State<RecordsScreen> {
       limit: _limit,
       searchKeyword: '',
       validated: 'New',
+      sortBy: sort,
+      ascending: ascending,
     );
     final List<FullYouthProfile> moreProfiles = List<FullYouthProfile>.from(
       res['youth'],
@@ -156,71 +155,88 @@ class RecordsScreenState extends State<RecordsScreen> {
 
           Row(
             children: [
-              Text('Sort '),
-              PopupMenuButton(
-                icon: Icon(
-                  Icons.tune,
-                  color: const Color.fromARGB(255, 0, 0, 0),
-                ),
+              const Text('Sort '),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.tune, color: Colors.black),
                 onSelected: (value) async {
-                  await _loadInitialData(sort: value, arg: '');
+                  if (value == 'desc' || value == 'asc') {
+                    setState(() {
+                      _offset = 0;
+                      ascending = value == 'asc' ? true : false;
+                    });
+                    await _loadInitialData(arg: '', val: 'New');
+                  } else {
+                    setState(() {
+                      sort = value;
+                      _offset = 0;
+                      _isInitialLoading = true;
+                    });
+                    await _loadInitialData(arg: '', val: 'New');
+                  }
                 },
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: 'fname',
-                        child: Text(
-                          'First name',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                sort == 'fname'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
+                itemBuilder: (context) {
+                  final sortOptions = {
+                    'fname': 'First name',
+                    'lname': 'Last name',
+                    'age': 'Age',
+                    'registerAt': 'Registered',
+                    'asc': 'Ascending',
+                    'desc': 'Descending',
+                  };
 
-                      PopupMenuItem(
-                        value: 'mname',
-                        child: Text(
-                          'Middle name',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                sort == 'lname'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
+                  return sortOptions.entries.map((entry) {
+                    final isActive = sort == entry.key;
+                    debugPrint('f: $sort');
+                    debugPrint('k: ${entry.key}');
+                    return PopupMenuItem<String>(
+                      value: entry.key,
+                      child: Text(
+                        entry.value,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight:
+                              (entry.key == 'desc' || entry.key == 'asc')
+                                  ? entry.key == 'asc'
+                                      ? ascending
+                                          ? FontWeight.bold
+                                          : FontWeight.normal
+                                      : entry.key == 'desc'
+                                      ? !ascending
+                                          ? FontWeight.bold
+                                          : FontWeight.normal
+                                      : FontWeight.normal
+                                  : isActive
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                          color:
+                              (entry.key == 'desc' || entry.key == 'asc')
+                                  ? entry.key == 'asc'
+                                      ? ascending
+                                          ? const Color.fromARGB(
+                                            255,
+                                            12,
+                                            126,
+                                            175,
+                                          )
+                                          : Colors.black
+                                      : entry.key == 'desc'
+                                      ? !ascending
+                                          ? const Color.fromARGB(
+                                            255,
+                                            12,
+                                            126,
+                                            175,
+                                          )
+                                          : Colors.black
+                                      : Colors.black
+                                  : isActive
+                                  ? const Color.fromARGB(255, 12, 126, 175)
+                                  : Colors.black,
                         ),
                       ),
-                      PopupMenuItem(
-                        value: 'lname',
-                        child: Text(
-                          'Last name',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                sort == 'lname'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'age',
-                        child: Text(
-                          'Age',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                sort == 'age'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ],
+                    );
+                  }).toList();
+                },
               ),
             ],
           ),
@@ -271,10 +287,12 @@ class RecordsScreenState extends State<RecordsScreen> {
                     contentPadding: EdgeInsets.fromLTRB(45, 10, 10, 10),
                   ),
                   style: TextStyle(fontSize: 15, color: Colors.black),
-                  onChanged: (value) {
-                    _offset = 0;
-                    _isInitialLoading = true;
-                    _loadInitialData(arg: value.trim());
+                  onChanged: (value) async {
+                    setState(() {
+                      _offset = 0;
+                      _isInitialLoading = true;
+                    });
+                    await _loadInitialData(arg: value.trim());
                   },
                 ),
                 Positioned(

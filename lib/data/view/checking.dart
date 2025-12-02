@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:skyouthprofiling/data/view/logged_in.txt';
+// import 'package:skyouthprofiling/data/view/logged_in.txt';
 import 'package:skyouthprofiling/service/dio_client.dart';
 
 class MigrateScreen extends StatefulWidget {
@@ -127,7 +127,8 @@ class _MigrateScreenState extends State<MigrateScreen> {
     } else {
       switch (authenticated) {
         case 1:
-          currentView = LoggedIn(authenticated: chageToLogin);
+          currentView = _loginForm();
+          // currentView = LoggedIn(authenticated: chageToLogin);
           break;
         case 2:
           currentView = _loginForm();

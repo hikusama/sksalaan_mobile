@@ -176,7 +176,7 @@ class _MoreState extends State<More> {
     'Buddhism',
     'Hinduism',
     'Atheism',
-    'Others',
+    'Other',
   ];
   final List<String> civilStats = [
     'Single',
@@ -187,7 +187,7 @@ class _MoreState extends State<More> {
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Others'];
+  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Other'];
   final List<String> address = [
     'Zone 1',
     'Zone 2',

@@ -41,12 +41,19 @@ class _ValidateState extends State<Validate> {
     _loadYouth(widget.profiles);
   }
 
+  // Add this helper method
+  String? _sanitizeDropdownValue(String? value, List<String> validOptions) {
+    if (value == null || value.isEmpty) return null;
+    return validOptions.contains(value) ? value : null;
+  }
+
+  // Update _loadYouth method
   void _loadYouth(FullYouthProfile profiles) {
-    //
     YouthUser yu = profiles.youthUser;
     YouthInfo yi = profiles.youthInfo;
     List<EducBg> edu = profiles.educBgs;
     List<CivicInvolvement> cv = profiles.civicInvolvements;
+
     final date = DateTime.parse(yi.dateOfBirth);
     final now = DateTime.now();
     final age =
@@ -56,34 +63,36 @@ class _ValidateState extends State<Validate> {
                 (now.month == date.month && now.day < date.day))
             ? 1
             : 0);
+
     _fnameController.text = yi.fname;
     _mnameController.text = yi.mname;
     _lnameController.text = yi.lname;
     _dobController.text = yi.dateOfBirth;
     _ageController.text = age.toString();
-    sexVal = yi.sex;
-    genVal = yi.gender;
-    civilStatsVal = yi.civilStatus;
-    addrVal = yi.address;
+
+    // Sanitize dropdown values
+    sexVal = _sanitizeDropdownValue(yi.sex, sex);
+    genVal = _sanitizeDropdownValue(yi.gender, gender);
+    civilStatsVal = _sanitizeDropdownValue(yi.civilStatus, civilStats);
+    addrVal = _sanitizeDropdownValue(yi.address, address);
+    youthTypeVal = _sanitizeDropdownValue(yu.youthType, youthType);
+    religionVal = _sanitizeDropdownValue(yi.religion, religion);
 
     _occController.text = yi.occupation;
     _pobController.text = yi.placeOfBirth;
     _cnController.text = yi.contactNo;
     _nocController.text = yi.noOfChildren.toString();
     _hController.text = yi.height != null ? yi.height.toString() : '';
-    _wController.text = yi.weight != null ? yi.height.toString() : '';
-    youthTypeVal = yi.civilStatus;
-    religionVal = yi.religion;
-    youthTypeVal = yu.youthType;
+    _wController.text = yi.weight != null ? yi.weight.toString() : '';
+
     skills = {for (var s in yu.skills.split(',')) s.trim(): s.trim()};
+    debugPrint('rel----------: $religionVal');
 
     for (int i = 0; i < edu.length && i < level.length; i++) {
       final e = edu[i];
-
       if (e.yearGraduate == null || e.yearGraduate!.isEmpty) {
         lastyr = true;
       }
-
       educbg[level[i]] = {
         'level': e.level,
         'nameOfSchool': e.nameOfSchool,
@@ -165,7 +174,7 @@ class _ValidateState extends State<Validate> {
     'Buddhism',
     'Hinduism',
     'Atheism',
-    'Others',
+    'Other',
   ];
   final List<String> civilStats = [
     'Single',
@@ -173,10 +182,11 @@ class _ValidateState extends State<Validate> {
     'Divorce',
     'Outside-marriage',
   ];
+  Map<String, bool> rec = {'ebg': false, 'cv': false};
 
   // 1
   final List<String> sex = ['Male', 'Female'];
-  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Others'];
+  final List<String> gender = ['unselect', 'Binary', 'Non-binary', 'Other'];
   final List<String> address = [
     'Zone 1',
     'Zone 2',
@@ -260,7 +270,11 @@ class _ValidateState extends State<Validate> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(size: 25, Icons.screen_rotation_alt_rounded,color: Color.fromARGB(255, 2, 144, 140),),
+              Icon(
+                size: 25,
+                Icons.screen_rotation_alt_rounded,
+                color: Color.fromARGB(255, 2, 144, 140),
+              ),
               Text(
                 'Validate',
                 style: TextStyle(
@@ -339,6 +353,7 @@ class _ValidateState extends State<Validate> {
                         backgroundColor: Color.fromARGB(255, 2, 144, 140),
                       ),
                       onPressed: () async {
+                        debugPrint('o-opopop');
                         int youthUserID = widget.profiles.youthUser.youthUserId;
                         if (_steps == 1 &&
                             (_fnameController.text.isNotEmpty &&
@@ -365,13 +380,14 @@ class _ValidateState extends State<Validate> {
                             });
                           }
                         }
-                        if (_steps >= 3 ||
+                        if (_steps >= 2 ||
                             _formKeyForCurrentStep().currentState!.validate()) {
                           if (_steps == 5) {
                             final db = AppDatabase();
 
                             // bool good = false;
                             final good = await db.updateFullYouthData(
+                              rec: rec,
                               youthUserId: youthUserID,
                               user: YouthUsersCompanion(
                                 youthType: drift.Value(
@@ -383,7 +399,7 @@ class _ValidateState extends State<Validate> {
                                       .toList()
                                       .join(', '),
                                 ),
-                                status: const drift.Value('New'),
+                                status: const drift.Value('Validated'),
                               ),
                               info: YouthInfosCompanion(
                                 fname: drift.Value(
@@ -636,50 +652,8 @@ class _ValidateState extends State<Validate> {
 
                     return null;
                   },
-                  onTap: () async {
-                    final now = DateTime.now();
-                    final today = DateTime(
-                      now.year,
-                      now.month,
-                      now.day,
-                    ); // normalize
-
-                    final maxDate = DateTime(
-                      today.year - 15,
-                      today.month,
-                      today.day,
-                    );
-                    final minDate = DateTime(
-                      today.year - 30,
-                      today.month,
-                      today.day,
-                    );
-
-                    final pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: maxDate,
-                      firstDate: minDate,
-                      lastDate: maxDate,
-                    );
-
-                    if (pickedDate != null) {
-                      final formattedDate = DateFormat(
-                        'yyyy-MM-dd',
-                      ).format(pickedDate);
-                      final age =
-                          today.year -
-                          pickedDate.year -
-                          ((today.month < pickedDate.month ||
-                                  (today.month == pickedDate.month &&
-                                      today.day < pickedDate.day))
-                              ? 1
-                              : 0);
-
-                      setState(() {
-                        _dobController.text = formattedDate;
-                        _ageController.text = age.toString();
-                      });
-                    }
+                  onTap: () {
+                    return;
                   },
                 ),
               ),
@@ -871,6 +845,7 @@ class _ValidateState extends State<Validate> {
           SizedBox(height: 10),
 
           TextFormField(
+            readOnly: true,
             decoration: InputDecoration(
               labelText: 'Place of Birth',
               labelStyle: TextStyle(fontSize: 12),
@@ -1437,6 +1412,7 @@ class _ValidateState extends State<Validate> {
                               ? educbg.length
                               : level.length - 1;
                       setState(() {
+                        rec['ebg'] = true;
                         if (_ygschoolController.text.isEmpty) {
                           lastyr = true;
                         }
@@ -1594,6 +1570,7 @@ class _ValidateState extends State<Validate> {
                                                   ),
                                                   onPressed: () {
                                                     setState(() {
+                                                      rec['ebg'] = true;
                                                       lastyr = false;
                                                       educbg.remove(key);
                                                     });
@@ -1871,6 +1848,7 @@ class _ValidateState extends State<Validate> {
                             qCheck(_ygorgController) &&
                             qCheck(_endedController))) {
                       setState(() {
+                        rec['cv'] = true;
                         civic[_orgController.text] = {
                           'nameOfOrganization': _orgController.text,
                           'addressOfOrganization': _orgaddrController.text,
@@ -2050,6 +2028,7 @@ class _ValidateState extends State<Validate> {
                                           ),
                                           onPressed: () {
                                             setState(() {
+                                              rec['cv'] = true;
                                               civic.remove(key);
                                             });
                                           },
@@ -3350,7 +3329,7 @@ class _ValidateState extends State<Validate> {
                       SizedBox(width: 4),
                       success
                           ? Text(
-                            'Success....',
+                            'Successfully Validated....',
                             style: TextStyle(color: Colors.black, fontSize: 18),
                           )
                           : Text(
@@ -3422,38 +3401,27 @@ class _ValidateState extends State<Validate> {
 
     return DropdownButtonFormField<String>(
       value: safeValue,
-      hint: Text(hintText, style: const TextStyle(fontSize: 12)),
+      hint: Text(hintText),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 12),
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(),
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 10,
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       ),
       style: const TextStyle(fontSize: 12, color: Colors.black),
-
-      // Convert list to Set to remove duplicates
       items:
           array
-              .toSet()
-              .map(
-                (String value) => DropdownMenuItem<String>(
+              .toSet() // Remove duplicates
+              .toList()
+              .map((String value) {
+                return DropdownMenuItem<String>(
                   value: value,
-                  child: Text(value, style: const TextStyle(fontSize: 12)),
-                ),
-              )
+                  child: Text(value),
+                );
+              })
               .toList(),
-
       onChanged: onChanged,
-
-      // Validation for forms
       validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select $label';
-        }
         return null;
       },
     );
