@@ -26,20 +26,26 @@ class ValidationScreenState extends State<ValidationScreen> {
   bool isDeleteSuccess = false;
   final int _limit = 5;
   bool _isInitialLoading = true;
-  String sort = 'regiteredAt';
+  String sort = 'registerAt';
+  bool ascending = true;
 
   @override
   void initState() {
     super.initState();
-    _loadInitialData('');
+    _loadInitialData(arg: '');
   }
 
-  Future<void> _loadInitialData(String arg) async {
+  Future<void> _loadInitialData({
+    String arg = "",
+    String val = 'Validated',
+  }) async {
     final res = await db.getAllYouthProfiles(
       offset: _offset,
       limit: _limit,
       searchKeyword: arg,
-      validated: 'Validated',
+      sortBy: sort,
+      validated: val,
+      ascending: ascending,
     );
 
     setState(() {
@@ -60,10 +66,12 @@ class ValidationScreenState extends State<ValidationScreen> {
     });
 
     final res = await db.getAllYouthProfiles(
+      sortBy: sort,
       offset: _offset,
       limit: _limit,
       searchKeyword: '',
       validated: 'Validated',
+      ascending: ascending,
     );
     final List<FullYouthProfile> moreProfiles = List<FullYouthProfile>.from(
       res['youth'],
@@ -99,7 +107,7 @@ class ValidationScreenState extends State<ValidationScreen> {
                         onRefresh: () async {
                           _offset = 0;
                           _isInitialLoading = true;
-                          await _loadInitialData('');
+                          await _loadInitialData(arg: '');
                         },
                         child: Scrollbar(
                           thumbVisibility:
@@ -152,83 +160,87 @@ class ValidationScreenState extends State<ValidationScreen> {
           Row(
             children: [
               Text('Sort '),
-              PopupMenuButton(
-                icon: Icon(
-                  Icons.tune,
-                  color: const Color.fromARGB(255, 0, 0, 0),
-                ),
-                onSelected: (value) {},
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: 'ASC',
-                        child: Text(
-                          'ASC',
-                          style: TextStyle(
-                            color:
-                                sort == 'ASC'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.tune, color: Colors.black),
+                onSelected: (value) async {
+                  if (value == 'desc' || value == 'asc') {
+                    setState(() {
+                      _offset = 0;
+                      ascending = value == 'asc' ? true : false;
+                    });
+                    await _loadInitialData(arg: '');
+                  } else {
+                    setState(() {
+                      sort = value;
+                      _offset = 0;
+                      _isInitialLoading = true;
+                    });
+                    await _loadInitialData(arg: '');
+                  }
+                },
+                itemBuilder: (context) {
+                  final sortOptions = {
+                    'fname': 'First name',
+                    'lname': 'Last name',
+                    'age': 'Age',
+                    'registerAt': 'Registered',
+                    'asc': 'Ascending',
+                    'desc': 'Descending',
+                  };
+
+                  return sortOptions.entries.map((entry) {
+                    final isActive = sort == entry.key;
+                    debugPrint('f: $sort');
+                    debugPrint('k: ${entry.key}');
+                    return PopupMenuItem<String>(
+                      value: entry.key,
+                      child: Text(
+                        entry.value,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight:
+                              (entry.key == 'desc' || entry.key == 'asc')
+                                  ? entry.key == 'asc'
+                                      ? ascending
+                                          ? FontWeight.bold
+                                          : FontWeight.normal
+                                      : entry.key == 'desc'
+                                      ? !ascending
+                                          ? FontWeight.bold
+                                          : FontWeight.normal
+                                      : FontWeight.normal
+                                  : isActive
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                          color:
+                              (entry.key == 'desc' || entry.key == 'asc')
+                                  ? entry.key == 'asc'
+                                      ? ascending
+                                          ? const Color.fromARGB(
+                                            255,
+                                            12,
+                                            126,
+                                            175,
+                                          )
+                                          : Colors.black
+                                      : entry.key == 'desc'
+                                      ? !ascending
+                                          ? const Color.fromARGB(
+                                            255,
+                                            12,
+                                            126,
+                                            175,
+                                          )
+                                          : Colors.black
+                                      : Colors.black
+                                  : isActive
+                                  ? const Color.fromARGB(255, 12, 126, 175)
+                                  : Colors.black,
                         ),
                       ),
-                      PopupMenuItem(
-                        value: 'DESC',
-                        child: Text(
-                          'DESC',
-                          style: TextStyle(
-                            color:
-                                sort == 'DESC'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: SizedBox(height: 15),
-                      ),
-                      PopupMenuItem(
-                        value: 'age',
-                        child: Text(
-                          'Age',
-                          style: TextStyle(
-                            color:
-                                sort == 'age'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'fname',
-                        child: Text(
-                          'Firstname',
-                          style: TextStyle(
-                            color:
-                                sort == 'fname'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'lname',
-                        child: Text(
-                          'Lastname',
-                          style: TextStyle(
-                            color:
-                                sort == 'lname'
-                                    ? Color.fromARGB(255, 30, 65, 80)
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'regiteredAt',
-                        child: Text('Registered'),
-                      ),
-                    ],
+                    );
+                  }).toList();
+                },
               ),
             ],
           ),
@@ -282,7 +294,7 @@ class ValidationScreenState extends State<ValidationScreen> {
                   onChanged: (value) {
                     _offset = 0;
                     _isInitialLoading = true;
-                    _loadInitialData(value.trim());
+                    _loadInitialData(arg: value.trim());
                   },
                 ),
                 Positioned(
@@ -447,7 +459,8 @@ class ValidationScreenState extends State<ValidationScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Validate(profiles: profile),
+                                builder:
+                                    (context) => Validate(profiles: profile),
                               ),
                             );
                             break;
