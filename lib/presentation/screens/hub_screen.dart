@@ -5,6 +5,7 @@ import 'package:skyouthprofiling/data/app_database.dart';
 import 'package:skyouthprofiling/data/view/loginform.dart';
 import 'package:skyouthprofiling/service/dio_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// import 'package:fl_chart/fl_chart.dart';
 
 class HubScreen extends StatefulWidget {
   final VoidCallback chtp;
@@ -24,6 +25,8 @@ class _HubScreenState extends State<HubScreen> {
   bool loadd = false;
   bool tryhub = false;
   bool showRetry = false;
+  String? req;
+  String reqType = 'dl';
   int regs = 0;
   int av = 0;
   int uv = 0;
@@ -63,6 +66,8 @@ class _HubScreenState extends State<HubScreen> {
   //   );
   // }
 
+  // Future<void> _pull() async {}
+
   Future<void> _init() async {
     await _loadIp();
     final db = AppDatabase();
@@ -77,25 +82,79 @@ class _HubScreenState extends State<HubScreen> {
     }
   }
 
-  void startCountdown(String expiresAt) {
-    final expiry = DateTime.parse(expiresAt);
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final diff = expiry.difference(DateTime.now());
+  Future<void> getAddr() async {
+    debugPrint('ppppppp58===============');
+    var res = await client?.getAddresses();
+    if (res != null && res.containsKey('hub')) {
+      var hub = res['hub'];
+      var addrList = Map<String, Map<String, dynamic>>.from(res['q']);
 
-      if (diff.isNegative) {
-        timer.cancel();
-        setState(() {
-          expirationCountDown = "00:00";
-          hubStat = 'd';
-        });
-      } else {
-        final minutes = diff.inMinutes.remainder(60).toString().padLeft(2, '0');
-        final seconds = diff.inSeconds.remainder(60).toString().padLeft(2, '0');
-        setState(() => expirationCountDown = "$minutes:$seconds");
+      // Parse expiration time from backend
+      String? expiresAt = hub['expires_at'];
+      if (expiresAt != null) {
+        startCountdown(expiresAt);
       }
-    });
+
+      setState(() {
+        hubStat = 'c';
+        addresses = addrList;
+      });
+    } else if (res != null && res.containsKey('error2')) {
+      setState(() {
+        hubStat = 'd';
+      });
+    } else if (res != null && res.containsKey('error')) {
+      await _init();
+    }
+    setState(() => tryhub = false);
   }
+
+  void startCountdown(String expiresAt) {
+    try {
+      // Parse the backend timestamp
+      final expiry = DateTime.parse(expiresAt);
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        final diff = expiry.difference(DateTime.now());
+
+        if (diff.isNegative) {
+          timer.cancel();
+          setState(() {
+            expirationCountDown = "00:00";
+            hubStat = 'd';
+          });
+        } else {
+          final minutes = diff.inMinutes.toString().padLeft(2, '0');
+          final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+          setState(() => expirationCountDown = "$minutes:$seconds");
+        }
+      });
+    } catch (e) {
+      debugPrint('Error parsing expiration time: $e');
+    }
+  }
+
+  // void startCountdown(String expiresAt) {
+  //   final expiry = DateTime.now().add(
+  //     const Duration(minutes: 15),
+  //   ); // force 15 mins
+  //   _timer?.cancel();
+  //   _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+  //     final diff = expiry.difference(DateTime.now());
+
+  //     if (diff.isNegative) {
+  //       timer.cancel();
+  //       setState(() {
+  //         expirationCountDown = "00:00";
+  //         hubStat = 'd';
+  //       });
+  //     } else {
+  //       final minutes = diff.inMinutes.toString().padLeft(2, '0');
+  //       final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+  //       setState(() => expirationCountDown = "$minutes:$seconds");
+  //     }
+  //   });
+  // }
 
   Future<void> _loadIp() async {
     String? ip = await storage.read(key: 'ip');
@@ -109,27 +168,6 @@ class _HubScreenState extends State<HubScreen> {
 
   bool hasActib(Map<String, Map<String, dynamic>> addresses) {
     return addresses.values.any((addr) => addr['status'] == true);
-  }
-
-  Future<void> getAddr() async {
-    debugPrint('ppppppp58===============');
-    var res = await client?.getAddresses();
-    if (res != null && res.containsKey('hub')) {
-      var hub = res['hub'];
-      var addrList = Map<String, Map<String, dynamic>>.from(res['q']);
-      startCountdown(hub['expires_at']);
-      setState(() {
-        hubStat = 'c';
-        addresses = addrList;
-      });
-    } else if (res != null && res.containsKey('error2')) {
-      setState(() {
-        hubStat = 'd';
-      });
-    } else if (res != null && res.containsKey('error')) {
-      await _init();
-    }
-    setState(() => tryhub = false);
   }
 
   Future<void> _auth() async {
@@ -147,6 +185,7 @@ class _HubScreenState extends State<HubScreen> {
       // });
       debugPrint('===============================');
       debugPrint(res.toString());
+      debugPrint(client?.base);
 
       if (res != null && res.containsKey('data')) {
         setState(() {
@@ -328,14 +367,59 @@ class _HubScreenState extends State<HubScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Opacity(
-                    opacity: (auth == 'c' && serverConn == 'c') ? 1 : .5,
+                    opacity:
+                        (auth == 'c' && serverConn == 'c') &&
+                                regs > 0 &&
+                                req == null
+                            ? 1
+                            : .5,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
 
                       children: [
                         GestureDetector(
+                          onTap: () async {
+                            if (req != null || regs == 0) {
+                              return;
+                            }
+                            final db = AppDatabase();
+
+                            setState(() {
+                              hob = "f1";
+                              req = 'f1';
+                            });
+                            final youthBulk = await db.migrate();
+                            final resMigrateRegs = await client?.migrateData(
+                              youthBulk,
+                              true,
+                            );
+                            setState(() {
+                              hob = null;
+                              req = null;
+                            });
+                            if (mounted) {
+                              await showModalBottomSheet(
+                                isScrollControlled: true,
+                                backgroundColor: Colors.white,
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return StatefulBuilder(
+                                    builder: (context, setModalState) {
+                                      return displayUpload(
+                                        true,
+                                        resMigrateRegs,
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            }
+                          },
                           onTapDown: (_) {
+                            if (req != null) {
+                              return;
+                            }
                             if (!(auth == 'c' && serverConn == 'c')) return;
                             setState(() => hob = "f1");
                           },
@@ -343,6 +427,9 @@ class _HubScreenState extends State<HubScreen> {
                             setState(() => hob = null);
                           },
                           onTapUp: (_) {
+                            if (req != null) {
+                              return;
+                            }
                             setState(() => hob = null);
                           },
                           child: Container(
@@ -351,9 +438,10 @@ class _HubScreenState extends State<HubScreen> {
                               vertical: 18,
                             ),
                             width: 160,
+                            height: 80,
                             decoration: BoxDecoration(
                               color:
-                                  hob == "f1"
+                                  hob == "f1" || req != null || regs == 0
                                       ? Color.fromARGB(161, 2, 52, 74)
                                       : Color.fromARGB(217, 2, 52, 74),
                               border: Border.all(
@@ -368,14 +456,22 @@ class _HubScreenState extends State<HubScreen> {
                               ),
                             ),
                             child: Stack(
+                              alignment: Alignment.center,
                               children: [
-                                Icon(
-                                  Icons.supervised_user_circle_sharp,
-                                  size: 20,
-                                  color: Colors.white,
+                                Positioned(
+                                  left: 1,
+                                  top: req == 'f1' ? 10 : 1,
+                                  child: Icon(
+                                    Icons.supervised_user_circle_sharp,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
                                 ),
+
                                 Text(
-                                  'Upload the registered data',
+                                  req == 'f1'
+                                      ? 'Uploading...'
+                                      : 'Upload the registered data',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -429,14 +525,60 @@ class _HubScreenState extends State<HubScreen> {
                     ),
                   ),
                   Opacity(
-                    opacity: (auth == 'c' && serverConn == 'c') ? 1 : .5,
+                    opacity:
+                        (auth == 'c' && serverConn == 'c') &&
+                                av > 0 &&
+                                req == null
+                            ? 1
+                            : .5,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.start,
 
                       children: [
                         GestureDetector(
+                          onTap: () async {
+                            if (req != null || av < 1) {
+                              return;
+                            }
+                            final db = AppDatabase();
+
+                            setState(() {
+                              hob = "f2";
+                              req = 'f2';
+                            });
+                            final youthBulk = await db.validate();
+                            final resMigrateVal = await client?.migrateData(
+                              youthBulk,
+                              false,
+                            );
+
+                            setState(() {
+                              hob = null;
+                              req = null;
+                            });
+                            if (mounted) {
+                              await showModalBottomSheet(
+                                isScrollControlled: true,
+                                backgroundColor: Colors.white,
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return StatefulBuilder(
+                                    builder: (context, setModalState) {
+                                      return displayUpload(
+                                        false,
+                                        resMigrateVal,
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            }
+                          },
                           onTapDown: (_) {
+                            if (req != null) {
+                              return;
+                            }
                             if (!(auth == 'c' && serverConn == 'c')) return;
                             setState(() => hob = "f2");
                           },
@@ -444,6 +586,9 @@ class _HubScreenState extends State<HubScreen> {
                             setState(() => hob = null);
                           },
                           onTapUp: (_) {
+                            if (req != null) {
+                              return;
+                            }
                             setState(() => hob = null);
                           },
                           child: Container(
@@ -452,10 +597,11 @@ class _HubScreenState extends State<HubScreen> {
                               vertical: 18,
                             ),
                             width: 160,
+                            height: 80,
                             // Color.fromARGB(255, 2, 144, 140
                             decoration: BoxDecoration(
                               color:
-                                  hob == "f2"
+                                  hob == "f2" || req != null || av == 0
                                       ? Color.fromARGB(161, 2, 77, 75)
                                       : Color.fromARGB(227, 2, 77, 74),
                               border: Border.all(
@@ -471,8 +617,11 @@ class _HubScreenState extends State<HubScreen> {
                             ),
 
                             child: Stack(
+                              alignment: Alignment.center,
                               children: [
                                 Positioned(
+                                  left: 1,
+                                  top: req == 'f2' ? 10 : 1,
                                   child: Icon(
                                     Icons.verified_user_sharp,
                                     size: 20,
@@ -480,7 +629,9 @@ class _HubScreenState extends State<HubScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'Upload the validated data',
+                                  req == 'f2'
+                                      ? 'Uploading...'
+                                      : 'Upload the validated data',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -552,7 +703,7 @@ class _HubScreenState extends State<HubScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Statuses',
+                    'Status',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -635,8 +786,780 @@ class _HubScreenState extends State<HubScreen> {
     );
   }
 
+  Widget displayUpload(bool nw, Map<String, dynamic>? data) {
+    String? ex, regs, fail, val, nf, uv;
+
+    debugPrint('loggggggg.......');
+    debugPrint(data.toString());
+    if (data?['data'] != null && nw) {
+      ex = (data?['data']['ex'] as List<dynamic>).length.toString();
+      regs = (data?['data']['regs'] as List<dynamic>).length.toString();
+    } else {
+      ex = '0';
+      regs = '0';
+    }
+    if (data?['data'] != null && !nw) {
+      fail = (data?['data']['fail'] as List<dynamic>).length.toString();
+      val = (data?['data']['val'] as List<dynamic>).length.toString();
+      nf = (data?['data']['nf'] as List<dynamic>).length.toString();
+      uv = (data?['data']['uv'] as List<dynamic>).length.toString();
+    } else {
+      fail = '0';
+      val = '0';
+      nf = '0';
+      uv = '0';
+    }
+    String response = 'Success';
+    if (data != null && data.containsKey('error1')) {
+      response = 'Failed';
+    } else if (data != null && data.containsKey('error2')) {
+      response = 'Server error';
+    }
+
+    return Container(
+      padding: EdgeInsets.only(bottom: 30),
+      decoration: BoxDecoration(
+        color: Color.fromARGB(161, 2, 52, 74),
+        borderRadius: BorderRadius.circular(27),
+      ),
+      height: nw ? 380 : 450,
+      // width: 320,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          Positioned(
+            top: -32,
+            left: -15,
+            child: Transform.rotate(
+              angle: -62,
+              child: Container(
+                padding: EdgeInsets.only(bottom: 15),
+                decoration: BoxDecoration(
+                  color:
+                      nw
+                          ? Color.fromARGB(255, 244, 158, 54)
+                          : Color.fromARGB(255, 54, 244, 190),
+                  borderRadius: BorderRadius.only(),
+                ),
+                height: 80,
+                width: 50,
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 20),
+            padding: EdgeInsets.only(bottom: 15),
+
+            decoration: BoxDecoration(
+              color: Color.fromARGB(82, 180, 180, 180),
+              borderRadius: BorderRadius.circular(27),
+            ),
+            height: 7,
+            width: 150,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                nw ? 'Upload Newly Registered' : 'Upload Validated',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                response,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color:
+                      response == 'Success'
+                          ? Color.fromARGB(255, 54, 244, 190)
+                          : Colors.red,
+                ),
+              ),
+              SizedBox(height: 15),
+              ...List.generate(nw ? 2 : 5, (i) {
+                return Column(
+                  children: [
+                    !nw
+                        ? Flex(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          direction: Axis.horizontal,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  height: 40,
+                                  width: 10,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    color:
+                                        i < 2 || i == 4
+                                            ? Colors.red
+                                            : i == 2
+                                            ? Color.fromARGB(0, 54, 244, 190)
+                                            : Color.fromARGB(255, 54, 244, 190),
+                                  ),
+                                ),
+                                SizedBox(width: 5),
+                                SizedBox(
+                                  width: 80,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        i == 2
+                                            ? 'Found As'
+                                            : i == 0
+                                            ? fail.toString()
+                                            : i == 1
+                                            ? nf.toString()
+                                            : i == 3
+                                            ? val.toString()
+                                            : uv.toString(),
+                                        style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      // Second widget
+                                      if (i == 2)
+                                        SizedBox.shrink()
+                                      else
+                                        Text(
+                                          i == 0
+                                              ? 'Failed'
+                                              : i == 1
+                                              ? 'Not found'
+                                              : i == 3
+                                              ? 'Validated'
+                                              : i == 4
+                                              ? 'Unvalidated'
+                                              : '',
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            i == 2
+                                ? SizedBox(width: 50)
+                                : Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 50,
+                                      child: Image.asset(
+                                        'assets/images/ar.png',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            i == 2
+                                ? SizedBox(width: 65)
+                                : Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 80,
+                                      child: Text(
+                                        textAlign: TextAlign.end,
+                                        i == 0 || i == 3
+                                            ? 'Skipped'
+                                            : 'Validated',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      child: IconButton(
+                                        color: Colors.red,
+                                        alignment: Alignment.centerLeft,
+                                        icon: Icon(
+                                          Icons.delete_rounded,
+                                          color:
+                                              i == 0 && fail.toString() == '0'
+                                                  ? Color.fromARGB(
+                                                    114,
+                                                    142,
+                                                    36,
+                                                    36,
+                                                  )
+                                                  : i == 1 &&
+                                                      nf.toString() == '0'
+                                                  ? Color.fromARGB(
+                                                    114,
+                                                    142,
+                                                    36,
+                                                    36,
+                                                  )
+                                                  : i == 3 &&
+                                                      val.toString() == '0'
+                                                  ? Color.fromARGB(
+                                                    114,
+                                                    142,
+                                                    36,
+                                                    36,
+                                                  )
+                                                  : i == 4 &&
+                                                      uv.toString() == '0'
+                                                  ? Color.fromARGB(
+                                                    114,
+                                                    142,
+                                                    36,
+                                                    36,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    142,
+                                                    36,
+                                                    36,
+                                                  ),
+                                        ),
+                                        highlightColor:
+                                            /*
+                                                 fail = '0';
+                                                nf = '0';
+                                                val = '0';
+                                                uv = '0'; 
+                                           */
+                                            i == 0 && fail.toString() == '0'
+                                                ? Colors.transparent
+                                                : i == 1 && nf.toString() == '0'
+                                                ? Colors.transparent
+                                                : i == 3 &&
+                                                    val.toString() == '0'
+                                                ? Colors.transparent
+                                                : i == 4 && uv.toString() == '0'
+                                                ? Colors.transparent
+                                                : const Color.fromARGB(
+                                                  116,
+                                                  244,
+                                                  67,
+                                                  54,
+                                                ),
+                                        onPressed: () async {
+                                          if (i == 0 &&
+                                              fail.toString() == '0') {
+                                            return;
+                                          }
+                                          if (i == 1 && nf.toString() == '0') {
+                                            return;
+                                          }
+                                          if (i == 3 && val.toString() == '0') {
+                                            return;
+                                          }
+                                          if (i == 4 && uv.toString() == '0') {
+                                            return;
+                                          }
+                                          String msg = 'Do you want to delete ';
+                                          String f = fail.toString(),
+                                              u = uv.toString(),
+                                              v = val.toString(),
+                                              n = nf.toString();
+                                          msg +=
+                                              i == 0
+                                                  ? 'the $f failed data?'
+                                                  : i == 1
+                                                  ? 'the $n not found data?'
+                                                  : i == 3
+                                                  ? 'the $v validated data?'
+                                                  : 'the $u unvalidated data?';
+                                          List<dynamic> toDel =
+                                              i == 0
+                                                  ? data!['data']['fail']
+                                                  : i == 1
+                                                  ? data!['data']['nf']
+                                                  : i == 3
+                                                  ? data!['data']['val']
+                                                  : i == 4
+                                                  ? data!['data']['uv']
+                                                  : [];
+                                          final del = await showDialog<bool>(
+                                            context: context,
+                                            builder:
+                                                (context) => AlertDialog(
+                                                  title: const Text('Delete'),
+                                                  content: Text(msg),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed:
+                                                          () => Navigator.of(
+                                                            context,
+                                                          ).pop(false),
+                                                      child: const Text('No'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.of(
+                                                          context,
+                                                        ).pop(true);
+                                                      },
+                                                      child: const Text('Yes'),
+                                                    ),
+                                                  ],
+                                                ),
+                                          );
+                                          if (del == true) {
+                                            //
+                                            if (toDel.isEmpty) {
+                                              return;
+                                            }
+                                            final db = AppDatabase();
+                                            bool s = false;
+                                            try {
+                                              await db.deleteBulkYouthUsers(
+                                                toDel
+                                                    .map((e) => e as int)
+                                                    .toList(),
+                                              );
+                                              s = true;
+                                            } catch (e) {
+                                              debugPrint(e.toString());
+                                              s = false;
+                                            }
+                                            if (mounted) {
+                                              await showDialog<bool>(
+                                                context: context,
+                                                builder:
+                                                    (context) => AlertDialog(
+                                                      title: Text(
+                                                        s
+                                                            ? 'Suceess'
+                                                            : 'Failed',
+                                                      ),
+                                                      content: Text(
+                                                        s
+                                                            ? 'Deleted sucessfully'
+                                                            : 'Failed to delete',
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed:
+                                                              () =>
+                                                                  Navigator.of(
+                                                                    context,
+                                                                  ).pop(true),
+                                                          child: const Text(
+                                                            'Done',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                          ],
+                        )
+                        : Flex(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          direction: Axis.horizontal,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  height: 40,
+                                  width: 10,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    color:
+                                        i == 0
+                                            ? Color.fromARGB(255, 54, 244, 190)
+                                            : Color.fromARGB(255, 28, 2, 171),
+                                  ),
+                                ),
+                                SizedBox(width: 5),
+                                SizedBox(
+                                  width: 80,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        i == 0
+                                            ? ex.toString()
+                                            : regs.toString(),
+                                        style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      // Second widget
+                                      if (i == 0)
+                                        const Text(
+                                          'Exist',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      else
+                                        Text(
+                                          'New Data',
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 50,
+                                  child: Image.asset('assets/images/ar.png'),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 80,
+                                  child: Text(
+                                    textAlign: TextAlign.end,
+                                    i == 0 ? 'Skipped' : 'Registered',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  child: IconButton(
+                                    color: Colors.red,
+                                    alignment: Alignment.centerLeft,
+                                    icon: Icon(
+                                      Icons.delete_rounded,
+                                      color:
+                                          i == 0 && ex.toString() == '0'
+                                              ? Color.fromARGB(114, 142, 36, 36)
+                                              : i == 1 && regs.toString() == '0'
+                                              ? Color.fromARGB(114, 142, 36, 36)
+                                              : Color.fromARGB(
+                                                255,
+                                                142,
+                                                36,
+                                                36,
+                                              ),
+                                    ),
+                                    highlightColor:
+                                        i == 0 && ex.toString() == '0'
+                                            ? Colors.transparent
+                                            : i == 1 && regs.toString() == '0'
+                                            ? Colors.transparent
+                                            : const Color.fromARGB(
+                                              116,
+                                              244,
+                                              67,
+                                              54,
+                                            ),
+                                    onPressed: () async {
+                                      if (i == 0 && ex.toString() == '0') {
+                                        return;
+                                      }
+                                      if (i == 1 && regs.toString() == '0') {
+                                        return;
+                                      }
+                                      String msg = 'Do you want to delete ';
+                                      String e = ex.toString(),
+                                          r = regs.toString();
+                                      msg +=
+                                          i == 0
+                                              ? 'the $e already existed data?'
+                                              : 'the $r newly inserted data?';
+                                      final del = await showDialog<bool>(
+                                        context: context,
+                                        builder:
+                                            (context) => AlertDialog(
+                                              title: const Text('Delete'),
+                                              content: Text(msg),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed:
+                                                      () => Navigator.of(
+                                                        context,
+                                                      ).pop(false),
+                                                  child: const Text('No'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    Navigator.of(
+                                                      context,
+                                                    ).pop(true);
+                                                  },
+                                                  child: const Text('Yes'),
+                                                ),
+                                              ],
+                                            ),
+                                      );
+                                      if (del == true) {
+                                        //
+                                        if (i == 0 && ex.toString() == '0') {
+                                          return;
+                                        }
+                                        if (i == 1 && regs.toString() == '0') {
+                                          return;
+                                        }
+                                        List<dynamic> toDel =
+                                            i == 0
+                                                ? data!['data']['ex']
+                                                : i == 1
+                                                ? data!['data']['regs']
+                                                : [];
+                                        if (toDel.isEmpty) {
+                                          return;
+                                        }
+                                        final db = AppDatabase();
+                                        bool s = false;
+                                        try {
+                                          await db.deleteBulkYouthUsers(
+                                            toDel.map((e) => e as int).toList(),
+                                          );
+                                          s = true;
+                                        } catch (e) {
+                                          s = false;
+                                        }
+                                        if (mounted) {
+                                          await showDialog<bool>(
+                                            context: context,
+                                            builder:
+                                                (context) => AlertDialog(
+                                                  title: Text(
+                                                    s ? 'Suceess' : 'Failed',
+                                                  ),
+                                                  content: Text(
+                                                    s
+                                                        ? 'Deleted sucessfully'
+                                                        : 'Failed to delete',
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed:
+                                                          () => Navigator.of(
+                                                            context,
+                                                          ).pop(true),
+                                                      child: const Text('Done'),
+                                                    ),
+                                                  ],
+                                                ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                    SizedBox(height: 7),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget displayDownload(Map<String, dynamic>? resdl) {
+    return Container(
+      padding: EdgeInsets.only(bottom: 80, top: 20),
+      decoration: BoxDecoration(
+        color: Color.fromARGB(161, 2, 52, 74),
+        borderRadius: BorderRadius.circular(27),
+      ),
+      height: 504,
+      // width: 320,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            padding: EdgeInsets.only(bottom: 15),
+
+            decoration: BoxDecoration(
+              color: Color.fromARGB(82, 180, 180, 180),
+              borderRadius: BorderRadius.circular(27),
+            ),
+            height: 7,
+            width: 150,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                reqType == 'dl'
+                    ? 'Downloaded Results'
+                    : reqType == 'upr'
+                    ? 'Uploaded Newly Registered Results'
+                    : 'Uploaded Validated Results',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Success',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 54, 244, 190),
+                ),
+              ),
+              SizedBox(height: 15),
+              ...List.generate(5, (i) {
+                return Column(
+                  children: [
+                    Flex(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      direction: Axis.horizontal,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              height: 40,
+                              width: 10,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color:
+                                    i == 1
+                                        ? const Color.fromARGB(0, 51, 199, 85)
+                                        : i == 2
+                                        ? Colors.red
+                                        : i == 3
+                                        ? Color.fromARGB(255, 54, 244, 190)
+                                        : i == 4
+                                        ? Color.fromARGB(255, 244, 158, 54)
+                                        : Color.fromARGB(255, 28, 2, 171),
+                              ),
+                            ),
+                            SizedBox(width: 5),
+                            SizedBox(
+                              width: 80,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    i == 1
+                                        ? 'Found As'
+                                        : resdl == null
+                                        ? '0'
+                                        : i == 0
+                                        ? resdl['new'].toString()
+                                        : i == 2
+                                        ? resdl['uv'].toString()
+                                        : i == 3
+                                        ? resdl['v'].toString()
+                                        : resdl['n'].toString(),
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  // Second widget
+                                  if (i == 0)
+                                    const Text(
+                                      'New Data',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  else if (i == 1)
+                                    const SizedBox.shrink()
+                                  else
+                                    Text(
+                                      i == 2
+                                          ? 'Unvalidated'
+                                          : i == 3
+                                          ? 'Validated'
+                                          : 'Newly regs.',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        i == 1
+                            ? SizedBox(width: 50)
+                            : Row(
+                              children: [
+                                SizedBox(
+                                  width: 50,
+                                  child: Image.asset('assets/images/ar.png'),
+                                ),
+                              ],
+                            ),
+                        i == 1
+                            ? SizedBox(width: 65)
+                            : SizedBox(
+                              width: 80,
+                              child: Text(
+                                textAlign: TextAlign.end,
+                                i == 0
+                                    ? 'Unvalidated'
+                                    : i == 2
+                                    ? 'Overwritten'
+                                    : i == 3
+                                    ? 'Skipped'
+                                    : 'Validated',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                      ],
+                    ),
+                    SizedBox(height: 7),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottom() {
     return Expanded(
+      flex: 1,
       child: Opacity(
         opacity: (auth == 'c' && serverConn == 'c') ? 1 : .5,
         child:
@@ -870,10 +1793,25 @@ class _HubScreenState extends State<HubScreen> {
                               if (tryhub) return;
                               if (hasActib(addresses)) {
                                 try {
-                                  debugPrint('Pulling...');
+                                  debugPrint('Downloading...');
                                   debugPrint('addresses: $addresses');
                                   setState(() => tryhub = true);
-                                  await client?.getDataFromHub(addresses);
+                                  final reshub = await client?.getDataFromHub(
+                                    addresses,
+                                  );
+                                  if (mounted) {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return StatefulBuilder(
+                                          builder: (context, setModalState) {
+                                            return displayDownload(reshub);
+                                          },
+                                        );
+                                      },
+                                    );
+                                  }
                                 } catch (e) {
                                   debugPrint('error: $e');
                                 } finally {
@@ -938,10 +1876,10 @@ class _HubScreenState extends State<HubScreen> {
                                   SizedBox(width: 2),
                                   Text(
                                     tryhub
-                                        ? 'Pulling data...'
+                                        ? 'Downloading...'
                                         : !hasActib(addresses)
-                                        ? 'Select addresses to pull'
-                                        : 'Pull data',
+                                        ? 'Select addresses to download'
+                                        : 'Download',
                                     style: TextStyle(
                                       color: const Color.fromARGB(
                                         255,

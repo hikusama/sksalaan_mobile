@@ -1,4 +1,4 @@
-import 'dart:convert';
+// import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -82,6 +82,8 @@ class DioClient {
         final error = Map<String, dynamic>.from(e.response!.data);
         return {'error': error};
       }
+      debugPrint('00000000000000000000');
+      debugPrint(e.message);
 
       return {'error3': e.message ?? 'Unknown Dio error'};
     } catch (e) {
@@ -100,7 +102,9 @@ class DioClient {
     }
   }
 
-  Future<void> getDataFromHub(Map<String, Map<String, dynamic>> data) async {
+  Future<Map<String, dynamic>> getDataFromHub(
+    Map<String, Map<String, dynamic>> data,
+  ) async {
     final db = DatabaseProvider.instance;
     final res = await _dio.post('/getDataFromHub', data: {'addresses': data});
     // debugPrint(jsonEncode(res.data));
@@ -131,14 +135,19 @@ class DioClient {
       //     (res.data['profiles'] as List)
       //         .map((p) => FullYouthProfile.fromJson(p))
       //         .toList();
-     
-      await db.insertBulkProfiles(profiles);
+
+      final res = await db.insertBulkProfiles(profiles);
+      return res;
     } catch (e) {
-      debugPrint('error90: $e');
+      debugPrint('error90: ');
+      debugPrint(e.toString());
     }
+    return {'res': null};
   }
 
   Future<Map<String, dynamic>> checkAuth() async {
+    debugPrint('**************');
+    debugPrint(base);
     try {
       final response = await _dio.get('/userAPI');
       return {'data': response.data};
@@ -151,19 +160,21 @@ class DioClient {
 
   Future<Map<String, dynamic>> migrateData(
     List<Map<String, dynamic>> data,
+    bool isNewData,
   ) async {
     try {
-      final response = await _dio.post('/migrate', data: data);
+      String dir = isNewData ? 'migrate' : 'validate';
+      final response = await _dio.post('/$dir', data: data);
       return {'data': response.data};
     } on DioException catch (e) {
       return {
-        'error': {
+        'error1': {
           'error': e.response?.data?['auth'] ?? 'Something went wrong.',
         },
       };
     } catch (e) {
       return {
-        'error': {'error': e.toString()},
+        'error2': {'error': e.toString()},
       };
     }
   }

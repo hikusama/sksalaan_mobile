@@ -80,6 +80,7 @@ class YouthInfos extends Table {
 
 class EducBgs extends Table {
   IntColumn get educBgId => integer().autoIncrement()();
+  IntColumn get orgId => integer().nullable()();
 
   IntColumn get youthUserId =>
       integer().customConstraint(
@@ -95,6 +96,7 @@ class EducBgs extends Table {
 
 class CivicInvolvements extends Table {
   IntColumn get civicInvolvementId => integer().autoIncrement()();
+  IntColumn get orgId => integer().nullable()();
 
   IntColumn get youthUserId =>
       integer().customConstraint(
@@ -117,7 +119,11 @@ class DatabaseProvider {
 
 @DriftDatabase(tables: [YouthUsers, YouthInfos, EducBgs, CivicInvolvements])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(openConnection());
+  AppDatabase._internal() : super(openConnection());
+
+  static final AppDatabase _instance = AppDatabase._internal();
+
+  factory AppDatabase() => _instance;
 
   // youth user
   Future<int> insertYouthUser(YouthUsersCompanion user) =>
@@ -130,6 +136,7 @@ class AppDatabase extends _$AppDatabase {
   // }
   Future<bool> updateFullYouthData({
     required int youthUserId,
+    required Map<String, bool> rec,
     required YouthUsersCompanion user,
     required YouthInfosCompanion info,
     required List<EducBgsCompanion> educList,
@@ -139,32 +146,62 @@ class AppDatabase extends _$AppDatabase {
 
     await transaction(() async {
       try {
-        // 1️⃣ Update youth user
+        // Update user + info tables
         await (update(youthUsers)
           ..where((t) => t.youthUserId.equals(youthUserId))).write(user);
 
-        // 2️⃣ Update youth info
         await (update(youthInfos)
           ..where((t) => t.youthUserId.equals(youthUserId))).write(info);
 
-        // 3️⃣ Update all educ backgrounds
-        for (final educ in educList) {
-          await (update(educBgs)
-            ..where((t) => t.youthUserId.equals(youthUserId))).write(educ);
+        // Delete existing educ & civic records if necessary
+        await _deleteIfExists(id: youthUserId, rec: rec);
+
+        if (educList.isNotEmpty && rec['ebg'] != false) {
+          for (final educ in educList) {
+            await into(educBgs).insert(educ);
+          }
         }
 
-        for (final civic in civicList) {
-          await (update(civicInvolvements)
-            ..where((t) => t.youthUserId.equals(youthUserId))).write(civic);
+        if (civicList.isNotEmpty && rec['cv'] != false) {
+          for (final civic in civicList) {
+            await into(civicInvolvements).insert(civic);
+          }
         }
 
         success = true;
-      } catch (e) {
+      } catch (e, st) {
+        debugPrint('updateFullYouthData error: $e\n$st');
         success = false;
       }
     });
 
     return success;
+  }
+
+  Future<void> _deleteIfExists({
+    required int id,
+    required Map<String, bool> rec,
+  }) async {
+    debugPrint('updateFullYouthDat/*/******a error: $rec');
+    final hasEbg =
+        await (select(educBgs)..where((t) => t.youthUserId.equals(id))).get();
+    if (hasEbg.isNotEmpty && rec['ebg'] != false) {
+      await (delete(educBgs)..where((t) => t.youthUserId.equals(id))).go();
+    }
+
+    final hasCivic =
+        await (select(civicInvolvements)
+          ..where((t) => t.youthUserId.equals(id))).get();
+    if (hasCivic.isNotEmpty && rec['cv'] != false) {
+      await (delete(civicInvolvements)
+        ..where((t) => t.youthUserId.equals(id))).go();
+    }
+  }
+
+  Future<int> deleteBulkYouthUsers(List<int> ids) async {
+    if (ids.isEmpty) return 0;
+    debugPrint(ids.toString());
+    return (delete(youthUsers)..where((t) => t.youthUserId.isIn(ids))).go();
   }
 
   Future<int> deleteYouthUser(int id) =>
@@ -189,14 +226,14 @@ class AppDatabase extends _$AppDatabase {
     };
   }
 
-Future<bool> youthExistsIgnoreCaseExceptInVal(
-  int id,
-  String fname,
-  String mname,
-  String lname,
-) async {
-  final query = customSelect(
-    '''
+  Future<bool> youthExistsIgnoreCaseExceptInVal(
+    int id,
+    String fname,
+    String mname,
+    String lname,
+  ) async {
+    final query = customSelect(
+      '''
     SELECT 1
     FROM youth_infos
     RIGHT JOIN youth_users
@@ -208,18 +245,66 @@ Future<bool> youthExistsIgnoreCaseExceptInVal(
       AND youth_users.status = 'New'
     LIMIT 1
     ''',
-    variables: [
-      Variable(fname.trim().toLowerCase()),
-      Variable(mname.trim().toLowerCase()),
-      Variable(lname.trim().toLowerCase()),
-      Variable(id),
-    ],
-    readsFrom: {youthInfos, youthUsers},
-  );
+      variables: [
+        Variable(fname.trim().toLowerCase()),
+        Variable(mname.trim().toLowerCase()),
+        Variable(lname.trim().toLowerCase()),
+        Variable(id),
+      ],
+      readsFrom: {youthInfos, youthUsers},
+    );
 
-  final result = await query.get();
-  return result.isNotEmpty;
-}
+    final result = await query.get();
+    return result.isNotEmpty;
+  }
+
+  Future<Map<String, dynamic>> checkStatExist({
+    required String fname,
+    required String mname,
+    required String lname,
+  }) async {
+    final query = customSelect(
+      '''
+    SELECT youth_users.status, youth_users.youth_user_id
+    FROM youth_users
+    LEFT JOIN youth_infos
+      ON youth_infos.youth_user_id = youth_users.youth_user_id
+    WHERE LOWER(youth_infos.fname) = ?
+      AND LOWER(youth_infos.mname) = ?
+      AND LOWER(youth_infos.lname) = ?
+    LIMIT 1
+    ''',
+      variables: [
+        Variable(fname.trim().toLowerCase()),
+        Variable(mname.trim().toLowerCase()),
+        Variable(lname.trim().toLowerCase()),
+      ],
+      readsFrom: {youthInfos, youthUsers},
+    );
+
+    final result = await query.get();
+
+    // 🔍 Logging
+    debugPrint('---- checkStatExist ----');
+    debugPrint('Searching for: $fname $mname $lname');
+    debugPrint('Rows found: ${result.length}');
+    for (final row in result) {
+      debugPrint(
+        'Row -> status: ${row.read<String>('status')}, '
+        'id: ${row.read<int>('youth_user_id')}',
+      );
+    }
+    debugPrint('------------------------');
+
+    if (result.isEmpty) {
+      return {'status': null, 'id': null};
+    }
+
+    return {
+      'status': result.first.read<String>('status'),
+      'id': result.first.read<int>('youth_user_id'),
+    };
+  }
 
   Future<bool> youthExistsIgnoreCaseExcept(
     int id,
@@ -392,29 +477,98 @@ Future<bool> youthExistsIgnoreCaseExceptInVal(
     return exportData;
   }
 
-  // Future<void> updateMigrationStatus({
-  //   required List<int> submitted,
-  //   required List<int> failed,
-  // }) async {
-  //   await batch((batch) {
-  //     if (submitted.isNotEmpty) {
-  //       batch.update(
-  //         youthUsers,
-  //         YouthUsersCompanion(status: const Value('Submitted')),
-  //         where: (tbl) => tbl.youthUserId.isIn(submitted),
-  //       );
-  //     }
+  Future<List<Map<String, dynamic>>> validate() async {
+    final newUsers =
+        await (select(youthUsers)
+          ..where((tbl) => tbl.status.equals('Validated'))).get();
 
-  //     // Update failed users
-  //     if (failed.isNotEmpty) {
-  //       batch.update(
-  //         youthUsers,
-  //         YouthUsersCompanion(status: const Value('Failed')),
-  //         where: (tbl) => tbl.youthUserId.isIn(failed),
-  //       );
-  //     }
-  //   });
-  // }
+    final List<Map<String, dynamic>> exportData = [];
+
+    try {
+      for (final user in newUsers) {
+        final info =
+            await (select(youthInfos)..where(
+              (tbl) => tbl.youthUserId.equals(user.youthUserId),
+            )).getSingle();
+
+        final educs =
+            await (select(educBgs)
+              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+        final civics =
+            await (select(civicInvolvements)
+              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+        exportData.add({
+          'user': {
+            'idM': user.youthUserId,
+            'id': user.orgId,
+            'youthType': user.youthType,
+            'skills': user.skills,
+            'created_at': DateFormat('yyyy-MM-dd').format(user.createdAt),
+          },
+          'info': {
+            'fname': info.fname,
+            'mname': info.mname,
+            'lname': info.lname,
+            'sex': info.sex,
+            'gender': info.gender,
+            'address': info.address,
+            'dateOfBirth': info.dateOfBirth,
+            'placeOfBirth': info.placeOfBirth,
+            'contactNo': info.contactNo,
+            'height': info.height,
+            'weight': info.weight,
+            'religion': info.religion,
+            'occupation': info.occupation,
+            'civilStatus': info.civilStatus,
+            'noOfChildren': info.noOfChildren,
+            'created_at': DateFormat('yyyy-MM-dd').format(info.createdAt),
+          },
+          'educBG':
+              educs
+                  .map(
+                    (e) => {
+                      'id': e.orgId,
+                      'level': e.level,
+                      'nameOfSchool': e.nameOfSchool,
+                      'periodOfAttendance': e.periodOfAttendance,
+                      'yearGraduate': e.yearGraduate,
+                      'created_at': DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(e.createdAt),
+                    },
+                  )
+                  .toList(),
+          'civic':
+              civics
+                  .map(
+                    (c) => {
+                      'id': c.orgId,
+                      'nameOfOrganization': c.nameOfOrganization,
+                      'addressOfOrganization': c.addressOfOrganization,
+                      'start': c.start,
+                      'end': c.end,
+                      'yearGraduated': c.yearGraduated,
+                      'created_at': DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(c.createdAt),
+                    },
+                  )
+                  .toList(),
+        });
+      }
+    } catch (e) {
+      //
+    }
+    return exportData;
+  }
+
+  Future<void> changeStat({required int id, required String stat}) async {
+    (update(youthUsers)..where(
+      (u) => u.youthUserId.equals(id),
+    )).write(YouthUsersCompanion(status: Value(stat)));
+  }
 
   Future<Map<String, dynamic>> getSingleProfile({required int id}) async {
     final user =
@@ -449,179 +603,119 @@ Future<bool> youthExistsIgnoreCaseExceptInVal(
     int limit = 10,
     String sortBy = 'lname', // default sorting
     int offset = 0,
-    bool ascending = true, // optional for direction
+    bool ascending = true,
     String? validated,
   }) async {
-    debugPrint('uv: $validated');
-    List<FullYouthProfile> result = [];
-    List<int> userIds = [];
+    debugPrint('validated: $validated');
+    debugPrint('sort: $sortBy');
 
-    // 🔎 Filter by keyword (search in infos table)
+    final joinedQuery = select(youthUsers).join([
+      innerJoin(
+        youthInfos,
+        youthInfos.youthUserId.equalsExp(youthUsers.youthUserId),
+      ),
+    ]);
+
+    // 🔍 Optional search
     if (searchKeyword.isNotEmpty) {
-      userIds =
-          await (select(youthInfos)..where(
-            (tbl) =>
-                tbl.fname.like('%$searchKeyword%') |
-                tbl.lname.like('%$searchKeyword%'),
-          )).map((info) => info.youthUserId).get();
-
-      if (userIds.isEmpty) {
-        return {
-          'youth': [],
-          'pagesLeft': 0,
-          'totalPages': 0,
-          'totalCount': 0,
-          'currentPage': 1,
-          'rowsLeft': 0,
-        };
-      }
+      joinedQuery.where(
+        (youthInfos.fname.like('%$searchKeyword%')) |
+            (youthInfos.lname.like('%$searchKeyword%')),
+      );
     }
 
-    // 🗂️ Handle sorting
-    if (['fname', 'lname', 'age'].contains(sortBy)) {
-      // Sorting that requires youthInfos → join
-      final joinedQuery = select(youthUsers).join([
-        innerJoin(
-          youthInfos,
-          youthInfos.youthUserId.equalsExp(youthUsers.youthUserId),
-        ),
-      ])..limit(limit, offset: offset);
-
-      if (userIds.isNotEmpty) {
-        joinedQuery.where(youthUsers.youthUserId.isIn(userIds));
-      }
-
+    // 🧩 Validation filter
+    if (validated != null && validated.isNotEmpty) {
       if (validated == 'New') {
         joinedQuery.where(youthUsers.status.equals('New'));
-      } else if (validated == 'Validated' || validated == 'Unvalidated') {
+      } else {
         joinedQuery.where(youthUsers.status.isNotValue('New'));
       }
-      final ageExpr = CustomExpression<int>(
-        'CAST((strftime("%Y", "now") - strftime("%Y", date_of_birth)) AS INTEGER)',
+    }
+
+    // 🔽 Sorting
+    final sortColumn = switch (sortBy) {
+      'fname' => youthInfos.fname,
+      'lname' => youthInfos.lname,
+      'age' => youthInfos.dateOfBirth, // approximate age sort
+      'registerAt' => youthUsers.registerAt,
+      _ => youthInfos.lname,
+    };
+
+    joinedQuery.orderBy([
+      OrderingTerm(
+        expression: sortColumn,
+        mode: ascending ? OrderingMode.asc : OrderingMode.desc,
+      ),
+    ]);
+
+    // 📄 Pagination
+    joinedQuery.limit(limit, offset: offset);
+
+    // 🧾 Fetch
+    final rows = await joinedQuery.get();
+    final result = <FullYouthProfile>[];
+
+    for (final row in rows) {
+      final user = row.readTable(youthUsers);
+      final info = row.readTable(youthInfos);
+
+      final educs =
+          await (select(educBgs)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+      final civics =
+          await (select(civicInvolvements)
+            ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
+
+      result.add(
+        FullYouthProfile(
+          youthUser: user,
+          youthInfo: info,
+          educBgs: educs,
+          civicInvolvements: civics,
+        ),
       );
+    }
 
-      switch (sortBy) {
-        case 'fname':
-          joinedQuery.orderBy([
-            OrderingTerm(
-              expression: youthInfos.fname,
-              mode: ascending ? OrderingMode.asc : OrderingMode.desc,
-            ),
-          ]);
-          break;
+    // 📊 Count for pagination (with join!)
+    final countJoin = select(youthUsers).join([
+      innerJoin(
+        youthInfos,
+        youthInfos.youthUserId.equalsExp(youthUsers.youthUserId),
+      ),
+    ]);
 
-        case 'lname':
-          joinedQuery.orderBy([
-            OrderingTerm(
-              expression: youthInfos.lname,
-              mode: ascending ? OrderingMode.asc : OrderingMode.desc,
-            ),
-          ]);
-          break;
+    countJoin.addColumns([youthUsers.youthUserId]);
 
-        case 'age':
-          joinedQuery.orderBy([
-            OrderingTerm(
-              expression: ageExpr,
-              mode: ascending ? OrderingMode.asc : OrderingMode.desc,
-            ),
-          ]);
-          break;
-      }
+    if (searchKeyword.isNotEmpty) {
+      countJoin.where(
+        (youthInfos.fname.like('%$searchKeyword%')) |
+            (youthInfos.lname.like('%$searchKeyword%')),
+      );
+    }
 
-      final rows = await joinedQuery.get();
-      for (final row in rows) {
-        final user = row.readTable(youthUsers);
-        final info = row.readTable(youthInfos);
-
-        final educs =
-            await (select(educBgs)
-              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-
-        final civics =
-            await (select(civicInvolvements)
-              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-
-        result.add(
-          FullYouthProfile(
-            youthUser: user,
-            youthInfo: info,
-            educBgs: educs,
-            civicInvolvements: civics,
-          ),
-        );
-      }
-    } else {
-      // Sorting only on youthUsers table (registerAt, createdAt, etc.)
-      final query = select(youthUsers)..limit(limit, offset: offset);
-
-      if (userIds.isNotEmpty) {
-        query.where((tbl) => tbl.youthUserId.isIn(userIds));
-      }
+    if (validated != null && validated.isNotEmpty) {
       if (validated == 'New') {
-        query.where((tbl) => tbl.status.equals('New'));
-      } else if (validated == 'Validated' || validated == 'Unvalidated') {
-        query.where((tbl) => tbl.status.isNotValue('New'));
-      }
-
-      // Default to youthUsers fields
-      // switch (sortBy) {
-      //   case 'registerAt':
-      //   default:
-      //     query.orderBy([
-      //       (tbl) =>
-      //           ascending
-      //               ? OrderingTerm.asc(tbl.registerAt)
-      //               : OrderingTerm.desc(tbl.registerAt),
-      //     ]);
-      // }
-
-      final users = await query.get();
-      for (final user in users) {
-        final info =
-            await (select(youthInfos)..where(
-              (tbl) => tbl.youthUserId.equals(user.youthUserId),
-            )).getSingle();
-
-        final educs =
-            await (select(educBgs)
-              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-
-        final civics =
-            await (select(civicInvolvements)
-              ..where((tbl) => tbl.youthUserId.equals(user.youthUserId))).get();
-
-        result.add(
-          FullYouthProfile(
-            youthUser: user,
-            youthInfo: info,
-            educBgs: educs,
-            civicInvolvements: civics,
-          ),
-        );
+        countJoin.where(youthUsers.status.equals('New'));
+      } else {
+        countJoin.where(youthUsers.status.isNotValue('New'));
       }
     }
 
-    final countQuery = selectOnly(youthUsers)
-      ..addColumns([youthUsers.youthUserId.count()]);
+    final countRows = await countJoin.get();
+    final totalCount = countRows.length;
 
-    if (userIds.isNotEmpty) {
-      countQuery.where(youthUsers.youthUserId.isIn(userIds));
-    }
-
-    final countRow = await countQuery.getSingle();
-    final int totalCount = countRow.read(youthUsers.youthUserId.count()) ?? 0;
-
-    final int totalPages = (totalCount / limit).ceil();
-    final int currentPage = (offset / limit).floor() + 1;
-    final int pagesLeft = (totalPages - currentPage).clamp(0, totalPages);
-    final int rowsLeft = (totalCount - (offset + result.length)).clamp(
+    final totalPages = (totalCount / limit).ceil();
+    final currentPage = (offset / limit).floor() + 1;
+    final pagesLeft = (totalPages - currentPage).clamp(0, totalPages);
+    final rowsLeft = (totalCount - (offset + result.length)).clamp(
       0,
       totalCount,
     );
-    // print("===============>");
-    // print(sortBy);
-    // print(result);
+
+    debugPrint('result length: ${result.length}');
+    debugPrint('totalCount: $totalCount');
 
     return {
       'youth': result,
@@ -633,25 +727,41 @@ Future<bool> youthExistsIgnoreCaseExceptInVal(
     };
   }
 
-  Future<void> insertBulkProfiles(List<dynamic> profiles) async {
+  Future<Map<String, dynamic>> insertBulkProfiles(
+    List<dynamic> profiles,
+  ) async {
+    var nIn = 0;
+    var existV = 0;
+    var existUV = 0;
+    var existN = 0;
     await transaction(() async {
-      debugPrint('Error 1============ : $profiles');
-
+      final Map<String, bool> rec = {'ebg': true, 'cv': true};
       for (final profile in profiles) {
         Map<String, dynamic> yuser = profile['youthUser'];
         Map<String, dynamic> yinfo = profile['youthInfo'];
-        // final eduList = (profile['educBgs'] as List<dynamic>? ?? [])
-        //     .map((e) => Map<String, dynamic>.from(e))
-        //     .toList();
 
-        // final civicList = (profile['civicInvolvements'] as List<dynamic>? ?? [])
-        //     .map((e) => Map<String, dynamic>.from(e))
-        //     .toList();
-        var youthId = 0;
-        var sc = false;
+        final eduList =
+            (profile['educBgs'] as List<dynamic>? ?? [])
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
+
+        final civicList =
+            (profile['civicInvolvements'] as List<dynamic>? ?? [])
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
+        final stat = await checkStatExist(
+          fname: yinfo['fname'],
+          mname: yinfo['mname'],
+          lname: yinfo['lname'],
+        );
         // await deleteYouthUser(5);
-        try {
-          youthId = await into(youthUsers).insert(
+        debugPrint('------------------------123');
+        if (stat['status'] == null) {
+          debugPrint('newdata');
+          nIn += 1;
+          debugPrint('validated');
+          // continue;
+          final youthId = await into(youthUsers).insert(
             YouthUsersCompanion.insert(
               orgId: Value(yuser['orgId']),
               youthType: yuser['youthType'],
@@ -660,13 +770,7 @@ Future<bool> youthExistsIgnoreCaseExceptInVal(
               registerAt: Value(DateTime.parse(yuser['registerAt'])),
             ),
           );
-          sc = true;
-        } catch (e) {
-          sc = false;
-          debugPrint('Error 1============ : $e');
-        }
 
-        if (sc) {
           await into(youthInfos).insert(
             YouthInfosCompanion.insert(
               youthUserId: youthId,
@@ -689,37 +793,158 @@ Future<bool> youthExistsIgnoreCaseExceptInVal(
           );
 
           // Insert Education Backgrounds
-          // for (final educ in eduList) {
-          //   await into(educBgs).insert(
-          //     EducBgsCompanion.insert(
-          //       youthUserId: youthId,
-          //       level: educ['level'],
-          //       nameOfSchool: educ['nameOfSchool'],
-          //       periodOfAttendance: educ['periodOfAttendance'],
-          //       yearGraduate: Value(educ['yearGraduate']),
-          //     ),
-          //   );
-          // }
+          for (final educ in eduList) {
+            await into(educBgs).insert(
+              EducBgsCompanion.insert(
+                youthUserId: youthId,
+                level: educ['level'],
+                nameOfSchool: educ['nameOfSchool'],
+                periodOfAttendance: educ['periodOfAttendance'],
+                yearGraduate: Value(educ['yearGraduate']),
+              ),
+            );
+          }
 
-          // // Insert Civic Involvements
-          // for (final cv in civicList) {
-          //   await into(civicInvolvements).insert(
-          //     CivicInvolvementsCompanion.insert(
-          //       youthUserId: youthId,
-          //       nameOfOrganization: cv['nameOfOrganization'],
-          //       addressOfOrganization: cv['addressOfOrganization'],
-          //       start: cv['start'],
-          //       end: cv['end'],
-          //       yearGraduated: cv['yearGraduated'],
-          //     ),
-          //   );
-          // }
-          debugPrint(
-            'Success =============================***********************',
+          // Insert Civic Involvements
+          for (final cv in civicList) {
+            await into(civicInvolvements).insert(
+              CivicInvolvementsCompanion.insert(
+                youthUserId: youthId,
+                nameOfOrganization: cv['nameOfOrganization'],
+                addressOfOrganization: cv['addressOfOrganization'],
+                start: cv['start'],
+                end: cv['end'],
+                yearGraduated: cv['yearGraduated'],
+              ),
+            );
+          }
+        } else if (stat['status'] == 'New') {
+          debugPrint('new');
+          existN += 1;
+          // continue;
+          await changeStat(id: stat['id'], stat: 'Validated');
+        } else if (stat['status'] == 'Unvalidated') {
+          debugPrint('unvalidated');
+          existUV += 1;
+
+          // continue;
+          await updateFullYouthData(
+            youthUserId: stat['id'],
+            rec: rec,
+            user: YouthUsersCompanion(
+              youthType: Value(yuser['youthType']?.toString() ?? ''),
+              skills: Value(yuser['skills']?.toString() ?? ''),
+              status: const Value('Unvalidated'),
+            ),
+
+            info: YouthInfosCompanion(
+              fname: Value(yinfo['fname']?.toString() ?? ''),
+              mname: Value(yinfo['mname']?.toString() ?? ''),
+              lname: Value(yinfo['lname']?.toString() ?? ''),
+              occupation: Value(yinfo['occupation']?.toString() ?? ''),
+              placeOfBirth: Value(yinfo['placeOfBirth']?.toString() ?? ''),
+              contactNo: Value(yinfo['contactNo']?.toString() ?? ''),
+
+              // ---- FIX for int / string errors ----
+              noOfChildren: Value(
+                yinfo['noOfChildren'] is int
+                    ? yinfo['noOfChildren']
+                    : int.tryParse(yinfo['noOfChildren']?.toString() ?? '') ??
+                        0,
+              ),
+
+              // ---- FIX for double / string errors ----
+              height: Value(
+                yinfo['height'] is double
+                    ? yinfo['height']
+                    : double.tryParse(yinfo['height']?.toString() ?? '0') ??
+                        0.0,
+              ),
+              weight: Value(
+                yinfo['weight'] is double
+                    ? yinfo['weight']
+                    : double.tryParse(yinfo['weight']?.toString() ?? '0') ??
+                        0.0,
+              ),
+
+              dateOfBirth: Value(yinfo['dateOfBirth']?.toString() ?? ''),
+              civilStatus: Value(yinfo['civilStatus']?.toString() ?? ''),
+              gender: Value(yinfo['gender']?.toString() ?? ''),
+              religion: Value(yinfo['religion']?.toString().trim() ?? ''),
+              sex: Value(yinfo['sex']?.toString().trim() ?? ''),
+              address: Value(yinfo['address']?.toString().trim() ?? ''),
+            ),
+
+            // ------------------------------------------------------------
+            // ----------- EDUCATION LIST (safe integer ID) --------------
+            // ------------------------------------------------------------
+            educList:
+                eduList.map((e) {
+                  return EducBgsCompanion.insert(
+                    orgId: Value(
+                      yuser['orgId'] is int
+                          ? yuser['orgId']
+                          : int.tryParse(yuser['orgId']?.toString() ?? '0') ??
+                              0,
+                    ),
+                    youthUserId: stat['id'],
+                    level: e['level']?.toString() ?? '',
+                    nameOfSchool: e['nameOfSchool']?.toString() ?? '',
+                    periodOfAttendance:
+                        e['periodOfAttendance']?.toString() ?? '',
+                    yearGraduate: Value(
+                      e['yearGraduate'] is int
+                          ? e['yearGraduate']
+                          : int.tryParse(
+                                e['yearGraduate']?.toString() ?? '0',
+                              ) ??
+                              0,
+                    ),
+                  );
+                }).toList(),
+
+            // ------------------------------------------------------------
+            // --------------- CIVIC LIST (safe ID) ------------------------
+            // ------------------------------------------------------------
+            civicList:
+                civicList.map((c) {
+                  return CivicInvolvementsCompanion.insert(
+                    orgId: Value(
+                      yuser['orgId'] is int
+                          ? yuser['orgId']
+                          : int.tryParse(yuser['orgId']?.toString() ?? '0') ??
+                              0,
+                    ),
+                    youthUserId: stat['id'],
+                    nameOfOrganization:
+                        c['nameOfOrganization']?.toString() ?? '',
+                    addressOfOrganization:
+                        c['addressOfOrganization']?.toString() ?? '',
+                    start: c['start']?.toString() ?? '',
+                    end: c['end']?.toString() ?? '',
+                    yearGraduated:
+                        c['yearGraduated'] is int
+                            ? c['yearGraduated']
+                            : int.tryParse(
+                                  c['yearGraduated']?.toString() ?? '0',
+                                ) ??
+                                0,
+                  );
+                }).toList(),
           );
+        } else if (stat['status'] != 'Validated') {
+          existV += 1;
         }
       }
     });
+    return {
+      'v': existV,
+      'uv': existUV,
+      'n': existN,
+      'sz': profiles.length,
+      'res': null,
+      'new': nIn,
+    };
   }
 
   @override
