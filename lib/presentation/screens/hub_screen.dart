@@ -17,11 +17,14 @@ class HubScreen extends StatefulWidget {
 class _HubScreenState extends State<HubScreen> {
   Map<String, String?> errors = {'email': null, 'password': null, 'auth': null};
   Timer? _timer;
+  Timer? _timerAuth;
   String expirationCountDown = "00:00";
   String? hob;
   String? hubStat;
   String? serverConn;
   String? ipConf;
+  String? disconnectionTime = "--:--:--";
+  String? name;
   bool loadd = false;
   bool tryhub = false;
   bool showRetry = false;
@@ -109,6 +112,33 @@ class _HubScreenState extends State<HubScreen> {
     setState(() => tryhub = false);
   }
 
+  void disconnectionTimeCount(String expiresAt) {
+    try {
+      // Parse the backend timestamp
+      final expiry = DateTime.parse(expiresAt);
+      _timerAuth?.cancel();
+      _timerAuth = Timer.periodic(const Duration(seconds: 1), (timer) {
+        final diff = expiry.difference(DateTime.now());
+
+        if (diff.isNegative) {
+          timer.cancel();
+          setState(() {
+            disconnectionTime = "--:--:--";
+            name = null;
+            auth = 'd';
+          });
+        } else {
+          final hours = diff.inHours.toString().padLeft(2, '0');
+          final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+          final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+          setState(() => disconnectionTime = "$hours:$minutes:$seconds");
+        }
+      });
+    } catch (e) {
+      debugPrint('Error parsing expiration time: $e');
+    }
+  }
+
   void startCountdown(String expiresAt) {
     try {
       // Parse the backend timestamp
@@ -188,7 +218,13 @@ class _HubScreenState extends State<HubScreen> {
       debugPrint(client?.base);
 
       if (res != null && res.containsKey('data')) {
+        String? expiresAt = res['data']['expires_at'];
         setState(() {
+          name = res['data']['user']['skofficials']['name'];
+          if (expiresAt != null) {
+            disconnectionTimeCount(expiresAt);
+          }
+
           ipConf = 'c';
           auth = 'c';
           serverConn = 'c';
@@ -227,411 +263,177 @@ class _HubScreenState extends State<HubScreen> {
   }
 
   Widget _buildHead() {
-    return Container(
-      // padding: EdgeInsets.only(top: 100),
-      margin: EdgeInsets.all(15),
-      height: 245,
-      decoration: BoxDecoration(
-        // color: const Color.fromARGB(0, 30, 65, 80),
-        // border: Border.all(color: Color.fromARGB(255, 1, 135, 193), width: 2),
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-      ),
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () async {
-                  if (loadd) return;
-                  if (ipConf == 'd') widget.chtp();
-                  if (serverConn == 'd') {
-                    await _init();
-                    return;
-                  }
-                  if (auth == 'c') {
-                    try {
-                      await client?.logoutOfficials();
-                      setState(() {
-                        auth = 'd';
-                      });
-                    } catch (e) {
-                      //
-                      setState(() {
-                        auth = null;
-                        serverConn = 'd';
-                      });
-                    }
-                    return;
-                  }
-                  if (!(auth == 'd' && serverConn == 'c')) return;
-                  await showModalBottomSheet(
-                    isScrollControlled: true,
-                    backgroundColor: Colors.white,
-                    context: context,
-                    builder: (BuildContext context) {
-                      return StatefulBuilder(
-                        builder: (context, setModalState) {
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              left: 16,
-                              right: 16,
-                              top: 16,
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
-                            ),
-                            child: SingleChildScrollView(
-                              child: LoginForm(mchange: mchange),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                onTapDown: (_) {
-                  if (serverConn == null && auth == null) return;
-                  setState(() => hob = "f3");
-                },
-                onTapCancel: () {
-                  setState(() => hob = null);
-                },
-                onTapUp: (_) {
-                  setState(() => hob = null);
-                },
-                child: Container(
-                  width: 150,
-                  padding: EdgeInsets.only(
-                    bottom: 10,
-                    left: 7,
-                    top: 10,
-                    right: 10,
-                  ),
-                  // Color.fromARGB(255, 2, 144, 140
-                  decoration: BoxDecoration(
-                    color:
-                        loadd == true
-                            ? Color.fromARGB(162, 2, 23, 77)
-                            : hob == "f3"
-                            ? Color.fromARGB(162, 2, 23, 77)
-                            : Color.fromARGB(230, 2, 23, 77),
-                    border: Border.all(
-                      color: Color.fromARGB(255, 0, 55, 194),
-                      width: 1.2,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        loadd
-                            ? Icons.safety_check_rounded
-                            : ipConf == 'd'
-                            ? Icons.settings
-                            : auth == 'c'
-                            ? Icons.power_off
-                            : serverConn == 'd'
-                            ? Icons.refresh
-                            : auth == 'd'
-                            ? Icons.fingerprint
-                            : Icons.safety_check_rounded,
-                        size: 20,
-                        color: Colors.white,
-                      ),
-                      Text(
-                        loadd
-                            ? ' Checking......'
-                            : ipConf == 'd'
-                            ? ' Configure IP'
-                            : auth == 'c'
-                            ? ' Disconnect'
-                            : serverConn == 'd'
-                            ? ' Reconnect'
-                            : auth == 'd'
-                            ? ' Authenticate'
-                            : ' Checking......',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 10),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Opacity(
-                    opacity:
-                        (auth == 'c' && serverConn == 'c') &&
-                                regs > 0 &&
-                                req == null
-                            ? 1
-                            : .5,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _init();
+      },
+      child: SafeArea(
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Container(
+            // padding: EdgeInsets.only(top: 100),
+            margin: EdgeInsets.all(15),
+            height: 245,
+            decoration: BoxDecoration(
+              // color: const Color.fromARGB(0, 30, 65, 80),
+              // border: Border.all(color: Color.fromARGB(255, 1, 135, 193), width: 2),
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+            ),
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        GestureDetector(
-                          onTap: () async {
-                            if (req != null || regs == 0) {
-                              return;
-                            }
-                            final db = AppDatabase();
-
-                            setState(() {
-                              hob = "f1";
-                              req = 'f1';
-                            });
-                            final youthBulk = await db.migrate();
-                            final resMigrateRegs = await client?.migrateData(
-                              youthBulk,
-                              true,
-                            );
-                            setState(() {
-                              hob = null;
-                              req = null;
-                            });
-                            if (mounted) {
-                              await showModalBottomSheet(
-                                isScrollControlled: true,
-                                backgroundColor: Colors.white,
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return StatefulBuilder(
-                                    builder: (context, setModalState) {
-                                      return displayUpload(
-                                        true,
-                                        resMigrateRegs,
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            }
-                          },
-                          onTapDown: (_) {
-                            if (req != null) {
-                              return;
-                            }
-                            if (!(auth == 'c' && serverConn == 'c')) return;
-                            setState(() => hob = "f1");
-                          },
-                          onTapCancel: () {
-                            setState(() => hob = null);
-                          },
-                          onTapUp: (_) {
-                            if (req != null) {
-                              return;
-                            }
-                            setState(() => hob = null);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 18,
-                            ),
+                        Opacity(
+                          opacity: auth == 'c' ? 1 : .5,
+                          child: SizedBox(
                             width: 160,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color:
-                                  hob == "f1" || req != null || regs == 0
-                                      ? Color.fromARGB(161, 2, 52, 74)
-                                      : Color.fromARGB(217, 2, 52, 74),
-                              border: Border.all(
-                                color: Color.fromARGB(255, 0, 143, 204),
-                                width: 1.2,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(0),
-                                bottomLeft: Radius.circular(0),
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
-                              ),
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Positioned(
-                                  left: 1,
-                                  top: req == 'f1' ? 10 : 1,
-                                  child: Icon(
-                                    Icons.supervised_user_circle_sharp,
-                                    size: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
-
                                 Text(
-                                  req == 'f1'
-                                      ? 'Uploading...'
-                                      : 'Upload the registered data',
+                                  name ?? '----',
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(230, 3, 53, 180),
                                   ),
-                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.start,
+                                ),
+                                Row(
+                                  children: [
+                                    Text('Disconnect in: '),
+                                    Text(
+                                      disconnectionTime ?? '--:--:--',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        Container(
-                          width: 85,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Color.fromARGB(135, 48, 48, 48),
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Color.fromARGB(255, 0, 143, 204),
-                                width: 1.2,
-                              ),
-                              right: BorderSide(
-                                color: Color.fromARGB(255, 0, 143, 204),
-                                width: 1.2,
-                              ),
-                              left: BorderSide(
-                                color: Color.fromARGB(255, 0, 143, 204),
-                                width: 1.2,
-                              ),
-                            ),
-                            borderRadius: BorderRadius.only(
-                              bottomRight: Radius.circular(0),
-                              bottomLeft: Radius.circular(60),
-                              topLeft: Radius.circular(0),
-                              topRight: Radius.circular(0),
-                            ),
-                          ),
-                          child: Text(
-                            loadd ? '----' : regs.toString(),
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                            textAlign: TextAlign.end,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Opacity(
-                    opacity:
-                        (auth == 'c' && serverConn == 'c') &&
-                                av > 0 &&
-                                req == null
-                            ? 1
-                            : .5,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.start,
-
-                      children: [
                         GestureDetector(
                           onTap: () async {
-                            if (req != null || av < 1) {
+                            if (loadd) return;
+                            if (ipConf == 'd') widget.chtp();
+                            if (serverConn == 'd') {
+                              await _init();
                               return;
                             }
-                            final db = AppDatabase();
-
-                            setState(() {
-                              hob = "f2";
-                              req = 'f2';
-                            });
-                            final youthBulk = await db.validate();
-                            final resMigrateVal = await client?.migrateData(
-                              youthBulk,
-                              false,
-                            );
-
-                            setState(() {
-                              hob = null;
-                              req = null;
-                            });
-                            if (mounted) {
-                              await showModalBottomSheet(
-                                isScrollControlled: true,
-                                backgroundColor: Colors.white,
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return StatefulBuilder(
-                                    builder: (context, setModalState) {
-                                      return displayUpload(
-                                        false,
-                                        resMigrateVal,
-                                      );
-                                    },
-                                  );
-                                },
-                              );
+                            if (auth == 'c') {
+                              try {
+                                await client?.logoutOfficials();
+                                setState(() {
+                                  auth = 'd';
+                                });
+                              } catch (e) {
+                                //
+                                setState(() {
+                                  auth = null;
+                                  serverConn = 'd';
+                                });
+                              }
+                              return;
                             }
+                            if (!(auth == 'd' && serverConn == 'c')) return;
+                            await showModalBottomSheet(
+                              isScrollControlled: true,
+                              backgroundColor: Colors.white,
+                              context: context,
+                              builder: (BuildContext context) {
+                                return StatefulBuilder(
+                                  builder: (context, setModalState) {
+                                    return Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 16,
+                                        right: 16,
+                                        top: 16,
+                                        bottom:
+                                            MediaQuery.of(
+                                              context,
+                                            ).viewInsets.bottom,
+                                      ),
+                                      child: SingleChildScrollView(
+                                        child: LoginForm(mchange: mchange),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            );
                           },
                           onTapDown: (_) {
-                            if (req != null) {
-                              return;
-                            }
-                            if (!(auth == 'c' && serverConn == 'c')) return;
-                            setState(() => hob = "f2");
+                            if (serverConn == null && auth == null) return;
+                            setState(() => hob = "f3");
                           },
                           onTapCancel: () {
                             setState(() => hob = null);
                           },
                           onTapUp: (_) {
-                            if (req != null) {
-                              return;
-                            }
                             setState(() => hob = null);
                           },
                           child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 18,
+                            width: 150,
+                            padding: EdgeInsets.only(
+                              bottom: 10,
+                              left: 7,
+                              top: 10,
+                              right: 10,
                             ),
-                            width: 160,
-                            height: 80,
                             // Color.fromARGB(255, 2, 144, 140
                             decoration: BoxDecoration(
                               color:
-                                  hob == "f2" || req != null || av == 0
-                                      ? Color.fromARGB(161, 2, 77, 75)
-                                      : Color.fromARGB(227, 2, 77, 74),
+                                  loadd == true
+                                      ? Color.fromARGB(162, 2, 23, 77)
+                                      : hob == "f3"
+                                      ? Color.fromARGB(162, 2, 23, 77)
+                                      : Color.fromARGB(230, 2, 23, 77),
                               border: Border.all(
-                                color: Color.fromARGB(255, 2, 144, 140),
+                                color: Color.fromARGB(255, 0, 55, 194),
                                 width: 1.2,
                               ),
-                              borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(0),
-                                bottomLeft: Radius.circular(0),
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10),
                               ),
                             ),
 
-                            child: Stack(
-                              alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Positioned(
-                                  left: 1,
-                                  top: req == 'f2' ? 10 : 1,
-                                  child: Icon(
-                                    Icons.verified_user_sharp,
-                                    size: 20,
-                                    color: Colors.white,
-                                  ),
+                                Icon(
+                                  loadd
+                                      ? Icons.safety_check_rounded
+                                      : ipConf == 'd'
+                                      ? Icons.settings
+                                      : auth == 'c'
+                                      ? Icons.power_off
+                                      : serverConn == 'd'
+                                      ? Icons.refresh
+                                      : auth == 'd'
+                                      ? Icons.fingerprint
+                                      : Icons.safety_check_rounded,
+                                  size: 20,
+                                  color: Colors.white,
                                 ),
                                 Text(
-                                  req == 'f2'
-                                      ? 'Uploading...'
-                                      : 'Upload the validated data',
+                                  loadd
+                                      ? ' Checking......'
+                                      : ipConf == 'd'
+                                      ? ' Configure IP'
+                                      : auth == 'c'
+                                      ? ' Disconnect'
+                                      : serverConn == 'd'
+                                      ? ' Reconnect'
+                                      : auth == 'd'
+                                      ? ' Authenticate'
+                                      : ' Checking......',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -642,172 +444,475 @@ class _HubScreenState extends State<HubScreen> {
                             ),
                           ),
                         ),
-                        Container(
-                          width: 85,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 10,
+                      ],
+                    ),
+
+                    SizedBox(height: 10),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Opacity(
+                          opacity:
+                              (auth == 'c' && serverConn == 'c') &&
+                                      regs > 0 &&
+                                      req == null
+                                  ? 1
+                                  : .5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (req != null || regs == 0) {
+                                    return;
+                                  }
+                                  final db = AppDatabase();
+
+                                  setState(() {
+                                    hob = "f1";
+                                    req = 'f1';
+                                  });
+                                  final youthBulk = await db.migrate();
+                                  final resMigrateRegs = await client
+                                      ?.migrateData(youthBulk, true);
+                                  setState(() {
+                                    hob = null;
+                                    req = null;
+                                  });
+                                  if (mounted) {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.white,
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return StatefulBuilder(
+                                          builder: (context, setModalState) {
+                                            return displayUpload(
+                                              true,
+                                              resMigrateRegs,
+                                            );
+                                          },
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                                onTapDown: (_) {
+                                  if (req != null) {
+                                    return;
+                                  }
+                                  if (!(auth == 'c' && serverConn == 'c'))
+                                    return;
+                                  setState(() => hob = "f1");
+                                },
+                                onTapCancel: () {
+                                  setState(() => hob = null);
+                                },
+                                onTapUp: (_) {
+                                  if (req != null) {
+                                    return;
+                                  }
+                                  setState(() => hob = null);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 18,
+                                  ),
+                                  width: 160,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        hob == "f1" || req != null || regs == 0
+                                            ? Color.fromARGB(161, 2, 52, 74)
+                                            : Color.fromARGB(217, 2, 52, 74),
+                                    border: Border.all(
+                                      color: Color.fromARGB(255, 0, 143, 204),
+                                      width: 1.2,
+                                    ),
+                                    borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(0),
+                                      bottomLeft: Radius.circular(0),
+                                      topLeft: Radius.circular(10),
+                                      topRight: Radius.circular(10),
+                                    ),
+                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Positioned(
+                                        left: 1,
+                                        top: req == 'f1' ? 10 : 1,
+                                        child: Icon(
+                                          Icons.supervised_user_circle_sharp,
+                                          size: 20,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+
+                                      Text(
+                                        req == 'f1'
+                                            ? 'Uploading...'
+                                            : 'Upload the registered data',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: 85,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Color.fromARGB(135, 48, 48, 48),
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Color.fromARGB(255, 0, 143, 204),
+                                      width: 1.2,
+                                    ),
+                                    right: BorderSide(
+                                      color: Color.fromARGB(255, 0, 143, 204),
+                                      width: 1.2,
+                                    ),
+                                    left: BorderSide(
+                                      color: Color.fromARGB(255, 0, 143, 204),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  borderRadius: BorderRadius.only(
+                                    bottomRight: Radius.circular(0),
+                                    bottomLeft: Radius.circular(60),
+                                    topLeft: Radius.circular(0),
+                                    topRight: Radius.circular(0),
+                                  ),
+                                ),
+                                child: Text(
+                                  loadd ? '----' : regs.toString(),
+                                  style: TextStyle(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                  textAlign: TextAlign.end,
+                                ),
+                              ),
+                            ],
                           ),
-                          decoration: BoxDecoration(
-                            color: Color.fromARGB(135, 48, 48, 48),
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Color.fromARGB(255, 0, 187, 180),
-                                width: 1.2,
+                        ),
+                        Opacity(
+                          opacity:
+                              (auth == 'c' && serverConn == 'c') &&
+                                      av > 0 &&
+                                      req == null
+                                  ? 1
+                                  : .5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.start,
+
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (req != null || av < 1) {
+                                    return;
+                                  }
+                                  final db = AppDatabase();
+
+                                  setState(() {
+                                    hob = "f2";
+                                    req = 'f2';
+                                  });
+                                  final youthBulk = await db.validate();
+                                  final resMigrateVal = await client
+                                      ?.migrateData(youthBulk, false);
+
+                                  setState(() {
+                                    hob = null;
+                                    req = null;
+                                  });
+                                  if (mounted) {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.white,
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return StatefulBuilder(
+                                          builder: (context, setModalState) {
+                                            return displayUpload(
+                                              false,
+                                              resMigrateVal,
+                                            );
+                                          },
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                                onTapDown: (_) {
+                                  if (req != null) {
+                                    return;
+                                  }
+                                  if (!(auth == 'c' && serverConn == 'c'))
+                                    return;
+                                  setState(() => hob = "f2");
+                                },
+                                onTapCancel: () {
+                                  setState(() => hob = null);
+                                },
+                                onTapUp: (_) {
+                                  if (req != null) {
+                                    return;
+                                  }
+                                  setState(() => hob = null);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 18,
+                                  ),
+                                  width: 160,
+                                  height: 80,
+                                  // Color.fromARGB(255, 2, 144, 140
+                                  decoration: BoxDecoration(
+                                    color:
+                                        hob == "f2" || req != null || av == 0
+                                            ? Color.fromARGB(161, 2, 77, 75)
+                                            : Color.fromARGB(227, 2, 77, 74),
+                                    border: Border.all(
+                                      color: Color.fromARGB(255, 2, 144, 140),
+                                      width: 1.2,
+                                    ),
+                                    borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(0),
+                                      bottomLeft: Radius.circular(0),
+                                      topLeft: Radius.circular(10),
+                                      topRight: Radius.circular(10),
+                                    ),
+                                  ),
+
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Positioned(
+                                        left: 1,
+                                        top: req == 'f2' ? 10 : 1,
+                                        child: Icon(
+                                          Icons.verified_user_sharp,
+                                          size: 20,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      Text(
+                                        req == 'f2'
+                                            ? 'Uploading...'
+                                            : 'Upload the validated data',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              left: BorderSide(
-                                color: Color.fromARGB(255, 0, 187, 180),
-                                width: 1.2,
+                              Container(
+                                width: 85,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Color.fromARGB(135, 48, 48, 48),
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Color.fromARGB(255, 0, 187, 180),
+                                      width: 1.2,
+                                    ),
+                                    left: BorderSide(
+                                      color: Color.fromARGB(255, 0, 187, 180),
+                                      width: 1.2,
+                                    ),
+                                    right: BorderSide(
+                                      color: Color.fromARGB(255, 0, 187, 180),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  borderRadius: BorderRadius.only(
+                                    bottomRight: Radius.circular(60),
+                                    bottomLeft: Radius.circular(10),
+                                    topLeft: Radius.circular(0),
+                                    topRight: Radius.circular(0),
+                                  ),
+                                ),
+                                child: Text(
+                                  loadd ? '----' : '$av/$uv',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                ),
                               ),
-                              right: BorderSide(
-                                color: Color.fromARGB(255, 0, 187, 180),
-                                width: 1.2,
-                              ),
-                            ),
-                            borderRadius: BorderRadius.only(
-                              bottomRight: Radius.circular(60),
-                              bottomLeft: Radius.circular(10),
-                              topLeft: Radius.circular(0),
-                              topRight: Radius.circular(0),
-                            ),
-                          ),
-                          child: Text(
-                            loadd ? '----' : '$av/$uv',
-                            style: TextStyle(color: Colors.white, fontSize: 15),
-                            textAlign: TextAlign.start,
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Positioned(
-            bottom: 0,
-            child: Container(
-              height: 97,
-              width: 135,
-              padding: EdgeInsets.only(bottom: 10, left: 7, top: 10, right: 10),
-              // Color.fromARGB(255, 2, 144, 140
-              decoration: BoxDecoration(
-                color: Color.fromARGB(155, 61, 61, 61),
-                border: Border.all(
-                  color: Color.fromARGB(255, 55, 55, 55),
-                  width: 1.2,
+                  ],
                 ),
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-              ),
+                Positioned(
+                  bottom: 0,
+                  child: Container(
+                    height: 97,
+                    width: 135,
+                    padding: EdgeInsets.only(
+                      bottom: 10,
+                      left: 7,
+                      top: 10,
+                      right: 10,
+                    ),
+                    // Color.fromARGB(255, 2, 144, 140
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(155, 61, 61, 61),
+                      border: Border.all(
+                        color: Color.fromARGB(255, 55, 55, 55),
+                        width: 1.2,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
 
-              child: Column(
-                children: [
-                  Text(
-                    'Status',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Status',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Row(
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.circle,
+                              size: 12,
+                              color:
+                                  ipConf == 'c'
+                                      ? Colors.green
+                                      : ipConf == 'd'
+                                      ? Colors.red
+                                      : Colors.amber,
+                            ),
+                            SizedBox(width: 5),
+                            Text(
+                              'IP configuration',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        Row(
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.circle,
+                              size: 12,
+                              color:
+                                  serverConn == 'c'
+                                      ? Colors.green
+                                      : serverConn == 'd'
+                                      ? Colors.red
+                                      : Colors.amber,
+                            ),
+                            SizedBox(width: 5),
+                            Text(
+                              'Server connection',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        Row(
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.circle,
+                              size: 12,
+                              color:
+                                  auth == 'c'
+                                      ? Colors.green
+                                      : auth == 'd'
+                                      ? Colors.red
+                                      : Colors.amber,
+                            ),
+                            SizedBox(width: 5),
+                            Text(
+                              'Authenticated',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 3),
-                  Row(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.circle,
-                        size: 12,
-                        color:
-                            ipConf == 'c'
-                                ? Colors.green
-                                : ipConf == 'd'
-                                ? Colors.red
-                                : Colors.amber,
-                      ),
-                      SizedBox(width: 5),
-                      Text(
-                        'IP configuration',
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                  Row(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.circle,
-                        size: 12,
-                        color:
-                            serverConn == 'c'
-                                ? Colors.green
-                                : serverConn == 'd'
-                                ? Colors.red
-                                : Colors.amber,
-                      ),
-                      SizedBox(width: 5),
-                      Text(
-                        'Server connection',
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                  Row(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.circle,
-                        size: 12,
-                        color:
-                            auth == 'c'
-                                ? Colors.green
-                                : auth == 'd'
-                                ? Colors.red
-                                : Colors.amber,
-                      ),
-                      SizedBox(width: 5),
-                      Text(
-                        'Authenticated',
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget displayUpload(bool nw, Map<String, dynamic>? data) {
-    String? ex, regs, fail, val, nf, uv;
+    String? ex, regis, fail, val, nf, uvv;
 
     debugPrint('loggggggg.......');
     debugPrint(data.toString());
     if (data?['data'] != null && nw) {
       ex = (data?['data']['ex'] as List<dynamic>).length.toString();
-      regs = (data?['data']['regs'] as List<dynamic>).length.toString();
+      regis = (data?['data']['regs'] as List<dynamic>).length.toString();
     } else {
       ex = '0';
-      regs = '0';
+      regis = '0';
     }
     if (data?['data'] != null && !nw) {
       fail = (data?['data']['fail'] as List<dynamic>).length.toString();
       val = (data?['data']['val'] as List<dynamic>).length.toString();
       nf = (data?['data']['nf'] as List<dynamic>).length.toString();
-      uv = (data?['data']['uv'] as List<dynamic>).length.toString();
+      uvv = (data?['data']['uv'] as List<dynamic>).length.toString();
     } else {
       fail = '0';
       val = '0';
       nf = '0';
-      uv = '0';
+      uvv = '0';
     }
     String response = 'Success';
     if (data != null && data.containsKey('error1')) {
@@ -923,7 +1028,7 @@ class _HubScreenState extends State<HubScreen> {
                                             ? nf.toString()
                                             : i == 3
                                             ? val.toString()
-                                            : uv.toString(),
+                                            : uvv.toString(),
                                         style: const TextStyle(
                                           fontSize: 17,
                                           fontWeight: FontWeight.bold,
@@ -1014,7 +1119,7 @@ class _HubScreenState extends State<HubScreen> {
                                                     36,
                                                   )
                                                   : i == 4 &&
-                                                      uv.toString() == '0'
+                                                      uvv.toString() == '0'
                                                   ? Color.fromARGB(
                                                     114,
                                                     142,
@@ -1042,7 +1147,8 @@ class _HubScreenState extends State<HubScreen> {
                                                 : i == 3 &&
                                                     val.toString() == '0'
                                                 ? Colors.transparent
-                                                : i == 4 && uv.toString() == '0'
+                                                : i == 4 &&
+                                                    uvv.toString() == '0'
                                                 ? Colors.transparent
                                                 : const Color.fromARGB(
                                                   116,
@@ -1061,12 +1167,12 @@ class _HubScreenState extends State<HubScreen> {
                                           if (i == 3 && val.toString() == '0') {
                                             return;
                                           }
-                                          if (i == 4 && uv.toString() == '0') {
+                                          if (i == 4 && uvv.toString() == '0') {
                                             return;
                                           }
                                           String msg = 'Do you want to delete ';
                                           String f = fail.toString(),
-                                              u = uv.toString(),
+                                              u = uvv.toString(),
                                               v = val.toString(),
                                               n = nf.toString();
                                           msg +=
@@ -1126,6 +1232,20 @@ class _HubScreenState extends State<HubScreen> {
                                                     .toList(),
                                               );
                                               s = true;
+                                              setState(() {
+                                                if (i == 0) {
+                                                  fail = '0';
+                                                } else if (i == 1) {
+                                                  nf = '0';
+                                                } else if (i == 3) {
+                                                  val = '0';
+                                                  av = 0;
+                                                } else if (i == 4) {
+                                                  uvv = '0';
+                                                  uv = 0;
+                                                }
+                                              });
+                                              
                                             } catch (e) {
                                               debugPrint(e.toString());
                                               s = false;
@@ -1198,7 +1318,7 @@ class _HubScreenState extends State<HubScreen> {
                                       Text(
                                         i == 0
                                             ? ex.toString()
-                                            : regs.toString(),
+                                            : regis.toString(),
                                         style: const TextStyle(
                                           fontSize: 17,
                                           fontWeight: FontWeight.bold,
@@ -1257,7 +1377,8 @@ class _HubScreenState extends State<HubScreen> {
                                       color:
                                           i == 0 && ex.toString() == '0'
                                               ? Color.fromARGB(114, 142, 36, 36)
-                                              : i == 1 && regs.toString() == '0'
+                                              : i == 1 &&
+                                                  regis.toString() == '0'
                                               ? Color.fromARGB(114, 142, 36, 36)
                                               : Color.fromARGB(
                                                 255,
@@ -1269,7 +1390,7 @@ class _HubScreenState extends State<HubScreen> {
                                     highlightColor:
                                         i == 0 && ex.toString() == '0'
                                             ? Colors.transparent
-                                            : i == 1 && regs.toString() == '0'
+                                            : i == 1 && regis.toString() == '0'
                                             ? Colors.transparent
                                             : const Color.fromARGB(
                                               116,
@@ -1281,12 +1402,12 @@ class _HubScreenState extends State<HubScreen> {
                                       if (i == 0 && ex.toString() == '0') {
                                         return;
                                       }
-                                      if (i == 1 && regs.toString() == '0') {
+                                      if (i == 1 && regis.toString() == '0') {
                                         return;
                                       }
                                       String msg = 'Do you want to delete ';
                                       String e = ex.toString(),
-                                          r = regs.toString();
+                                          r = regis.toString();
                                       msg +=
                                           i == 0
                                               ? 'the $e already existed data?'
@@ -1321,7 +1442,7 @@ class _HubScreenState extends State<HubScreen> {
                                         if (i == 0 && ex.toString() == '0') {
                                           return;
                                         }
-                                        if (i == 1 && regs.toString() == '0') {
+                                        if (i == 1 && regis.toString() == '0') {
                                           return;
                                         }
                                         List<dynamic> toDel =
@@ -1340,6 +1461,15 @@ class _HubScreenState extends State<HubScreen> {
                                             toDel.map((e) => e as int).toList(),
                                           );
                                           s = true;
+                                          setState(() {
+                                            if (i == 0) {
+                                              regs -= int.parse(ex ?? '0');
+                                              ex = '0';
+                                            } else if (i == 1) {
+                                              regs -= int.parse(regis ?? '0');
+                                              regis = '0';
+                                            }
+                                          });
                                         } catch (e) {
                                           s = false;
                                         }
@@ -1812,10 +1942,22 @@ class _HubScreenState extends State<HubScreen> {
                                       },
                                     );
                                   }
+                                  setState(() {
+                                    tryhub = false;
+                                    uv += int.parse(reshub?['new']);
+                                    av += int.parse(reshub?['n']);
+                                  });
                                 } catch (e) {
                                   debugPrint('error: $e');
-                                } finally {
-                                  setState(() => tryhub = false);
+                                  /*
+                                   : i == 0
+                                        ? resdl['new'].toString()
+                                        : i == 2
+                                        ? resdl['uv'].toString()
+                                        : i == 3
+                                        ? resdl['v'].toString()
+                                        : resdl['n'].toString(),
+                                  */
                                 }
                               }
                             },

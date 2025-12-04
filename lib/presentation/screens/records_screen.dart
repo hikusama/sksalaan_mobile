@@ -679,6 +679,9 @@ class RecordsScreenState extends State<RecordsScreen> {
                                                                     .youthUser
                                                                     .youthUserId,
                                                               );
+                                                          await _loadInitialData(
+                                                            arg: '',
+                                                          );
                                                           isGood = true;
                                                         } catch (e) {
                                                           isGood = false;

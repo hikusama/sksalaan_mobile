@@ -682,6 +682,10 @@ class ValidationScreenState extends State<ValidationScreen> {
                                                                     .youthUser
                                                                     .youthUserId,
                                                               );
+                                                          await _loadInitialData(
+                                                            arg: '',
+                                                          );
+
                                                           isGood = true;
                                                         } catch (e) {
                                                           isGood = false;
