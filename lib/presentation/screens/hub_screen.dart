@@ -329,10 +329,19 @@ class _HubScreenState extends State<HubScreen> {
                             }
                             if (auth == 'c') {
                               try {
+                                setState(() {
+                                  loadd = true;
+                                });
                                 await client?.logoutOfficials();
                                 setState(() {
+                                  loadd = false;
                                   auth = 'd';
                                 });
+                                disconnectionTimeCount(
+                                  DateTime.now()
+                                      .subtract(Duration(seconds: 1))
+                                      .toIso8601String(),
+                                );
                               } catch (e) {
                                 //
                                 setState(() {
@@ -1245,7 +1254,6 @@ class _HubScreenState extends State<HubScreen> {
                                                   uv = 0;
                                                 }
                                               });
-                                              
                                             } catch (e) {
                                               debugPrint(e.toString());
                                               s = false;
